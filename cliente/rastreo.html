@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MotoClick — Rastrea tu mandado en tiempo real.">
+  <title>MotoClick — Rastreo en Vivo</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .tracking-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+    .tracking-map { min-height: 420px; }
+    .tracking-details { display: flex; flex-direction: column; gap: var(--space-lg); }
+    .order-summary {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .order-summary-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+    }
+    .order-summary-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .order-summary-content {
+      flex: 1;
+    }
+    .order-summary-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .order-summary-value {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      margin-top: 2px;
+    }
+    .driver-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: rgba(0, 230, 91, 0.06);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-md);
+    }
+    .driver-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .driver-info { flex: 1; }
+    .driver-name { font-weight: 600; font-size: 1rem; }
+    .driver-label { font-size: 0.8rem; color: var(--text-muted); }
+
+    .waiting-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 15, 26, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      border-radius: var(--radius-lg);
+      gap: var(--space-md);
+    }
+    .waiting-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-500);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @media (min-width: 900px) {
+      .tracking-layout {
+        grid-template-columns: 1fr 380px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="../" class="navbar-brand">
+        <span class="brand-icon">🏍️</span>
+        <span>MotoClick</span>
+      </a>
+      <div class="navbar-actions">
+        <a href="nuevo-pedido.html" class="btn btn-sm btn-secondary">+ Nuevo Mandado</a>
+      </div>
+    </nav>
+
+    <div class="page-content">
+      <div class="container">
+        <h2 class="mb-lg animate-fade-in">📍 Rastreo en Vivo</h2>
+
+        <!-- Status Tracker -->
+        <div class="status-tracker mb-lg animate-fade-in-up stagger-1" id="status-tracker"></div>
+
+        <!-- Layout -->
+        <div class="tracking-layout animate-fade-in-up stagger-2">
+          <!-- Map -->
+          <div class="map-container tracking-map" style="position: relative;">
+            <div id="map"></div>
+            <div class="waiting-overlay hidden" id="waiting-overlay">
+              <div class="waiting-spinner"></div>
+              <p style="color: var(--text-secondary); font-size: 0.9rem;">Buscando repartidor disponible...</p>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="tracking-details">
+            <!-- Driver Info -->
+            <div class="card-glass hidden" id="driver-section">
+              <h3 style="margin-bottom: var(--space-md); font-size: 1rem;">🏍️ Tu Repartidor</h3>
+              <div class="driver-card" id="driver-card"></div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="card-glass">
+              <h3 style="margin-bottom: var(--space-md); font-size: 1rem;">📋 Detalles del mandado</h3>
+              <div class="order-summary" id="order-summary"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    const user = requireAuth('client');
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('id');
+
+    if (!orderId) {
+      showToast('Pedido no encontrado.', 'error');
+      setTimeout(() => navigateTo('nuevo-pedido.html'), 1000);
+    }
+
+    let map, pickupMarker, deliveryMarker, driverMarker, routeLine;
+
+    function init() {
+      map = createMap('map');
+      loadOrder();
+      // Listen for real-time updates
+      store.on('order_accepted', handleUpdate);
+      store.on('status_change', handleUpdate);
+      store.on('location_update', handleLocationUpdate);
+      // Poll as fallback
+      setInterval(loadOrder, 3000);
+    }
+
+    function handleUpdate(data) {
+      if (data.id === orderId || data.orderId === orderId) {
+        loadOrder();
+      }
+    }
+
+    function handleLocationUpdate(data) {
+      if (data.orderId === orderId && data.location) {
+        updateDriverMarker(data.location);
+      }
+    }
+
+    function loadOrder() {
+      const order = store.getOrderById(orderId);
+      if (!order) return;
+
+      renderStatus(order.status);
+      renderSummary(order);
+      renderMap(order);
+
+      if (order.status === 'pending') {
+        document.getElementById('waiting-overlay').classList.remove('hidden');
+        document.getElementById('driver-section').classList.add('hidden');
+      } else {
+        document.getElementById('waiting-overlay').classList.add('hidden');
+        if (order.driverName) {
+          document.getElementById('driver-section').classList.remove('hidden');
+          document.getElementById('driver-card').innerHTML = `
+            <div class="driver-avatar">🏍️</div>
+            <div class="driver-info">
+              <div class="driver-name">${order.driverName}</div>
+              <div class="driver-label">Repartidor asignado</div>
+            </div>
+            <span class="badge badge-active">${getStatusLabel(order.status)}</span>
+          `;
+        }
+      }
+    }
+
+    function renderStatus(status) {
+      const tracker = document.getElementById('status-tracker');
+      const steps = STATUS_ORDER;
+      const currentIdx = getStatusIndex(status);
+
+      tracker.innerHTML = steps.map((s, i) => {
+        const labels = { pending: 'Pendiente', accepted: 'Aceptado', en_camino: 'En camino', recolectado: 'Recolectado', entregado: 'Entregado' };
+        const icons = { pending: '⏳', accepted: '✅', en_camino: '🏍️', recolectado: '📦', entregado: '🎉' };
+        let cls = '';
+        if (i < currentIdx) cls = 'completed';
+        else if (i === currentIdx) cls = 'active';
+
+        let html = `
+          <div class="status-step ${cls}">
+            <div class="status-dot">${icons[s]}</div>
+            <span class="status-label">${labels[s]}</span>
+          </div>`;
+        if (i < steps.length - 1) {
+          html += `<div class="status-line ${i < currentIdx ? 'completed' : ''}"></div>`;
+        }
+        return html;
+      }).join('');
+    }
+
+    function renderSummary(order) {
+      document.getElementById('order-summary').innerHTML = `
+        <div class="order-summary-row">
+          <span class="order-summary-icon">📝</span>
+          <div class="order-summary-content">
+            <div class="order-summary-label">Mandado</div>
+            <div class="order-summary-value">${order.description}</div>
+          </div>
+        </div>
+        <div class="order-summary-row">
+          <span class="order-summary-icon">📍</span>
+          <div class="order-summary-content">
+            <div class="order-summary-label">Recolección</div>
+            <div class="order-summary-value">${order.pickupAddress}</div>
+          </div>
+        </div>
+        <div class="order-summary-row">
+          <span class="order-summary-icon">🏠</span>
+          <div class="order-summary-content">
+            <div class="order-summary-label">Entrega</div>
+            <div class="order-summary-value">${order.deliveryAddress}</div>
+          </div>
+        </div>
+        <div class="order-summary-row">
+          <span class="order-summary-icon">${order.paymentMethod === 'cash' ? '💵' : order.paymentMethod === 'card' ? '💳' : '🏦'}</span>
+          <div class="order-summary-content">
+            <div class="order-summary-label">Pago</div>
+            <div class="order-summary-value">${getPaymentLabel(order.paymentMethod)}</div>
+          </div>
+        </div>
+        <div class="order-summary-row">
+          <span class="order-summary-icon">🕐</span>
+          <div class="order-summary-content">
+            <div class="order-summary-label">Solicitado</div>
+            <div class="order-summary-value">${formatDate(order.createdAt)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMap(order) {
+      if (!order.pickupCoords || !order.deliveryCoords) return;
+
+      if (!pickupMarker) {
+        pickupMarker = L.marker(order.pickupCoords, { icon: createIcon('📍', 32) }).addTo(map)
+          .bindPopup('<b>Recolección</b><br>' + order.pickupAddress);
+        deliveryMarker = L.marker(order.deliveryCoords, { icon: createIcon('🏠', 32) }).addTo(map)
+          .bindPopup('<b>Entrega</b><br>' + order.deliveryAddress);
+
+        routeLine = L.polyline([order.pickupCoords, order.deliveryCoords], {
+          color: '#00E65B',
+          weight: 3,
+          opacity: 0.7,
+          dashArray: '8, 12'
+        }).addTo(map);
+
+        const bounds = L.latLngBounds([order.pickupCoords, order.deliveryCoords]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+
+      if (order.driverLocation) {
+        updateDriverMarker(order.driverLocation);
+      }
+    }
+
+    function updateDriverMarker(location) {
+      if (!driverMarker) {
+        driverMarker = L.marker(location, { icon: createIcon('🏍️', 40) }).addTo(map);
+      } else {
+        driverMarker.setLatLng(location);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MotoClick — Vista de entrega activa con mapa y actualización de estado.">
+  <title>MotoClick — Entrega Activa</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .delivery-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+    @media (min-width: 900px) {
+      .delivery-layout {
+        grid-template-columns: 1fr 400px;
+      }
+    }
+    .delivery-map { min-height: 420px; }
+    .delivery-sidebar { display: flex; flex-direction: column; gap: var(--space-lg); }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+    .info-row-content { flex: 1; }
+    .info-row-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .info-row-value { margin-top: 2px; font-size: 0.95rem; }
+
+    .status-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .status-btn-group .btn {
+      padding: 18px;
+      font-size: 1.05rem;
+    }
+
+    .completed-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 26, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: var(--z-modal);
+      animation: fadeIn var(--duration-normal) var(--ease-out);
+    }
+    .completed-check {
+      font-size: 5rem;
+      margin-bottom: var(--space-lg);
+      animation: float 2s ease-in-out infinite;
+    }
+    .completed-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: var(--space-sm);
+    }
+    .completed-text {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xl);
+    }
+
+    .client-contact {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: rgba(59, 130, 246, 0.06);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: var(--radius-md);
+    }
+    .client-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--info-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="../" class="navbar-brand">
+        <span class="brand-icon">🏍️</span>
+        <span>MotoClick</span>
+      </a>
+      <div class="navbar-actions">
+        <a href="panel.html" class="btn btn-sm btn-secondary">← Panel</a>
+      </div>
+    </nav>
+
+    <div class="page-content">
+      <div class="container">
+        <h2 class="mb-lg animate-fade-in">🏍️ Entrega Activa</h2>
+
+        <!-- Status -->
+        <div class="status-tracker mb-lg animate-fade-in-up stagger-1" id="status-tracker"></div>
+
+        <!-- Layout -->
+        <div class="delivery-layout animate-fade-in-up stagger-2">
+          <!-- Map -->
+          <div class="map-container delivery-map">
+            <div id="map"></div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="delivery-sidebar">
+            <!-- Client -->
+            <div class="card-glass">
+              <h3 style="margin-bottom: var(--space-md); font-size: 1rem;">👤 Cliente</h3>
+              <div class="client-contact" id="client-info"></div>
+            </div>
+
+            <!-- Details -->
+            <div class="card-glass">
+              <h3 style="margin-bottom: var(--space-sm); font-size: 1rem;">📋 Detalles</h3>
+              <div id="delivery-details"></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-glass">
+              <h3 style="margin-bottom: var(--space-md); font-size: 1rem;">⚡ Actualizar Estado</h3>
+              <div class="status-btn-group" id="status-actions"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed Overlay -->
+    <div class="completed-overlay hidden" id="completed-overlay">
+      <div class="completed-check">🎉</div>
+      <div class="completed-title text-gradient">¡Entrega Completada!</div>
+      <div class="completed-text">Has entregado el mandado con éxito.</div>
+      <button class="btn btn-primary btn-lg" onclick="navigateTo('panel.html')">
+        Volver al Panel
+      </button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    const user = requireAuth('driver');
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('id');
+
+    if (!orderId) {
+      showToast('Pedido no encontrado.', 'error');
+      setTimeout(() => navigateTo('panel.html'), 1000);
+    }
+
+    let map, pickupMarker, deliveryMarker, driverMarker, routeLine;
+    let movementTimer = null;
+
+    function init() {
+      map = createMap('map');
+      loadOrder();
+    }
+
+    function loadOrder() {
+      const order = store.getOrderById(orderId);
+      if (!order) {
+        showToast('Pedido no encontrado.', 'error');
+        return;
+      }
+
+      renderStatus(order.status);
+      renderDetails(order);
+      renderMap(order);
+      renderActions(order);
+
+      if (order.status === 'entregado') {
+        document.getElementById('completed-overlay').classList.remove('hidden');
+      }
+    }
+
+    function renderStatus(status) {
+      const tracker = document.getElementById('status-tracker');
+      const steps = STATUS_ORDER;
+      const currentIdx = getStatusIndex(status);
+
+      tracker.innerHTML = steps.map((s, i) => {
+        const labels = { pending: 'Pendiente', accepted: 'Aceptado', en_camino: 'En camino', recolectado: 'Recolectado', entregado: 'Entregado' };
+        const icons = { pending: '⏳', accepted: '✅', en_camino: '🏍️', recolectado: '📦', entregado: '🎉' };
+        let cls = '';
+        if (i < currentIdx) cls = 'completed';
+        else if (i === currentIdx) cls = 'active';
+
+        let html = `
+          <div class="status-step ${cls}">
+            <div class="status-dot">${icons[s]}</div>
+            <span class="status-label">${labels[s]}</span>
+          </div>`;
+        if (i < steps.length - 1) {
+          html += `<div class="status-line ${i < currentIdx ? 'completed' : ''}"></div>`;
+        }
+        return html;
+      }).join('');
+    }
+
+    function renderDetails(order) {
+      document.getElementById('client-info').innerHTML = `
+        <div class="client-avatar">👤</div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600;">${order.clientName}</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">📞 ${order.clientPhone}</div>
+        </div>
+      `;
+
+      document.getElementById('delivery-details').innerHTML = `
+        <div class="info-row">
+          <span class="info-row-icon">📝</span>
+          <div class="info-row-content">
+            <div class="info-row-label">Mandado</div>
+            <div class="info-row-value">${order.description}</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-row-icon">📍</span>
+          <div class="info-row-content">
+            <div class="info-row-label">Recolección</div>
+            <div class="info-row-value">${order.pickupAddress}</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-row-icon">🏠</span>
+          <div class="info-row-content">
+            <div class="info-row-label">Entrega</div>
+            <div class="info-row-value">${order.deliveryAddress}</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-row-icon">${order.paymentMethod === 'cash' ? '💵' : order.paymentMethod === 'card' ? '💳' : '🏦'}</span>
+          <div class="info-row-content">
+            <div class="info-row-label">Método de pago</div>
+            <div class="info-row-value">${getPaymentLabel(order.paymentMethod)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMap(order) {
+      if (!order.pickupCoords || !order.deliveryCoords) return;
+
+      if (!pickupMarker) {
+        pickupMarker = L.marker(order.pickupCoords, { icon: createIcon('📍', 32) }).addTo(map)
+          .bindPopup('<b>Recolección</b><br>' + order.pickupAddress);
+        deliveryMarker = L.marker(order.deliveryCoords, { icon: createIcon('🏠', 32) }).addTo(map)
+          .bindPopup('<b>Entrega</b><br>' + order.deliveryAddress);
+
+        routeLine = L.polyline([order.pickupCoords, order.deliveryCoords], {
+          color: '#00E65B',
+          weight: 4,
+          opacity: 0.8,
+          dashArray: '8, 12'
+        }).addTo(map);
+
+        // Start driver near pickup
+        const driverStart = [
+          order.pickupCoords[0] + (Math.random() - 0.5) * 0.008,
+          order.pickupCoords[1] + (Math.random() - 0.5) * 0.008
+        ];
+        driverMarker = L.marker(driverStart, { icon: createIcon('🏍️', 40) }).addTo(map);
+
+        const bounds = L.latLngBounds([order.pickupCoords, order.deliveryCoords, driverStart]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+
+    function renderActions(order) {
+      const container = document.getElementById('status-actions');
+      const s = order.status;
+
+      if (s === 'entregado') {
+        container.innerHTML = `
+          <button class="btn btn-success btn-block" disabled>
+            🎉 Entrega completada
+          </button>
+        `;
+        return;
+      }
+
+      const nextSteps = {
+        accepted: { label: '🏍️ En Camino', status: 'en_camino', cls: 'btn-primary' },
+        en_camino: { label: '📦 Recolectado', status: 'recolectado', cls: 'btn-primary' },
+        recolectado: { label: '🎉 Entregado', status: 'entregado', cls: 'btn-success' }
+      };
+
+      const next = nextSteps[s];
+      if (next) {
+        container.innerHTML = `
+          <button class="btn ${next.cls} btn-block" onclick="changeStatus('${next.status}')">
+            ${next.label}
+          </button>
+        `;
+      }
+    }
+
+    function changeStatus(newStatus) {
+      const order = store.updateOrderStatus(orderId, newStatus);
+      if (!order) return;
+
+      showToast(`Estado actualizado: ${getStatusLabel(newStatus)}`, 'success');
+
+      // Simulate driver movement when status changes
+      if (newStatus === 'en_camino') {
+        startMovement(order.pickupCoords, order.deliveryCoords);
+      }
+
+      loadOrder();
+
+      if (newStatus === 'entregado') {
+        if (movementTimer) clearInterval(movementTimer);
+        setTimeout(() => {
+          document.getElementById('completed-overlay').classList.remove('hidden');
+        }, 500);
+      }
+    }
+
+    function startMovement(from, to) {
+      if (movementTimer) clearInterval(movementTimer);
+      const route = generateRoute(from, to, 25);
+
+      movementTimer = simulateMovement(route, (point, idx, total) => {
+        if (driverMarker) {
+          driverMarker.setLatLng(point);
+        }
+        // Broadcast location to client
+        store.updateDriverLocation(orderId, point);
+      }, 2000);
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MotoClick — Solicita un nuevo mandado y elige tu forma de pago.">
+  <title>MotoClick — Nuevo Pedido</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .order-form-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    .order-form-header h1 {
+      font-size: 1.8rem;
+    }
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-accent);
+      margin-bottom: var(--space-md);
+      margin-top: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .form-card { max-width: 650px; margin: 0 auto; }
+    .user-greeting {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .user-name {
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+
+    .orders-history {
+      max-width: 650px;
+      margin: var(--space-2xl) auto 0;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-sm);
+      transition: all var(--duration-fast) ease;
+      cursor: pointer;
+    }
+    .history-item:hover {
+      border-color: var(--border-active);
+    }
+    .history-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .history-desc {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .history-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="../" class="navbar-brand">
+        <span class="brand-icon">🏍️</span>
+        <span>MotoClick</span>
+      </a>
+      <div class="navbar-actions">
+        <span class="user-greeting" id="user-greeting"></span>
+        <button class="btn btn-sm btn-secondary" onclick="handleLogout()" id="btn-logout">Salir</button>
+      </div>
+    </nav>
+
+    <!-- Form -->
+    <div class="page-content">
+      <div class="container">
+        <div class="form-card card-glass animate-fade-in">
+          <div class="order-form-header">
+            <h1>📋 Nuevo Mandado</h1>
+            <p class="text-secondary">Cuéntanos qué necesitas y nosotros lo llevamos</p>
+          </div>
+
+          <form id="order-form" onsubmit="handleSubmitOrder(event)">
+            <!-- Mandado -->
+            <div class="section-title">📝 ¿Qué necesitas?</div>
+            <div class="form-group">
+              <label class="form-label" for="description">Descripción del mandado</label>
+              <textarea class="form-textarea" id="description" name="description"
+                placeholder="Ej. Recoger un paquete en la tienda X y entregarlo en mi casa. El paquete es una caja pequeña de color azul."></textarea>
+              <span class="form-error"></span>
+            </div>
+
+            <!-- Addresses -->
+            <div class="section-title">📍 Direcciones</div>
+            <div class="form-group">
+              <label class="form-label" for="pickup-address">Dirección de recolección</label>
+              <input class="form-input" type="text" id="pickup-address" name="pickupAddress"
+                placeholder="Ej. Av. Reforma 222, Col. Juárez, CDMX">
+              <span class="form-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="delivery-address">Dirección de entrega</label>
+              <input class="form-input" type="text" id="delivery-address" name="deliveryAddress"
+                placeholder="Ej. Calle Monterrey 54, Col. Roma Norte, CDMX">
+              <span class="form-error"></span>
+            </div>
+
+            <!-- Payment -->
+            <div class="section-title">💰 Forma de pago</div>
+            <div class="payment-options">
+              <label class="payment-card">
+                <input type="radio" name="paymentMethod" value="cash" checked>
+                <div class="payment-card-body">
+                  <span class="payment-icon">💵</span>
+                  <span class="payment-label">Efectivo</span>
+                  <span class="text-muted" style="font-size: 0.75rem;">Paga al recibir</span>
+                </div>
+              </label>
+              <label class="payment-card">
+                <input type="radio" name="paymentMethod" value="card">
+                <div class="payment-card-body">
+                  <span class="payment-icon">💳</span>
+                  <span class="payment-label">Tarjeta</span>
+                  <span class="text-muted" style="font-size: 0.75rem;">Crédito o débito</span>
+                </div>
+              </label>
+              <label class="payment-card">
+                <input type="radio" name="paymentMethod" value="transfer">
+                <div class="payment-card-body">
+                  <span class="payment-icon">🏦</span>
+                  <span class="payment-label">Transferencia</span>
+                  <span class="text-muted" style="font-size: 0.75rem;">SPEI / bancaria</span>
+                </div>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-xl" id="submit-order">
+              🏍️ Solicitar Mandado
+            </button>
+          </form>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="orders-history" id="orders-history"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    const user = requireAuth('client');
+    if (user) {
+      document.getElementById('user-greeting').innerHTML =
+        `Hola, <span class="user-name">${user.name}</span>`;
+      renderHistory();
+    }
+
+    function handleSubmitOrder(e) {
+      e.preventDefault();
+      const form = e.target;
+
+      const valid = validateForm(form, {
+        description: { required: true, minLength: 5, requiredMessage: 'Describe tu mandado.' },
+        pickupAddress: { required: true, minLength: 5, requiredMessage: 'Ingresa la dirección de recolección.' },
+        deliveryAddress: { required: true, minLength: 5, requiredMessage: 'Ingresa la dirección de entrega.' }
+      });
+
+      if (!valid) return;
+
+      const order = store.createOrder({
+        clientId: user.id,
+        clientName: user.name,
+        clientPhone: user.phone,
+        description: form.description.value.trim(),
+        pickupAddress: form.pickupAddress.value.trim(),
+        deliveryAddress: form.deliveryAddress.value.trim(),
+        paymentMethod: form.paymentMethod.value,
+        // Simulated coordinates for demo (CDMX area)
+        pickupCoords: [
+          19.4326 + (Math.random() - 0.5) * 0.03,
+          -99.1332 + (Math.random() - 0.5) * 0.03
+        ],
+        deliveryCoords: [
+          19.4326 + (Math.random() - 0.5) * 0.03,
+          -99.1332 + (Math.random() - 0.5) * 0.03
+        ]
+      });
+
+      showToast('¡Mandado solicitado! Buscando repartidor...', 'success');
+      setTimeout(() => navigateTo(`rastreo.html?id=${order.id}`), 800);
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('orders-history');
+      const orders = store.getOrdersByClient(user.id).reverse();
+      if (orders.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = `
+        <h3 style="margin-bottom: var(--space-md); color: var(--text-secondary);">📜 Tus mandados recientes</h3>
+        ${orders.slice(0, 5).map(o => `
+          <div class="history-item" onclick="navigateTo('rastreo.html?id=${o.id}')">
+            <div class="history-left">
+              <span class="history-desc">${o.description.substring(0, 60)}${o.description.length > 60 ? '...' : ''}</span>
+              <span class="history-date">${timeAgo(o.createdAt)}</span>
+            </div>
+            <span class="badge ${o.status === 'entregado' ? 'badge-success' : o.status === 'pending' ? 'badge-pending' : 'badge-active'}">
+              ${getStatusLabel(o.status)}
+            </span>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function handleLogout() {
+      store.logout();
+      navigateTo('./');
+    }
+  </script>
+</body>
+</html>

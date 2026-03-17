@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MotoClick — Panel de solicitudes para repartidores.">
+  <title>MotoClick — Panel Repartidor</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-xl);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    .panel-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .online-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--success-bg);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--success);
+    }
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .new-order-flash {
+      animation: flashBorder 1s ease 3;
+    }
+    @keyframes flashBorder {
+      0%, 100% { border-color: var(--border-color); }
+      50% { border-color: var(--primary-500); box-shadow: var(--shadow-glow-strong); }
+    }
+    .user-greeting {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .user-name {
+      color: var(--text-accent);
+      font-weight: 600;
+    }
+    .active-delivery-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md) var(--space-lg);
+      background: rgba(0, 230, 91, 0.08);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+      cursor: pointer;
+      transition: all var(--duration-fast) ease;
+    }
+    .active-delivery-banner:hover {
+      background: rgba(0, 230, 91, 0.14);
+    }
+    .count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="../" class="navbar-brand">
+        <span class="brand-icon">🏍️</span>
+        <span>MotoClick</span>
+      </a>
+      <div class="navbar-actions">
+        <span class="user-greeting" id="user-greeting"></span>
+        <button class="btn btn-sm btn-secondary" onclick="handleLogout()">Salir</button>
+      </div>
+    </nav>
+
+    <div class="page-content">
+      <div class="container" style="max-width: 750px;">
+        <!-- Active delivery banner -->
+        <div class="active-delivery-banner hidden" id="active-banner" onclick="goToActiveDelivery()">
+          <div style="display: flex; align-items: center; gap: var(--space-md);">
+            <span style="font-size: 1.3rem;">🏍️</span>
+            <div>
+              <div style="font-weight: 600;">Tienes una entrega activa</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary);" id="active-banner-detail"></div>
+            </div>
+          </div>
+          <span class="btn btn-sm btn-primary">Ver →</span>
+        </div>
+
+        <!-- Header -->
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <h2>📋 Mandados Disponibles <span class="count-badge" id="order-count">0</span></h2>
+            <p class="text-secondary" style="font-size: 0.9rem;">Acepta un mandado para comenzar</p>
+          </div>
+          <div class="online-badge">
+            <span class="online-dot"></span>
+            En línea
+          </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="orders-list" id="orders-list">
+          <div class="empty-state" id="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-title">Sin mandados por ahora</div>
+            <div class="empty-state-text">Cuando un cliente solicite un mandado, aparecerá aquí automáticamente.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    const user = requireAuth('driver');
+    let previousCount = 0;
+
+    if (user) {
+      document.getElementById('user-greeting').innerHTML =
+        `Hola, <span class="user-name">${user.name}</span>`;
+      loadOrders();
+
+      // Listen for new orders
+      store.on('new_order', () => {
+        playNotificationSound();
+        showToast('🆕 ¡Nuevo mandado disponible!', 'warning');
+        loadOrders(true);
+      });
+
+      // Poll as fallback
+      setInterval(() => loadOrders(), 3000);
+    }
+
+    function loadOrders(isNew = false) {
+      const pending = store.getPendingOrders();
+      const container = document.getElementById('orders-list');
+      const emptyState = document.getElementById('empty-state');
+      const countBadge = document.getElementById('order-count');
+
+      // Check for active delivery
+      const activeOrder = store.getActiveOrderForDriver(user.id);
+      const banner = document.getElementById('active-banner');
+      if (activeOrder) {
+        banner.classList.remove('hidden');
+        document.getElementById('active-banner-detail').textContent =
+          `${activeOrder.description.substring(0, 50)}... — ${getStatusLabel(activeOrder.status)}`;
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      countBadge.textContent = pending.length;
+
+      // Detect new orders
+      if (pending.length > previousCount && previousCount > 0) {
+        playNotificationSound();
+      }
+      previousCount = pending.length;
+
+      if (pending.length === 0) {
+        container.innerHTML = '';
+        container.appendChild(emptyState.cloneNode ? createEmptyState() : emptyState);
+        return;
+      }
+
+      container.innerHTML = pending.map((order, i) => `
+        <div class="order-card ${isNew && i === pending.length - 1 ? 'new-order-flash' : ''}" id="order-${order.id}">
+          <div class="order-card-header">
+            <div style="display: flex; align-items: center; gap: var(--space-sm);">
+              <span style="font-size: 1.2rem;">📦</span>
+              <div>
+                <div style="font-weight: 600;">${order.clientName}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${timeAgo(order.createdAt)}</div>
+              </div>
+            </div>
+            <span class="badge ${getPaymentBadgeClass(order.paymentMethod)}">
+              ${getPaymentLabel(order.paymentMethod)}
+            </span>
+          </div>
+          <div class="order-card-body">
+            <div class="order-detail">
+              <span class="order-detail-icon">📝</span>
+              <span class="order-detail-text">${order.description}</span>
+            </div>
+            <div class="order-detail">
+              <span class="order-detail-icon">📍</span>
+              <span class="order-detail-text"><strong>Recoger:</strong> ${order.pickupAddress}</span>
+            </div>
+            <div class="order-detail">
+              <span class="order-detail-icon">🏠</span>
+              <span class="order-detail-text"><strong>Entregar:</strong> ${order.deliveryAddress}</span>
+            </div>
+          </div>
+          <div class="order-card-footer">
+            <button class="btn btn-primary btn-block" onclick="acceptOrder('${order.id}')">
+              ✅ Aceptar Mandado
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function createEmptyState() {
+      const div = document.createElement('div');
+      div.className = 'empty-state';
+      div.innerHTML = `
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-title">Sin mandados por ahora</div>
+        <div class="empty-state-text">Cuando un cliente solicite un mandado, aparecerá aquí automáticamente.</div>
+      `;
+      return div;
+    }
+
+    function acceptOrder(orderId) {
+      const order = store.acceptOrder(orderId, user);
+      if (order) {
+        showToast('¡Mandado aceptado! Revisa los detalles.', 'success');
+        setTimeout(() => navigateTo(`entrega.html?id=${order.id}`), 600);
+      } else {
+        showToast('Este mandado ya fue tomado.', 'error');
+        loadOrders();
+      }
+    }
+
+    function goToActiveDelivery() {
+      const active = store.getActiveOrderForDriver(user.id);
+      if (active) {
+        navigateTo(`entrega.html?id=${active.id}`);
+      }
+    }
+
+    function handleLogout() {
+      store.logout();
+      navigateTo('./');
+    }
+  </script>
+</body>
+</html>

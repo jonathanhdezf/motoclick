@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MotoClick — Tu mandado, a un click. Servicio de pedidos y envíos con rastreo en tiempo real.">
+  <title>MotoClick — Tu mandado, a un click</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .role-card {
+      cursor: pointer;
+      text-align: center;
+      padding: var(--space-2xl) var(--space-xl);
+      position: relative;
+      overflow: hidden;
+    }
+    .role-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-card);
+      opacity: 0;
+      transition: opacity var(--duration-normal) ease;
+    }
+    .role-card:hover::before { opacity: 1; }
+    .role-card .role-icon {
+      font-size: 4rem;
+      margin-bottom: var(--space-lg);
+      display: block;
+      transition: transform var(--duration-normal) var(--ease-bounce);
+    }
+    .role-card:hover .role-icon { transform: scale(1.15); }
+    .role-card .role-title {
+      font-size: 1.3rem;
+      margin-bottom: var(--space-sm);
+      position: relative;
+    }
+    .role-card .role-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      position: relative;
+    }
+
+    .footer {
+      text-align: center;
+      padding: var(--space-xl) 0;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-2xl);
+      padding: var(--space-lg) 0;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <span class="brand-icon">🏍️</span>
+        <span>MotoClick</span>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero animate-fade-in">
+      <div class="container">
+        <div class="hero-icon">🏍️</div>
+        <h1 class="hero-title">
+          Tu mandado, <span class="text-gradient">a un click</span>
+        </h1>
+        <p class="hero-subtitle">
+          Envía y recibe paquetes, comida, documentos o cualquier mandado con rastreo en tiempo real.
+        </p>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="container">
+      <div class="stats-bar animate-fade-in-up stagger-1">
+        <div class="stat-item">
+          <div class="stat-value">500+</div>
+          <div class="stat-label">Mandados diarios</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">15 min</div>
+          <div class="stat-label">Tiempo promedio</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">4.9 ⭐</div>
+          <div class="stat-label">Calificación</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Role Selection -->
+    <section class="container" style="padding: var(--space-2xl) 0;">
+      <h2 class="text-center mb-lg animate-fade-in-up stagger-2">¿Cómo quieres usar MotoClick?</h2>
+      <div class="grid-2" style="max-width: 700px; margin: 0 auto;">
+        <div class="card role-card animate-fade-in-up stagger-3" id="btn-client" onclick="window.location.href='cliente/'">
+          <span class="role-icon">📦</span>
+          <h3 class="role-title">Soy Cliente</h3>
+          <p class="role-desc">Solicita un mandado y rastrea tu envío en tiempo real</p>
+        </div>
+        <div class="card role-card animate-fade-in-up stagger-4" id="btn-driver" onclick="window.location.href='repartidor/'">
+          <span class="role-icon">🏍️</span>
+          <h3 class="role-title">Soy Repartidor</h3>
+          <p class="role-desc">Acepta mandados disponibles y gana dinero</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="container">
+      <div class="features">
+        <div class="card feature-card animate-fade-in-up stagger-3">
+          <span class="feature-icon">📍</span>
+          <h3 class="feature-title">Rastreo en Vivo</h3>
+          <p class="feature-text">Sigue a tu repartidor en el mapa en tiempo real desde que acepta tu mandado hasta la entrega.</p>
+        </div>
+        <div class="card feature-card animate-fade-in-up stagger-4">
+          <span class="feature-icon">⚡</span>
+          <h3 class="feature-title">Rápido y Seguro</h3>
+          <p class="feature-text">Nuestros repartidores verificados recogen y entregan tus mandados con la máxima rapidez.</p>
+        </div>
+        <div class="card feature-card animate-fade-in-up stagger-5">
+          <span class="feature-icon">💳</span>
+          <h3 class="feature-title">Múltiples Pagos</h3>
+          <p class="feature-text">Paga como prefieras: efectivo, tarjeta de crédito/débito o transferencia bancaria.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>© 2026 MotoClick — Todos los derechos reservados</p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
