@@ -502,12 +502,7 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   }
   
   .coverage-sub-text {
-    font-size: 1rem;
-  }
-}
 
-/* ── Pricing Section ── */
-.pricing-section {
   margin-top: var(--space-xl);
   margin-bottom: var(--space-2xl);
 }
