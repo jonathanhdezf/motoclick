@@ -840,6 +840,31 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   gap: var(--space-md);
 }
 
+.nav-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--duration-normal) var(--ease-out);
+  border: 1px solid var(--border-color);
+}
+
+.nav-login-btn:hover {
+  background: var(--bg-element);
+  border-color: var(--primary-500);
+  box-shadow: 0 0 15px rgba(0, 230, 91, 0.15);
+  transform: translateY(-1px);
+}
+
+.nav-login-btn i {
+  font-size: 1rem;
+}
+
 /* ── Status / Progress Bar ── */
 .status-tracker {
   display: flex;
@@ -1437,6 +1462,37 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   .hero-title { font-size: 2rem; }
   .hero-icon { width: 160px; }
   .card { padding: var(--space-lg); }
+  
+  /* Mobile Login Button Corner Placement */
+  .navbar {
+    position: relative;
+    padding-right: 80px; /* Space for the button */
+  }
+  
+  .navbar-actions {
+    position: absolute;
+    right: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .nav-login-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    background: var(--gradient-primary);
+    border: none;
+    color: #000;
+  }
+  
+  .nav-login-btn .btn-text {
+    display: none; /* Hide text on very small screens to keep it clean */
+  }
+  
+  @media (min-width: 350px) {
+    .nav-login-btn .btn-text {
+      display: inline;
+    }
+  }
 }
 
 /* ── Modal ── */
