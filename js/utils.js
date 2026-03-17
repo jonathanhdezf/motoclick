@@ -234,3 +234,150 @@ function playNotificationSound() {
     // Silently fail if audio API not available
   }
 }
+
+// ── Profile Modal ──
+function openProfileModal() {
+  const user = window.store.getCurrentUser();
+  if (!user) return;
+
+  let modal = document.getElementById('profile-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'profile-modal';
+    modal.className = 'modal-overlay animate-fade-in';
+    
+    // Different fields based on role
+    const extraField = user.role === 'client' 
+      ? `<div class="form-group">
+           <label class="form-label">Dirección (Opcional)</label>
+           <input type="text" id="profile-address" class="form-input" value="${user.address || ''}" placeholder="Ej. Av. Siempre Viva 123">
+         </div>`
+      : `<div class="form-group" style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
+           <label class="form-label" style="text-align: left;">Foto de perfil</label>
+           <div class="profile-photo-preview" style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--primary-500); margin: 0 auto var(--space-sm); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+             ${user.photo ? `<img src="${user.photo}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;">` : `<span id="modal-photo-icon" style="font-size: 2.5rem;">👤</span>`}
+           </div>
+           <label class="btn btn-sm btn-secondary" style="cursor: pointer; display: inline-block;">
+             Cambiar Foto
+             <input type="file" id="profile-photo" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+           </label>
+         </div>
+         <div class="form-group">
+           <label class="form-label">Vehículo</label>
+           <select id="profile-vehicle" class="form-select">
+             <option value="Motocicleta" ${user.vehicle === 'Motocicleta' ? 'selected' : ''}>Motocicleta</option>
+             <option value="Bicicleta" ${user.vehicle === 'Bicicleta' ? 'selected' : ''}>Bicicleta</option>
+             <option value="Automóvil" ${user.vehicle === 'Automóvil' ? 'selected' : ''}>Automóvil</option>
+           </select>
+         </div>`;
+
+    modal.innerHTML = `
+      <div class="modal-content card-glass">
+        <div class="modal-header">
+          <h3>Mi Perfil</h3>
+          <button class="modal-close" onclick="document.getElementById('profile-modal').remove()">&times;</button>
+        </div>
+        <div class="modal-body mt-md">
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input type="text" id="profile-name" class="form-input" value="${user.name}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="text" id="profile-phone" class="form-input" value="${user.phone}" disabled>
+            <small class="text-muted mt-sm">El teléfono no se puede cambiar.</small>
+          </div>
+          ${extraField}
+          <div class="form-group mt-lg">
+            <button class="btn btn-primary btn-block" onclick="saveProfileChanges()">Guardar Cambios</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    window._tempProfilePhoto = null;
+  }
+}
+
+window.handlePhotoUpload = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    compressImage(dataUrl, 300, 300, 0.8, (compressedBase64) => {
+      window._tempProfilePhoto = compressedBase64;
+      const previewContainer = document.querySelector('.profile-photo-preview');
+      if (previewContainer) {
+        previewContainer.innerHTML = `<img src="${compressedBase64}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;">`;
+      }
+    });
+  };
+  reader.readAsDataURL(file);
+};
+
+function compressImage(src, maxWidth, maxHeight, quality, callback) {
+  const img = new Image();
+  img.src = src;
+  img.onload = () => {
+    let width = img.width;
+    let height = img.height;
+
+    if (width > height) {
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+    } else {
+      if (height > maxHeight) {
+        width = Math.round((width * maxHeight) / height);
+        height = maxHeight;
+      }
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, width, height);
+
+    callback(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.onerror = () => callback(src);
+}
+
+window.saveProfileChanges = function() {
+  const user = window.store.getCurrentUser();
+  if (!user) return;
+
+  const nameInput = document.getElementById('profile-name');
+  if (!nameInput.value.trim()) {
+    showToast('El nombre no puede estar vacío', 'error');
+    return;
+  }
+
+  const updates = { name: nameInput.value.trim() };
+  if (window._tempProfilePhoto) {
+    updates.photo = window._tempProfilePhoto;
+  }
+  
+  if (user.role === 'client') {
+    updates.address = document.getElementById('profile-address').value.trim();
+  } else {
+    updates.vehicle = document.getElementById('profile-vehicle').value;
+  }
+
+  const result = window.store.updateUser(user.id, updates);
+  if (result.success) {
+    showToast('Perfil actualizado correctamente', 'success');
+    document.getElementById('profile-modal').remove();
+    
+    // Update UI name if present in navbar
+    const userNameEl = document.getElementById('navbar-user-name');
+    if (userNameEl) {
+      userNameEl.textContent = result.user.name;
+    }
+  } else {
+    showToast('Error al actualizar el perfil', 'error');
+  }
+}

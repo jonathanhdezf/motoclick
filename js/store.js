@@ -98,6 +98,22 @@ class MotoClickStore {
     localStorage.removeItem(STORAGE_KEY_CURRENT_USER);
   }
 
+  updateUser(id, data) {
+    const users = this.getUsers();
+    const idx = users.findIndex(u => u.id === id);
+    if (idx === -1) return { success: false, error: 'Usuario no encontrado.' };
+
+    users[idx] = { ...users[idx], ...data };
+    this._saveUsers(users);
+
+    const currentUser = this.getCurrentUser();
+    if (currentUser && currentUser.id === id) {
+      this.setCurrentUser(users[idx]);
+    }
+
+    return { success: true, user: users[idx] };
+  }
+
   // ── Orders ──
   getOrders() {
     try {
@@ -152,6 +168,7 @@ class MotoClickStore {
     orders[idx].status = 'accepted';
     orders[idx].driverId = driver.id;
     orders[idx].driverName = driver.name;
+    orders[idx].driverPhoto = driver.photo || null;
     orders[idx].updatedAt = new Date().toISOString();
 
     this._saveOrders(orders);

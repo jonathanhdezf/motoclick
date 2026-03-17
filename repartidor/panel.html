@@ -96,8 +96,8 @@
         <span class="brand-icon">🏍️</span>
         <span>MotoClick</span>
       </a>
-      <div class="navbar-actions">
-        <span class="user-greeting" id="user-greeting"></span>
+      <div class="navbar-actions" style="display: flex; align-items: center; gap: var(--space-md);">
+        <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" style="cursor: pointer;" title="Editar Perfil"></span>
         <button class="btn btn-sm btn-secondary" onclick="handleLogout()">Salir</button>
       </div>
     </nav>
@@ -148,7 +148,7 @@
 
     if (user) {
       document.getElementById('user-greeting').innerHTML =
-        `Hola, <span class="user-name">${user.name}</span>`;
+        `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
       loadOrders();
 
       // Listen for new orders

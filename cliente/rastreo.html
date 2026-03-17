@@ -105,7 +105,8 @@
         <span class="brand-icon">🏍️</span>
         <span>MotoClick</span>
       </a>
-      <div class="navbar-actions">
+      <div class="navbar-actions" style="display: flex; align-items: center; gap: var(--space-md);">
+        <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" style="cursor: pointer;" title="Editar Perfil"></span>
         <a href="nuevo-pedido.html" class="btn btn-sm btn-secondary">+ Nuevo Mandado</a>
       </div>
     </nav>
@@ -152,6 +153,11 @@
   <script src="../js/utils.js"></script>
   <script>
     const user = requireAuth('client');
+    if (user) {
+      const g = document.getElementById('user-greeting');
+      if (g) g.innerHTML = `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('id');
 
@@ -201,7 +207,9 @@
         if (order.driverName) {
           document.getElementById('driver-section').classList.remove('hidden');
           document.getElementById('driver-card').innerHTML = `
-            <div class="driver-avatar">🏍️</div>
+            <div class="driver-avatar" style="overflow: hidden;">
+              ${order.driverPhoto ? `<img src="${order.driverPhoto}" style="width: 100%; height: 100%; object-fit: cover;">` : '🏍️'}
+            </div>
             <div class="driver-info">
               <div class="driver-name">${order.driverName}</div>
               <div class="driver-label">Repartidor asignado</div>

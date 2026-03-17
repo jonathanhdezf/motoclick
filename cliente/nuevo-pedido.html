@@ -6,6 +6,7 @@
   <meta name="description" content="MotoClick — Solicita un nuevo mandado y elige tu forma de pago.">
   <title>MotoClick — Nuevo Pedido</title>
   <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     .order-form-header {
       text-align: center;
@@ -78,8 +79,8 @@
         <span class="brand-icon">🏍️</span>
         <span>MotoClick</span>
       </a>
-      <div class="navbar-actions">
-        <span class="user-greeting" id="user-greeting"></span>
+      <div class="navbar-actions" style="display: flex; align-items: center; gap: var(--space-md);">
+        <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" style="cursor: pointer;" title="Editar Perfil"></span>
         <button class="btn btn-sm btn-secondary" onclick="handleLogout()" id="btn-logout">Salir</button>
       </div>
     </nav>
@@ -106,13 +107,19 @@
             <!-- Addresses -->
             <div class="section-title">📍 Direcciones</div>
             <div class="form-group">
-              <label class="form-label" for="pickup-address">Dirección de recolección</label>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px; align-items: baseline;">
+                <label class="form-label" for="pickup-address" style="margin-bottom: 0;">Dirección de recolección</label>
+                <span class="text-accent" style="cursor: pointer; font-size: 0.8rem; font-weight: 600;" onclick="openMapPicker('pickup')">📍 Marcar en mapa</span>
+              </div>
               <input class="form-input" type="text" id="pickup-address" name="pickupAddress"
                 placeholder="Ej. Av. Reforma 222, Col. Juárez, CDMX">
               <span class="form-error"></span>
             </div>
             <div class="form-group">
-              <label class="form-label" for="delivery-address">Dirección de entrega</label>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px; align-items: baseline;">
+                <label class="form-label" for="delivery-address" style="margin-bottom: 0;">Dirección de entrega</label>
+                <span class="text-accent" style="cursor: pointer; font-size: 0.8rem; font-weight: 600;" onclick="openMapPicker('delivery')">📍 Marcar en mapa</span>
+              </div>
               <input class="form-input" type="text" id="delivery-address" name="deliveryAddress"
                 placeholder="Ej. Calle Monterrey 54, Col. Roma Norte, CDMX">
               <span class="form-error"></span>
@@ -157,15 +164,33 @@
         <div class="orders-history" id="orders-history"></div>
       </div>
     </div>
+
+    <!-- Map Picker Modal -->
+    <div class="modal-overlay hidden" id="map-picker-modal" style="display: none; align-items: flex-start; padding-top: 10vh;">
+      <div class="modal-content card-glass" style="max-width: 600px;">
+        <div class="modal-header">
+          <h3>📍 Seleccionar Ubicación</h3>
+          <button class="modal-close" type="button" onclick="closeMapPicker()">&times;</button>
+        </div>
+        <div class="modal-body mt-md" style="padding: 0;">
+          <div id="picker-map" style="width: 100%; height: 380px; background: #0a0f1a; border-radius: var(--radius-md);"></div>
+          <div style="padding: var(--space-md);">
+             <p id="picker-address-text" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-md);">Mueve el mapa o haz clic para seleccionar la ubicación exacta.</p>
+             <button type="button" class="btn btn-primary btn-block" id="btn-confirm-location" onclick="confirmLocation()">✔ Confirmar Ubicación</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
     const user = requireAuth('client');
     if (user) {
       document.getElementById('user-greeting').innerHTML =
-        `Hola, <span class="user-name">${user.name}</span>`;
+        `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
       renderHistory();
     }
 
@@ -189,12 +214,11 @@
         pickupAddress: form.pickupAddress.value.trim(),
         deliveryAddress: form.deliveryAddress.value.trim(),
         paymentMethod: form.paymentMethod.value,
-        // Simulated coordinates for demo (CDMX area)
-        pickupCoords: [
+        pickupCoords: currentCoords.pickup || [
           19.4326 + (Math.random() - 0.5) * 0.03,
           -99.1332 + (Math.random() - 0.5) * 0.03
         ],
-        deliveryCoords: [
+        deliveryCoords: currentCoords.delivery || [
           19.4326 + (Math.random() - 0.5) * 0.03,
           -99.1332 + (Math.random() - 0.5) * 0.03
         ]
@@ -230,6 +254,87 @@
     function handleLogout() {
       store.logout();
       navigateTo('./');
+    }
+
+    // --- Map Picker Logic ---
+    let pickerType = null;
+    let pickerMap = null;
+    let pickerMarker = null;
+    let currentCoords = { pickup: null, delivery: null };
+    let tempCoords = null;
+    let tempAddress = '';
+
+    function openMapPicker(type) {
+      pickerType = type;
+      document.getElementById('map-picker-modal').style.display = 'flex';
+      
+      if (!pickerMap) {
+        pickerMap = createMap('picker-map', { center: DEFAULT_CENTER, zoom: 14 });
+        
+        pickerMarker = L.marker(DEFAULT_CENTER, { icon: createIcon('📍', 40), draggable: true }).addTo(pickerMap);
+        
+        pickerMap.on('click', (e) => {
+          pickerMarker.setLatLng(e.latlng);
+          updatePickerAddress(e.latlng);
+        });
+        
+        pickerMarker.on('dragend', (e) => {
+          updatePickerAddress(pickerMarker.getLatLng());
+        });
+      }
+      
+      const initialPos = currentCoords[type] || DEFAULT_CENTER;
+      pickerMap.setView(initialPos, 14);
+      pickerMarker.setLatLng(initialPos);
+      
+      setTimeout(() => pickerMap.invalidateSize(), 150);
+      updatePickerAddress(initialPos);
+    }
+    
+    function closeMapPicker() {
+      document.getElementById('map-picker-modal').style.display = 'none';
+    }
+    
+    async function updatePickerAddress(latlng) {
+      tempCoords = [latlng.lat, latlng.lng];
+      const textEl = document.getElementById('picker-address-text');
+      const btn = document.getElementById('btn-confirm-location');
+      
+      textEl.textContent = 'Obteniendo dirección exacta...';
+      btn.disabled = true;
+      
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`);
+        const data = await res.json();
+        if (data && data.display_name) {
+          tempAddress = data.display_name;
+          textEl.textContent = tempAddress;
+        } else {
+          tempAddress = 'Ubicación seleccionada en el mapa';
+          textEl.textContent = tempAddress;
+        }
+      } catch (e) {
+        tempAddress = 'Ubicación seleccionada en el mapa';
+        textEl.textContent = tempAddress;
+      }
+      btn.disabled = false;
+    }
+    
+    function confirmLocation() {
+      if (pickerType === 'pickup') {
+        currentCoords.pickup = tempCoords;
+        const el = document.getElementById('pickup-address');
+        el.value = tempAddress;
+        const group = el.closest('.form-group');
+        if (group) group.classList.remove('has-error');
+      } else {
+        currentCoords.delivery = tempCoords;
+        const el = document.getElementById('delivery-address');
+        el.value = tempAddress;
+        const group = el.closest('.form-group');
+        if (group) group.classList.remove('has-error');
+      }
+      closeMapPicker();
     }
   </script>
 </body>
