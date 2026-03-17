@@ -193,7 +193,47 @@
               </label>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block btn-lg mt-xl" id="submit-order">
+            <!-- Servicios Especiales -->
+            <div class="section-title mt-md">⚡ Servicios Especiales (+extra)</div>
+            <div class="form-group" id="special-services-container">
+               <label class="custom-checkbox m-b-sm">
+                  <input type="checkbox" name="urgent" value="20" onchange="calculateRouteDistance()">
+                  <span class="checkmark"></span>
+                  <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <span>Mandado urgente</span>
+                    <span class="text-accent">+$20</span>
+                  </div>
+               </label>
+               <label class="custom-checkbox m-b-sm">
+                  <input type="checkbox" name="wait" value="10" onchange="calculateRouteDistance()">
+                  <span class="checkmark"></span>
+                  <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <span>Espera mayor a 10 min</span>
+                    <span class="text-accent">+$10</span>
+                  </div>
+               </label>
+               <label class="custom-checkbox m-b-sm">
+                  <input type="checkbox" name="line" value="15" onchange="calculateRouteDistance()">
+                  <span class="checkmark"></span>
+                  <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <span>Compras en fila larga</span>
+                    <span class="text-accent">+$15</span>
+                  </div>
+               </label>
+            </div>
+
+            <!-- Price Estimator -->
+            <div class="price-estimator mt-md" id="price-estimator-box" style="display: none;">
+              <div class="d-flex align-items-center justify-content-between p-h-md p-v-md" style="background: rgba(0,230,91,0.1); border-radius: var(--radius-md); border: 1px solid rgba(0,230,91,0.3);">
+                <div>
+                  <div class="text-secondary" style="font-size: 0.9rem; font-weight: 500;">Costo Estimado</div>
+                  <div class="text-muted" style="font-size: 0.8rem;" id="route-distance-text">Calculando ruta...</div>
+                </div>
+                <div class="text-accent" style="font-size: 1.5rem; font-weight: 700;" id="estimated-price-text">...</div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-md" id="submit-order">
               🏍️ Solicitar Mandado
             </button>
           </form>
@@ -253,14 +293,13 @@
         pickupAddress: form.pickupAddress.value.trim(),
         deliveryAddress: form.deliveryAddress.value.trim(),
         paymentMethod: form.paymentMethod.value,
-        pickupCoords: currentCoords.pickup || [
-          19.4326 + (Math.random() - 0.5) * 0.03,
-          -99.1332 + (Math.random() - 0.5) * 0.03
-        ],
-        deliveryCoords: currentCoords.delivery || [
-          19.4326 + (Math.random() - 0.5) * 0.03,
-          -99.1332 + (Math.random() - 0.5) * 0.03
-        ]
+        ...currentCoords, // Fallbacks
+        pickupCoords: currentCoords.pickup || GMAP_DEFAULT_CENTER,
+        deliveryCoords: currentCoords.delivery || GMAP_DEFAULT_CENTER,
+        estimatedPriceMin: currentPriceEstimate.min,
+        estimatedPriceMax: currentPriceEstimate.max,
+        routeDistanceText: currentPriceEstimate.distanceText,
+        specialServices: Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.name)
       });
 
       showToast('¡Mandado solicitado! Buscando repartidor...', 'success');
@@ -302,6 +341,7 @@
     let geocoder = null;
     let pickupAutocomplete = null;
     let deliveryAutocomplete = null;
+    let directionsService = null;
     
     // Default center (Teziutlán, Puebla)
     const GMAP_DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 };
@@ -315,6 +355,7 @@
     };
     
     let currentCoords = { pickup: null, delivery: null };
+    let currentPriceEstimate = { min: 0, max: 0, distanceText: '' };
     let tempCoords = null;
     let tempAddress = '';
 
@@ -471,6 +512,70 @@
         if (group) group.classList.remove('has-error');
       }
       closeMapPicker();
+      calculateRouteDistance();
+    }
+
+    function calculateRouteDistance() {
+      if (!currentCoords.pickup || !currentCoords.delivery || typeof google === 'undefined') return;
+
+      const box = document.getElementById('price-estimator-box');
+      const distTextEl = document.getElementById('route-distance-text');
+      const priceTextEl = document.getElementById('estimated-price-text');
+      
+      box.style.display = 'block';
+      distTextEl.textContent = 'Calculando ruta...';
+      priceTextEl.textContent = '...';
+
+      if (!directionsService) {
+        directionsService = new google.maps.DirectionsService();
+      }
+
+      const request = {
+        origin: { lat: currentCoords.pickup[0], lng: currentCoords.pickup[1] },
+        destination: { lat: currentCoords.delivery[0], lng: currentCoords.delivery[1] },
+        travelMode: 'DRIVING'
+      };
+
+      directionsService.route(request, (result, status) => {
+        if (status === 'OK' && result.routes[0]) {
+          const distanceMeters = result.routes[0].legs[0].distance.value;
+          const distanceKm = distanceMeters / 1000;
+          distTextEl.textContent = `${distanceKm.toFixed(1)} km aprox`;
+          
+          let minPrice = 0, maxPrice = 0;
+          
+          if (distanceKm <= 2.5) { // Centro radius allowance up to 2.5
+            minPrice = 40; maxPrice = 50;
+          } else if (distanceKm <= 5.5) { // Colonias allowance
+            minPrice = 60; maxPrice = 70;
+          } else { // Zonas lejanas
+             minPrice = 80; maxPrice = 120;
+          }
+
+          // Add Extra Services Costs
+          const checkboxes = document.querySelectorAll('#special-services-container input[type="checkbox"]:checked');
+          let extrasCost = 0;
+          checkboxes.forEach(cb => {
+             extrasCost += parseInt(cb.value);
+          });
+
+          minPrice += extrasCost;
+          maxPrice += extrasCost;
+
+          currentPriceEstimate = {
+             min: minPrice,
+             max: maxPrice,
+             distanceText: `${distanceKm.toFixed(1)} km`
+          };
+
+          priceTextEl.textContent = `$${minPrice} - $${maxPrice}`;
+          
+        } else {
+          distTextEl.textContent = 'Ruta no calculable';
+          priceTextEl.textContent = 'A cotizar';
+          currentPriceEstimate = { min: 0, max: 0, distanceText: 'N/A' };
+        }
+      });
     }
 
     function init() {
@@ -494,6 +599,7 @@
         if (place.geometry && place.geometry.location) {
           currentCoords.pickup = [place.geometry.location.lat(), place.geometry.location.lng()];
           pickupInput.value = place.formatted_address || place.name;
+          calculateRouteDistance();
         }
       });
 
@@ -502,6 +608,7 @@
         if (place.geometry && place.geometry.location) {
           currentCoords.delivery = [place.geometry.location.lat(), place.geometry.location.lng()];
           deliveryInput.value = place.formatted_address || place.name;
+          calculateRouteDistance();
         }
       });
     }
