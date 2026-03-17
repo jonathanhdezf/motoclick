@@ -534,8 +534,8 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   gap: var(--space-md);
   padding: var(--space-xl);
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   transition: all 0.3s ease;
@@ -1177,8 +1177,8 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   position: sticky;
   top: 72px; /* Navbar height on desktop */
   z-index: 90;
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .ticker-wrapper {
