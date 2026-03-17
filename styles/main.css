@@ -1141,6 +1141,57 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   font-size: 1rem;
 }
 
+/* ── News Ticker (News Channel Style) ── */
+.news-ticker {
+  background: rgba(0, 230, 91, 0.08);
+  border-bottom: 1px solid var(--border-color);
+  overflow: hidden;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 72px; /* Adjusted to be below the sticky navbar */
+  z-index: 90;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.ticker-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.ticker-content {
+  display: flex;
+  white-space: nowrap;
+  animation: ticker-scroll 40s linear infinite;
+  width: max-content;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 50px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.ticker-item span {
+  font-size: 1.1rem;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .news-ticker { top: 64px; height: 36px; }
+  .ticker-item { padding: 0 30px; font-size: 0.75rem; }
+}
+
 /* ── Hero Section (Landing) ── */
 .hero {
   text-align: center;
