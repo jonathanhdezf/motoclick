@@ -246,6 +246,22 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   transform: translateY(0);
 }
 
+.btn-xl {
+  padding: 18px 42px;
+  font-size: 1.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 230, 91, 0.3);
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite ease-in-out;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 230, 91, 0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 15px 45px rgba(0, 230, 91, 0.5); }
+}
+
 .feature-card:hover .feature-icon {
   transform: scale(1.1) rotate(5deg);
 }
