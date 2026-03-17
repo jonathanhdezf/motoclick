@@ -1207,10 +1207,10 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
 .beam:nth-child(5) { left: 95%; top: -150px; animation-duration: 5s; animation-delay: 4.5s; }
 
 @keyframes shine {
-  0% { transform: translateY(-10vh) rotate(15deg); opacity: 0; }
+  0% { transform: translateY(-10vh); opacity: 0; }
   20% { opacity: 0.3; }
   80% { opacity: 0.3; }
-  100% { transform: translateY(110vh) rotate(15deg); opacity: 0; }
+  100% { transform: translateY(110vh); opacity: 0; }
 }
 
 .hero .container {
