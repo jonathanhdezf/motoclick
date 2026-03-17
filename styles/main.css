@@ -1346,6 +1346,31 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
 .auth-card {
   width: 100%;
   max-width: 440px;
+  position: relative;
+}
+
+.back-nav {
+  margin-bottom: var(--space-lg);
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all var(--duration-fast) ease;
+  padding: 8px 0;
+}
+
+.btn-back:hover {
+  color: var(--primary-400);
+  transform: translateX(-4px);
+}
+
+.btn-back i {
+  font-size: 0.8rem;
 }
 
 .auth-header {
