@@ -1175,7 +1175,7 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   display: flex;
   align-items: center;
   position: sticky;
-  top: 72px; /* Adjusted to be below the sticky navbar */
+  top: 72px; /* Navbar height on desktop */
   z-index: 90;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1213,7 +1213,7 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
 }
 
 @media (max-width: 768px) {
-  .news-ticker { top: 64px; height: 36px; }
+  .news-ticker { top: 58px; height: 36px; } /* 58px is mobile navbar height */
   .ticker-item { padding: 0 30px; font-size: 0.75rem; }
 }
 
@@ -1490,7 +1490,6 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   
   /* Mobile Login Button Corner Placement */
   .navbar {
-    position: relative;
     padding-right: 80px; /* Space for the button */
   }
   
