@@ -597,7 +597,12 @@
           priceTextEl.textContent = `$${minPrice} - $${maxPrice}`;
           
         } else {
-          distTextEl.textContent = 'Ruta no calculable';
+          console.error("Directions request failed due to " + status);
+          if (status === 'REQUEST_DENIED') {
+            distTextEl.textContent = 'Error: Directions API no habilitada';
+          } else {
+            distTextEl.textContent = 'Error ruta: ' + status;
+          }
           priceTextEl.textContent = 'A cotizar';
           currentPriceEstimate = { min: 0, max: 0, distanceText: 'N/A' };
         }
