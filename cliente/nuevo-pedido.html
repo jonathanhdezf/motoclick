@@ -300,9 +300,19 @@
     let pickerMap = null;
     let pickerMarker = null;
     let geocoder = null;
+    let pickupAutocomplete = null;
+    let deliveryAutocomplete = null;
     
     // Default center (Teziutlán, Puebla)
     const GMAP_DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 };
+    
+    // Teziutlan approximated bounds for autocomplete bias
+    const TEZIUTLAN_BOUNDS = {
+      north: 19.8500,
+      south: 19.7800,
+      east: -97.3200,
+      west: -97.4000,
+    };
     
     let currentCoords = { pickup: null, delivery: null };
     let tempCoords = null;
@@ -462,6 +472,41 @@
       }
       closeMapPicker();
     }
+
+    function init() {
+      if (typeof google === 'undefined') return;
+
+      const options = {
+        bounds: TEZIUTLAN_BOUNDS,
+        strictBounds: false, 
+        componentRestrictions: { country: "mx" },
+        fields: ["formatted_address", "geometry", "name"],
+      };
+
+      const pickupInput = document.getElementById('pickup-address');
+      const deliveryInput = document.getElementById('delivery-address');
+
+      pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
+      deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, options);
+
+      pickupAutocomplete.addListener('place_changed', () => {
+        const place = pickupAutocomplete.getPlace();
+        if (place.geometry && place.geometry.location) {
+          currentCoords.pickup = [place.geometry.location.lat(), place.geometry.location.lng()];
+          pickupInput.value = place.formatted_address || place.name;
+        }
+      });
+
+      deliveryAutocomplete.addListener('place_changed', () => {
+        const place = deliveryAutocomplete.getPlace();
+        if (place.geometry && place.geometry.location) {
+          currentCoords.delivery = [place.geometry.location.lat(), place.geometry.location.lng()];
+          deliveryInput.value = place.formatted_address || place.name;
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
