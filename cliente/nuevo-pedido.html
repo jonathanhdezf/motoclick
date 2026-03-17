@@ -108,6 +108,32 @@
       font-size: 0.8rem;
       color: var(--text-muted);
     }
+    
+    /* Dynamic Pricing & Extra Services Additions */
+    .service-checkbox-label {
+      display: flex; 
+      justify-content: space-between; 
+      width: 100%;
+    }
+    .price-estimator-box {
+      display: none;
+    }
+    .price-estimator-inner {
+      background: rgba(0,230,91,0.1); 
+      border-radius: var(--radius-md); 
+      border: 1px solid rgba(0,230,91,0.3);
+    }
+    .price-estimator-title {
+      font-size: 0.9rem; 
+      font-weight: 500;
+    }
+    .price-estimator-distance {
+      font-size: 0.8rem;
+    }
+    .price-estimator-amount {
+      font-size: 1.5rem; 
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -199,7 +225,7 @@
                <label class="custom-checkbox m-b-sm">
                   <input type="checkbox" name="urgent" value="20" onchange="calculateRouteDistance()">
                   <span class="checkmark"></span>
-                  <div style="display: flex; justify-content: space-between; width: 100%;">
+                  <div class="service-checkbox-label">
                     <span>Mandado urgente</span>
                     <span class="text-accent">+$20</span>
                   </div>
@@ -207,7 +233,7 @@
                <label class="custom-checkbox m-b-sm">
                   <input type="checkbox" name="wait" value="10" onchange="calculateRouteDistance()">
                   <span class="checkmark"></span>
-                  <div style="display: flex; justify-content: space-between; width: 100%;">
+                  <div class="service-checkbox-label">
                     <span>Espera mayor a 10 min</span>
                     <span class="text-accent">+$10</span>
                   </div>
@@ -215,7 +241,7 @@
                <label class="custom-checkbox m-b-sm">
                   <input type="checkbox" name="line" value="15" onchange="calculateRouteDistance()">
                   <span class="checkmark"></span>
-                  <div style="display: flex; justify-content: space-between; width: 100%;">
+                  <div class="service-checkbox-label">
                     <span>Compras en fila larga</span>
                     <span class="text-accent">+$15</span>
                   </div>
@@ -223,13 +249,13 @@
             </div>
 
             <!-- Price Estimator -->
-            <div class="price-estimator mt-md" id="price-estimator-box" style="display: none;">
-              <div class="d-flex align-items-center justify-content-between p-h-md p-v-md" style="background: rgba(0,230,91,0.1); border-radius: var(--radius-md); border: 1px solid rgba(0,230,91,0.3);">
+            <div class="price-estimator mt-md price-estimator-box" id="price-estimator-box">
+              <div class="d-flex align-items-center justify-content-between p-h-md p-v-md price-estimator-inner">
                 <div>
-                  <div class="text-secondary" style="font-size: 0.9rem; font-weight: 500;">Costo Estimado</div>
-                  <div class="text-muted" style="font-size: 0.8rem;" id="route-distance-text">Calculando ruta...</div>
+                  <div class="text-secondary price-estimator-title">Costo Estimado</div>
+                  <div class="text-muted price-estimator-distance" id="route-distance-text">Calculando ruta...</div>
                 </div>
-                <div class="text-accent" style="font-size: 1.5rem; font-weight: 700;" id="estimated-price-text">...</div>
+                <div class="text-accent price-estimator-amount" id="estimated-price-text">...</div>
               </div>
             </div>
 
