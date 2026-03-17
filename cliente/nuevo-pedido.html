@@ -301,8 +301,8 @@
     let pickerMarker = null;
     let geocoder = null;
     
-    // Default center (CDMX)
-    const GMAP_DEFAULT_CENTER = { lat: 19.4326, lng: -99.1332 };
+    // Default center (Teziutlán, Puebla)
+    const GMAP_DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 };
     
     let currentCoords = { pickup: null, delivery: null };
     let tempCoords = null;
@@ -314,7 +314,7 @@
       modalEl.classList.remove('hidden');
       modalEl.style.display = 'flex';
       
-      const initialPos = currentCoords[type] 
+      let initialPos = currentCoords[type] 
         ? { lat: currentCoords[type][0], lng: currentCoords[type][1] } 
         : GMAP_DEFAULT_CENTER;
 
@@ -363,19 +363,54 @@
         pickerMarker.addListener('dragend', () => {
           updatePickerAddress(pickerMarker.getPosition());
         });
+
+        // Request user location if no current coords set
+        if (!currentCoords[type] && navigator.geolocation) {
+          const textEl = document.getElementById('picker-address-text');
+          textEl.textContent = 'Buscando tu ubicación...';
+          
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userPos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+              pickerMap.setCenter(userPos);
+              pickerMap.setZoom(16);
+              pickerMarker.setPosition(userPos);
+              updatePickerAddress(pickerMarker.getPosition());
+            },
+            () => {
+              // Geolocation denied or failed, fallback to default Teziutlan
+              updatePickerAddress(initialPos);
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+          );
+        } else {
+           updatePickerAddress(initialPos);
+        }
       } else {
         // Map exists, just update it
         pickerMap.setCenter(initialPos);
         pickerMarker.setPosition(initialPos);
+        
+        if (!currentCoords[type] && navigator.geolocation) {
+           navigator.geolocation.getCurrentPosition((position) => {
+              const userPos = { lat: position.coords.latitude, lng: position.coords.longitude };
+              pickerMap.setCenter(userPos);
+              pickerMap.setZoom(16);
+              pickerMarker.setPosition(userPos);
+              updatePickerAddress(pickerMarker.getPosition());
+           });
+        } else {
+           updatePickerAddress(initialPos);
+        }
       }
       
       // Fix rendering issues in hidden modals
       setTimeout(() => {
         google.maps.event.trigger(pickerMap, 'resize');
-        pickerMap.setCenter(initialPos);
       }, 150);
-      
-      updatePickerAddress(initialPos);
     }
     
     function closeMapPicker() {
