@@ -6,7 +6,6 @@
   <meta name="description" content="MotoClick — Vista de entrega activa con mapa y actualización de estado.">
   <title>MotoClick — Entrega Activa</title>
   <link rel="stylesheet" href="../styles/main.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     .delivery-layout {
       display: grid;
@@ -97,6 +96,9 @@
       flex-shrink: 0;
       border: 1px solid rgba(59, 130, 246, 0.2);
     }
+    .user-greeting { cursor: pointer; }
+    .section-title-md { margin-bottom: var(--space-md); font-size: 1rem; }
+    .section-title-sm { margin-bottom: var(--space-sm); font-size: 1rem; }
   </style>
 </head>
 <body>
@@ -107,8 +109,8 @@
         <span class="brand-icon">🏍️</span>
         <span>MotoClick</span>
       </a>
-      <div class="navbar-actions" style="display: flex; align-items: center; gap: var(--space-md);">
-        <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" style="cursor: pointer;" title="Editar Perfil"></span>
+      <div class="navbar-actions">
+        <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" title="Editar Perfil"></span>
         <a href="panel.html" class="btn btn-sm btn-secondary">← Panel</a>
       </div>
     </nav>
@@ -131,19 +133,19 @@
           <div class="delivery-sidebar">
             <!-- Client -->
             <div class="card-glass">
-              <h3 style="margin-bottom: var(--space-md); font-size: 1rem;">👤 Cliente</h3>
+              <h3 class="section-title-md">👤 Cliente</h3>
               <div class="client-contact" id="client-info"></div>
             </div>
 
             <!-- Details -->
             <div class="card-glass">
-              <h3 style="margin-bottom: var(--space-sm); font-size: 1rem;">📋 Detalles</h3>
+              <h3 class="section-title-sm">📋 Detalles</h3>
               <div id="delivery-details"></div>
             </div>
 
             <!-- Actions -->
             <div class="card-glass">
-              <h3 style="margin-bottom: var(--space-md); font-size: 1rem;">⚡ Actualizar Estado</h3>
+              <h3 class="section-title-md">⚡ Actualizar Estado</h3>
               <div class="status-btn-group" id="status-actions"></div>
             </div>
           </div>
@@ -162,7 +164,7 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
@@ -184,7 +186,10 @@
     let movementTimer = null;
 
     function init() {
-      map = createMap('map');
+      if (typeof google === 'undefined') {
+        showToast('Error cargando Google Maps API.', 'error');
+        return;
+      }
       loadOrder();
     }
 
@@ -273,28 +278,70 @@
     function renderMap(order) {
       if (!order.pickupCoords || !order.deliveryCoords) return;
 
-      if (!pickupMarker) {
-        pickupMarker = L.marker(order.pickupCoords, { icon: createIcon('📍', 32) }).addTo(map)
-          .bindPopup('<b>Recolección</b><br>' + order.pickupAddress);
-        deliveryMarker = L.marker(order.deliveryCoords, { icon: createIcon('🏠', 32) }).addTo(map)
-          .bindPopup('<b>Entrega</b><br>' + order.deliveryAddress);
+      if (!map) {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 14,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          styles: [
+            // Dark mode
+            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+            { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+            { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+            { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
+          ]
+        });
 
-        routeLine = L.polyline([order.pickupCoords, order.deliveryCoords], {
-          color: '#00E65B',
-          weight: 4,
-          opacity: 0.8,
-          dashArray: '8, 12'
-        }).addTo(map);
+        const pickupLatLng = { lat: order.pickupCoords[0], lng: order.pickupCoords[1] };
+        const deliveryLatLng = { lat: order.deliveryCoords[0], lng: order.deliveryCoords[1] };
+
+        pickupMarker = new google.maps.Marker({
+          position: pickupLatLng,
+          map: map,
+          title: 'Recolección: ' + order.pickupAddress,
+          label: '📍'
+        });
+        
+        deliveryMarker = new google.maps.Marker({
+          position: deliveryLatLng,
+          map: map,
+          title: 'Entrega: ' + order.deliveryAddress,
+          label: '🏠'
+        });
+
+        routeLine = new google.maps.Polyline({
+          path: [pickupLatLng, deliveryLatLng],
+          geodesic: true,
+          strokeColor: '#00E65B',
+          strokeOpacity: 0.8,
+          strokeWeight: 4,
+          map: map
+        });
 
         // Start driver near pickup
-        const driverStart = [
-          order.pickupCoords[0] + (Math.random() - 0.5) * 0.008,
-          order.pickupCoords[1] + (Math.random() - 0.5) * 0.008
-        ];
-        driverMarker = L.marker(driverStart, { icon: createIcon('🏍️', 40) }).addTo(map);
+        const driverStart = {
+          lat: order.pickupCoords[0] + (Math.random() - 0.5) * 0.008,
+          lng: order.pickupCoords[1] + (Math.random() - 0.5) * 0.008
+        };
+        
+        driverMarker = new google.maps.Marker({
+          position: driverStart,
+          map: map,
+          label: '🏍️',
+          zIndex: 999
+        });
 
-        const bounds = L.latLngBounds([order.pickupCoords, order.deliveryCoords, driverStart]);
-        map.fitBounds(bounds, { padding: [50, 50] });
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend(pickupLatLng);
+        bounds.extend(deliveryLatLng);
+        bounds.extend(driverStart);
+        map.fitBounds(bounds);
       }
     }
 
@@ -353,10 +400,11 @@
       const route = generateRoute(from, to, 25);
 
       movementTimer = simulateMovement(route, (point, idx, total) => {
+        const latLng = { lat: point[0], lng: point[1] };
         if (driverMarker) {
-          driverMarker.setLatLng(point);
+          driverMarker.setPosition(latLng);
         }
-        // Broadcast location to client
+        // Broadcast location to client (store expects [lat, lng])
         store.updateDriverLocation(orderId, point);
       }, 2000);
     }

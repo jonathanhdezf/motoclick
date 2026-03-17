@@ -73,6 +73,8 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
+    .role-selection-section { padding: var(--space-2xl) 0; }
+    .role-selection-grid { max-width: 700px; margin: 0 auto; }
   </style>
 </head>
 <body>
@@ -117,9 +119,9 @@
     </section>
 
     <!-- Role Selection -->
-    <section class="container" style="padding: var(--space-2xl) 0;">
+    <section class="container role-selection-section">
       <h2 class="text-center mb-lg animate-fade-in-up stagger-2">¿Cómo quieres usar MotoClick?</h2>
-      <div class="grid-2" style="max-width: 700px; margin: 0 auto;">
+      <div class="grid-2 role-selection-grid">
         <div class="card role-card animate-fade-in-up stagger-3" id="btn-client" onclick="window.location.href='cliente/'">
           <span class="role-icon">📦</span>
           <h3 class="role-title">Soy Cliente</h3>

@@ -174,8 +174,8 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
 /* ── Glass / Card ── */
 .card {
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
@@ -190,8 +190,8 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
 
 .card-glass {
   background: var(--bg-glass);
-  backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
@@ -425,8 +425,8 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   justify-content: space-between;
   padding: var(--space-md) var(--space-lg);
   background: rgba(10, 15, 26, 0.85);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
@@ -612,6 +612,7 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   gap: var(--space-md);
   padding: var(--space-md) var(--space-lg);
   background: var(--bg-card);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -635,6 +636,7 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
 /* ── Order Card (for driver panel) ── */
 .order-card {
   background: var(--bg-card);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -968,8 +970,8 @@ h3 { font-size: 1.25rem; letter-spacing: -0.01em; }
   position: fixed;
   inset: 0;
   background: rgba(10, 15, 26, 0.8);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
