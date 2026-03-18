@@ -326,6 +326,7 @@
     document.querySelectorAll('.whatsapp-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        const btnText = btn.innerText;
         const phone = "522331072438";
         const now = new Date();
         const dateStr = now.toLocaleDateString('es-MX', { 
@@ -333,7 +334,13 @@
           hour: '2-digit', minute: '2-digit'
         });
         const orderId = "MC-" + Math.random().toString(36).substr(2, 6).toUpperCase();
-        const text = `Hola MotoClick! 👋\nQuiero pedir un mandado.\n\n📅 Fecha: ${dateStr}\n🆔 Orden: ${orderId}\n🌐 Nota: enviado desde la pagina web`;
+        
+        // Customize note based on button context
+        const note = btnText.includes('Cotización') 
+          ? "Cotización solicitada desde la pagina web" 
+          : "enviado desde la pagina web";
+
+        const text = `Hola MotoClick! 👋\nQuiero pedir un mandado.\n\n📅 Fecha: ${dateStr}\n🆔 Orden: ${orderId}\n🌐 Nota: ${note}`;
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
       });
