@@ -1829,3 +1829,27 @@ h3 { font-size: 1.2rem;  letter-spacing: -0.01em; font-weight: 600; }
   border-radius: 10px;
   padding: 4px 8px;
 }
+
+/* -- Footer logo final -- */
+.footer-logo {
+  height: auto;
+  width: 220px;
+  object-fit: contain;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 0px transparent);
+}
+
+/* -- Footer logo_motoclick.png — blend white bg away -- */
+.footer-logo {
+  height: auto;
+  width: 200px;
+  max-width: 100%;
+  object-fit: contain;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  mix-blend-mode: screen;
+}
