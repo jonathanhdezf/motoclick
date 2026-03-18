@@ -1853,3 +1853,60 @@ h3 { font-size: 1.2rem;  letter-spacing: -0.01em; font-weight: 600; }
   padding: 0;
 
 }
+
+/* -- Trust Carousel Mobile -- */
+.trust-carousel-wrapper {
+  position: relative;
+}
+
+/* On mobile: make the grid scroll horizontally, snap card-by-card */
+@media (max-width: 768px) {
+  .trust-grid {
+    display: flex !important;
+    flex-direction: row;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    gap: var(--space-md);
+    padding-bottom: var(--space-sm);
+    /* hide scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+  }
+  .trust-grid::-webkit-scrollbar { display: none; }
+
+  .trust-grid .trust-card {
+    flex: 0 0 calc(100% - 2rem);
+    scroll-snap-align: center;
+    min-width: calc(100% - 2rem);
+  }
+
+  /* Dots */
+  .trust-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding-top: 16px;
+  }
+  .trust-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: var(--border-color, rgba(255,255,255,0.25));
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+    padding: 0;
+  }
+  .trust-dot.active {
+    background: var(--primary-400, #00e65b);
+    transform: scale(1.3);
+  }
+}
+
+/* Hide dots on desktop */
+@media (min-width: 769px) {
+  .trust-dots { display: none; }
+}

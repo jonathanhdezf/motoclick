@@ -174,27 +174,31 @@
     <!-- Confianza Section -->
     <section class="container trust-section mt-3xl animate-fade-in-up stagger-2">
       <h2 class="section-title text-center mb-2xl">¿Por qué confiar en MotoClick?</h2>
-      <div class="trust-grid">
-        <div class="card trust-card text-center">
-          <div class="trust-image-wrapper"><img src="assets/profile-owner.png" alt="Atención directa" class="trust-profile-img"></div>
-          <h3 class="trust-point-title">Atención directa conmigo</h3>
+      <div class="trust-carousel-wrapper">
+        <div class="trust-grid" id="trustCarousel">
+          <div class="card trust-card text-center">
+            <div class="trust-image-wrapper"><img src="assets/servicios-atencion directa.jpg" alt="Atención directa" class="trust-profile-img"></div>
+            <h3 class="trust-point-title">Atención directa conmigo</h3>
+          </div>
+          <div class="card trust-card text-center">
+            <div class="trust-image-wrapper"><img src="assets/serviciopuntual.jpg" alt="Servicio puntual" class="trust-profile-img"></div>
+            <h3 class="trust-point-title">Servicio puntual</h3>
+          </div>
+          <div class="card trust-card text-center">
+            <div class="trust-image-wrapper"><img src="assets/sevicios-comunicacion.jpg" alt="Comunicación" class="trust-profile-img"></div>
+            <h3 class="trust-point-title">Comunicación en todo momento</h3>
+          </div>
+          <div class="card trust-card text-center">
+            <div class="trust-image-wrapper"><img src="assets/servicios-entregasegura.jpg" alt="Entrega segura" class="trust-profile-img"></div>
+            <h3 class="trust-point-title">Entrega segura</h3>
+          </div>
+          <div class="card trust-card text-center">
+            <div class="trust-icon-wrapper"><span class="trust-icon">📍</span></div>
+            <h3 class="trust-point-title">Rastreo en tiempo real</h3>
+          </div>
         </div>
-        <div class="card trust-card text-center">
-          <div class="trust-icon-wrapper"><span class="trust-icon">🕒</span></div>
-          <h3 class="trust-point-title">Servicio puntual</h3>
-        </div>
-        <div class="card trust-card text-center">
-          <div class="trust-icon-wrapper"><span class="trust-icon">📱</span></div>
-          <h3 class="trust-point-title">Comunicación en todo momento</h3>
-        </div>
-        <div class="card trust-card text-center">
-          <div class="trust-icon-wrapper"><span class="trust-icon">🛡️</span></div>
-          <h3 class="trust-point-title">Entrega segura</h3>
-        </div>
-        <div class="card trust-card text-center">
-          <div class="trust-icon-wrapper"><span class="trust-icon">📍</span></div>
-          <h3 class="trust-point-title">Rastreo en tiempo real</h3>
-        </div>
+        <!-- Dots indicator (solo mobile) -->
+        <div class="trust-dots" id="trustDots"></div>
       </div>
     </section>
 
@@ -324,6 +328,92 @@
   </div>
 
   <script>
+    /* ── Trust Carousel (mobile only) ── */
+    (function() {
+      const carousel = document.getElementById('trustCarousel');
+      const dotsContainer = document.getElementById('trustDots');
+      if (!carousel) return;
+
+      const cards = Array.from(carousel.querySelectorAll('.trust-card'));
+      const CARD_COUNT = cards.length;
+      let currentIndex = 0;
+      let autoTimer = null;
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragScrollLeft = 0;
+
+      // Build dots
+      cards.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'trust-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', 'Ir a tarjeta ' + (i + 1));
+        dot.addEventListener('click', () => { scrollToCard(i); resetTimer(); });
+        dotsContainer.appendChild(dot);
+      });
+
+      function getCardWidth() {
+        return carousel.clientWidth;
+      }
+
+      function scrollToCard(index) {
+        currentIndex = (index + CARD_COUNT) % CARD_COUNT;
+        // Only animate on mobile
+        if (window.innerWidth <= 768) {
+          carousel.scrollTo({ left: currentIndex * getCardWidth(), behavior: 'smooth' });
+        }
+        updateDots();
+      }
+
+      function updateDots() {
+        dotsContainer.querySelectorAll('.trust-dot').forEach((d, i) => {
+          d.classList.toggle('active', i === currentIndex);
+        });
+      }
+
+      function startTimer() {
+        autoTimer = setInterval(() => {
+          if (window.innerWidth <= 768) scrollToCard(currentIndex + 1);
+        }, 3000);
+      }
+
+      function resetTimer() {
+        clearInterval(autoTimer);
+        startTimer();
+      }
+
+      // Sync dots on manual scroll
+      carousel.addEventListener('scroll', () => {
+        const w = getCardWidth();
+        if (w > 0) {
+          const idx = Math.round(carousel.scrollLeft / w);
+          if (idx !== currentIndex) { currentIndex = idx; updateDots(); }
+        }
+      });
+
+      // Drag/swipe support
+      carousel.addEventListener('mousedown', e => {
+        isDragging = true;
+        dragStartX = e.pageX - carousel.offsetLeft;
+        dragScrollLeft = carousel.scrollLeft;
+        carousel.style.cursor = 'grabbing';
+        clearInterval(autoTimer);
+      });
+      carousel.addEventListener('mouseleave', () => { if (isDragging) { isDragging = false; carousel.style.cursor = ''; resetTimer(); } });
+      carousel.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; carousel.style.cursor = ''; resetTimer(); } });
+      carousel.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - carousel.offsetLeft;
+        carousel.scrollLeft = dragScrollLeft - (x - dragStartX);
+      });
+
+      carousel.addEventListener('touchstart', () => clearInterval(autoTimer), { passive: true });
+      carousel.addEventListener('touchend', () => resetTimer(), { passive: true });
+
+      startTimer();
+    })();
+
+    /* ── WhatsApp buttons ── */
     document.querySelectorAll('.whatsapp-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
