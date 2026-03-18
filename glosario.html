@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Glosario de MotoClick — Definiciones de los términos clave utilizados en nuestra plataforma.">
+  <title>Glosario — MotoClick</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" type="image/png" href="assets/logo-moto.png">
+  <style>
+    .legal-hero { padding: var(--space-3xl) 0 var(--space-2xl); text-align: center; }
+    .legal-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(249,115,22,0.12); color: var(--color-primary, #f97316);
+      border: 1px solid rgba(249,115,22,0.25); border-radius: 999px;
+      padding: 6px 18px; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: var(--space-lg);
+    }
+    .legal-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; margin-bottom: var(--space-lg); }
+    .legal-meta { color: var(--text-muted); font-size: 0.85rem; }
+    .legal-body { max-width: 760px; margin: 0 auto; padding: 0 0 var(--space-3xl); }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+      transition: color 0.2s ease; margin-bottom: var(--space-2xl);
+    }
+    .back-link:hover { color: var(--color-primary, #f97316); }
+    .back-link:hover svg { transform: translateX(-3px); }
+    .back-link svg { transition: transform 0.2s ease; }
+
+    /* Search bar */
+    .glosario-search-wrap {
+      margin-bottom: var(--space-xl);
+      position: relative;
+    }
+    .glosario-search {
+      width: 100%;
+      padding: 14px 18px 14px 48px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+      box-sizing: border-box;
+    }
+    .glosario-search:focus { border-color: var(--color-primary, #f97316); }
+    .glosario-search::placeholder { color: var(--text-muted); }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Alphabet jump links */
+    .alphabet-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: var(--space-xl);
+    }
+    .alpha-link {
+      width: 34px; height: 34px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem; font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .alpha-link:hover { background: var(--color-primary, #f97316); color: #fff; border-color: transparent; }
+    .alpha-link.disabled { opacity: 0.3; pointer-events: none; }
+
+    /* Glossary entries */
+    .glosario-group { margin-bottom: var(--space-xl); }
+    .glosario-letter {
+      font-size: 1.8rem; font-weight: 800;
+      background: var(--gradient-primary, linear-gradient(135deg,#f97316,#ea580c));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: var(--space-sm);
+    }
+    .glosario-entry {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: padding-left 0.2s ease;
+    }
+    .glosario-entry:last-child { border-bottom: none; }
+    .glosario-entry:hover { padding-left: 8px; }
+    .glosario-term {
+      font-size: 1rem; font-weight: 700; color: var(--text-primary);
+    }
+    .glosario-def {
+      font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7;
+    }
+    .glosario-tag {
+      display: inline-block; padding: 2px 10px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 600; margin-top: 4px; width: fit-content;
+      background: rgba(249,115,22,0.12); color: var(--color-primary, #f97316);
+    }
+
+    .no-results { text-align: center; color: var(--text-muted); padding: var(--space-2xl) 0; display: none; }
+
+    .footer { padding: var(--space-xl) 0; border-top: 1px solid var(--border-color); text-align: center; }
+    .footer-copy { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <a href="index.html"><img src="./assets/logo.png" alt="MotoClick Logo" class="brand-logo"></a>
+      </div>
+      <div class="navbar-actions">
+        <a href="./cliente/" class="nav-login-btn">
+          <i class="fas fa-user-circle"></i>
+          <span class="btn-text">Soy Cliente</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="legal-hero">
+        <a href="index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Volver al inicio
+        </a>
+        <div class="legal-badge">📖 Referencia</div>
+        <h1 class="legal-title"><span class="text-gradient">Glosario</span> MotoClick</h1>
+        <p class="legal-meta">Definiciones de los términos clave de nuestra plataforma</p>
+      </div>
+
+      <div class="legal-body">
+
+        <!-- Search -->
+        <div class="glosario-search-wrap">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="glosario-search" class="glosario-search" type="text" placeholder="Buscar término…" autocomplete="off">
+        </div>
+
+        <!-- Alphabet nav -->
+        <div class="alphabet-nav" id="alpha-nav">
+          <a class="alpha-link" href="#letra-C">C</a>
+          <a class="alpha-link" href="#letra-D">D</a>
+          <a class="alpha-link" href="#letra-E">E</a>
+          <a class="alpha-link" href="#letra-G">G</a>
+          <a class="alpha-link" href="#letra-M">M</a>
+          <a class="alpha-link" href="#letra-O">O</a>
+          <a class="alpha-link" href="#letra-P">P</a>
+          <a class="alpha-link" href="#letra-R">R</a>
+          <a class="alpha-link" href="#letra-S">S</a>
+          <a class="alpha-link" href="#letra-T">T</a>
+          <a class="alpha-link" href="#letra-Z">Z</a>
+        </div>
+
+        <div id="glosario-list">
+
+          <!-- C -->
+          <div class="glosario-group" id="letra-C">
+            <div class="glosario-letter">C</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Cliente</span>
+              <span class="glosario-def">Persona que solicita un servicio de mandado o entrega a través de la plataforma MotoClick, ya sea por WhatsApp o aplicación web.</span>
+              <span class="glosario-tag">Rol</span>
+            </div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Cobertura</span>
+              <span class="glosario-def">Área geográfica donde MotoClick ofrece sus servicios. Actualmente abarca la ciudad de Teziutlán y colonias cercanas en Puebla, México.</span>
+              <span class="glosario-tag">Operaciones</span>
+            </div>
+          </div>
+
+          <!-- D -->
+          <div class="glosario-group" id="letra-D">
+            <div class="glosario-letter">D</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Dirección de entrega</span>
+              <span class="glosario-def">Ubicación física donde el cliente desea recibir su pedido. Debe proporcionarse de forma precisa para garantizar una entrega exitosa.</span>
+              <span class="glosario-tag">Pedido</span>
+            </div>
+          </div>
+
+          <!-- E -->
+          <div class="glosario-group" id="letra-E">
+            <div class="glosario-letter">E</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Entrega segura</span>
+              <span class="glosario-def">Garantía de que el artículo llegará en las mismas condiciones en que fue recibido por el repartidor, sin daños ni alteraciones.</span>
+              <span class="glosario-tag">Servicio</span>
+            </div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Estado del pedido</span>
+              <span class="glosario-def">Indicador en tiempo real que muestra en qué fase se encuentra un mandado: pendiente, recogido, en camino o entregado.</span>
+              <span class="glosario-tag">Plataforma</span>
+            </div>
+          </div>
+
+          <!-- G -->
+          <div class="glosario-group" id="letra-G">
+            <div class="glosario-letter">G</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Geolocalización</span>
+              <span class="glosario-def">Tecnología que permite determinar la posición geográfica de un dispositivo. MotoClick la utiliza para el rastreo en tiempo real del repartidor.</span>
+              <span class="glosario-tag">Tecnología</span>
+            </div>
+          </div>
+
+          <!-- M -->
+          <div class="glosario-group" id="letra-M">
+            <div class="glosario-letter">M</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Mandado</span>
+              <span class="glosario-def">Servicio en el que un repartidor realiza una tarea específica en nombre del cliente, como comprar artículos del súper, retirar medicamentos o realizar pagos.</span>
+              <span class="glosario-tag">Servicio</span>
+            </div>
+            <div class="glosario-entry">
+              <span class="glosario-term">MotoClick</span>
+              <span class="glosario-def">Servicio de mensajería y mandados express operado en Teziutlán, Puebla. Conecta clientes con repartidores verificados para entregas rápidas y seguras.</span>
+              <span class="glosario-tag">Marca</span>
+            </div>
+          </div>
+
+          <!-- O -->
+          <div class="glosario-group" id="letra-O">
+            <div class="glosario-letter">O</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Orden ID</span>
+              <span class="glosario-def">Identificador único generado automáticamente para cada pedido (ej. <code>MC-A3F9B2</code>). Permite rastrear y referenciar un mandado específico.</span>
+              <span class="glosario-tag">Plataforma</span>
+            </div>
+          </div>
+
+          <!-- P -->
+          <div class="glosario-group" id="letra-P">
+            <div class="glosario-letter">P</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Pedido</span>
+              <span class="glosario-def">Solicitud formal de un cliente para que MotoClick realice una entrega o mandado específico, que incluye los detalles del artículo, origen y destino.</span>
+              <span class="glosario-tag">Pedido</span>
+            </div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Punto de recogida</span>
+              <span class="glosario-def">Lugar donde el repartidor recogerá el artículo o realizará la compra antes de dirigirse al punto de entrega.</span>
+              <span class="glosario-tag">Operaciones</span>
+            </div>
+          </div>
+
+          <!-- R -->
+          <div class="glosario-group" id="letra-R">
+            <div class="glosario-letter">R</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Rastreo en tiempo real</span>
+              <span class="glosario-def">Función que permite al cliente ver la ubicación del repartidor en el mapa mientras su mandado está en camino.</span>
+              <span class="glosario-tag">Tecnología</span>
+            </div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Repartidor</span>
+              <span class="glosario-def">Persona verificada y registrada en MotoClick que acepta y realiza mandados en la zona de cobertura. También conocido como mensajero o rider.</span>
+              <span class="glosario-tag">Rol</span>
+            </div>
+          </div>
+
+          <!-- S -->
+          <div class="glosario-group" id="letra-S">
+            <div class="glosario-letter">S</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Servicio express</span>
+              <span class="glosario-def">Modalidad de entrega con prioridad alta que garantiza tiempos de respuesta reducidos, típicamente en menos de 15 minutos dentro de la zona central.</span>
+              <span class="glosario-tag">Servicio</span>
+            </div>
+          </div>
+
+          <!-- T -->
+          <div class="glosario-group" id="letra-T">
+            <div class="glosario-letter">T</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Tarifa</span>
+              <span class="glosario-def">Costo del servicio de entrega, calculado en función de la distancia entre el punto de recogida y el punto de entrega, más factores adicionales como el tipo de artículo.</span>
+              <span class="glosario-tag">Pagos</span>
+            </div>
+          </div>
+
+          <!-- Z -->
+          <div class="glosario-group" id="letra-Z">
+            <div class="glosario-letter">Z</div>
+            <div class="glosario-entry">
+              <span class="glosario-term">Zona de cobertura</span>
+              <span class="glosario-def">Perímetro geográfico dentro del cual MotoClick garantiza la disponibilidad y operación de su servicio de mandados y entregas.</span>
+              <span class="glosario-tag">Operaciones</span>
+            </div>
+          </div>
+
+        </div>
+
+        <p class="no-results" id="no-results">No se encontraron términos que coincidan con tu búsqueda.</p>
+
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <p class="footer-copy">&copy; 2026 MotoClick &mdash; Todos los derechos reservados. Teziutlán, Puebla.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('glosario-search');
+    const entries = document.querySelectorAll('.glosario-entry');
+    const groups = document.querySelectorAll('.glosario-group');
+    const noResults = document.getElementById('no-results');
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      groups.forEach(group => {
+        let groupVisible = 0;
+        group.querySelectorAll('.glosario-entry').forEach(entry => {
+          const term = entry.querySelector('.glosario-term').textContent.toLowerCase();
+          const def  = entry.querySelector('.glosario-def').textContent.toLowerCase();
+          const match = !query || term.includes(query) || def.includes(query);
+          entry.style.display = match ? '' : 'none';
+          if (match) groupVisible++;
+        });
+        group.style.display = groupVisible > 0 ? '' : 'none';
+        visibleCount += groupVisible;
+      });
+
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    });
+  </script>
+</body>
+</html>

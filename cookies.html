@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Política de Cookies de MotoClick — Cómo usamos cookies y tecnologías similares en nuestra plataforma.">
+  <title>Política de Cookies — MotoClick</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" type="image/png" href="assets/logo-moto.png">
+  <style>
+    .legal-hero { padding: var(--space-3xl) 0 var(--space-2xl); text-align: center; }
+    .legal-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(249,115,22,0.12); color: var(--color-primary, #f97316);
+      border: 1px solid rgba(249,115,22,0.25); border-radius: 999px;
+      padding: 6px 18px; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: var(--space-lg);
+    }
+    .legal-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; margin-bottom: var(--space-lg); }
+    .legal-meta { color: var(--text-muted); font-size: 0.85rem; }
+    .legal-body { max-width: 760px; margin: 0 auto; padding: 0 0 var(--space-3xl); }
+    .legal-section { margin-bottom: var(--space-2xl); }
+    .legal-section h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; gap: 10px; }
+    .legal-section h2 .section-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--gradient-primary, linear-gradient(135deg,#f97316,#ea580c));
+      color: #fff; font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .legal-section p, .legal-section li { color: var(--text-secondary); line-height: 1.8; font-size: 0.95rem; }
+    .legal-section ul { padding-left: 1.5rem; margin-top: var(--space-sm); }
+    .legal-section ul li { margin-bottom: var(--space-xs); }
+    .legal-divider { height: 1px; background: var(--border-color); margin: var(--space-2xl) 0; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+      transition: color 0.2s ease; margin-bottom: var(--space-2xl);
+    }
+    .back-link:hover { color: var(--color-primary, #f97316); }
+    .back-link:hover svg { transform: translateX(-3px); }
+    .back-link svg { transition: transform 0.2s ease; }
+
+    /* Cookie type table */
+    .cookie-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: var(--space-md); }
+    .cookie-table th { text-align: left; padding: 10px 14px; background: rgba(255,255,255,0.04); border-bottom: 2px solid var(--border-color); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+    .cookie-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); vertical-align: top; }
+    .cookie-table tr:last-child td { border-bottom: none; }
+    .cookie-type-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .pill-essential { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .pill-analytics  { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .pill-functional { background: rgba(168,85,247,0.15); color: #a855f7; }
+
+    .footer { padding: var(--space-xl) 0; border-top: 1px solid var(--border-color); text-align: center; }
+    .footer-copy { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <a href="index.html"><img src="./assets/logo.png" alt="MotoClick Logo" class="brand-logo"></a>
+      </div>
+      <div class="navbar-actions">
+        <a href="./cliente/" class="nav-login-btn">
+          <i class="fas fa-user-circle"></i>
+          <span class="btn-text">Soy Cliente</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="legal-hero">
+        <a href="index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Volver al inicio
+        </a>
+        <div class="legal-badge">🍪 Cookies</div>
+        <h1 class="legal-title">Política de <span class="text-gradient">Cookies</span></h1>
+        <p class="legal-meta">Última actualización: 18 de marzo de 2026</p>
+      </div>
+
+      <div class="legal-body">
+
+        <div class="legal-section">
+          <h2><span class="section-num">1</span> ¿Qué son las cookies?</h2>
+          <p>Las cookies son pequeños archivos de texto que los sitios web guardan en tu dispositivo cuando los visitas. Son ampliamente utilizadas para que los sitios funcionen correctamente, sean más eficientes y para proporcionar información a los propietarios del sitio.</p>
+        </div>
+
+        <div class="legal-divider"></div>
+
+        <div class="legal-section">
+          <h2><span class="section-num">2</span> Cookies que utilizamos</h2>
+          <p>En MotoClick utilizamos las siguientes categorías de cookies:</p>
+          <table class="cookie-table">
+            <thead>
+              <tr>
+                <th>Cookie</th>
+                <th>Tipo</th>
+                <th>Propósito</th>
+                <th>Duración</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>mc_session</code></td>
+                <td><span class="cookie-type-pill pill-essential">Esencial</span></td>
+                <td>Mantiene tu sesión activa mientras utilizas la plataforma.</td>
+                <td>Sesión</td>
+              </tr>
+              <tr>
+                <td><code>mc_prefs</code></td>
+                <td><span class="cookie-type-pill pill-functional">Funcional</span></td>
+                <td>Recuerda tus preferencias de idioma y zona de cobertura.</td>
+                <td>30 días</td>
+              </tr>
+              <tr>
+                <td><code>_ga</code></td>
+                <td><span class="cookie-type-pill pill-analytics">Analítica</span></td>
+                <td>Cookie de Google Analytics para medir el tráfico del sitio.</td>
+                <td>2 años</td>
+              </tr>
+              <tr>
+                <td><code>_gid</code></td>
+                <td><span class="cookie-type-pill pill-analytics">Analítica</span></td>
+                <td>Distingue usuarios únicos para estadísticas de visita.</td>
+                <td>24 horas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="legal-divider"></div>
+
+        <div class="legal-section">
+          <h2><span class="section-num">3</span> Cookies de terceros</h2>
+          <p>Nuestra plataforma integra servicios de Google Maps Platform, que puede establecer sus propias cookies para funcionar correctamente. Consulta la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary, #f97316);">política de privacidad de Google</a> para más información.</p>
+        </div>
+
+        <div class="legal-divider"></div>
+
+        <div class="legal-section">
+          <h2><span class="section-num">4</span> Gestión de cookies</h2>
+          <p>Puedes controlar y/o eliminar las cookies cuando lo desees. A continuación, cómo hacerlo según tu navegador:</p>
+          <ul>
+            <li><strong>Chrome:</strong> Configuración → Privacidad y seguridad → Cookies y otros datos del sitio.</li>
+            <li><strong>Firefox:</strong> Opciones → Privacidad y seguridad → Cookies y datos del sitio.</li>
+            <li><strong>Safari:</strong> Preferencias → Privacidad → Gestionar datos de sitios web.</li>
+            <li><strong>Edge:</strong> Configuración → Cookies y permisos del sitio.</li>
+          </ul>
+          <p>Ten en cuenta que deshabilitar ciertas cookies puede afectar la funcionalidad de la plataforma.</p>
+        </div>
+
+        <div class="legal-divider"></div>
+
+        <div class="legal-section">
+          <h2><span class="section-num">5</span> Actualizaciones</h2>
+          <p>Esta política puede ser actualizada para reflejar cambios en nuestras prácticas o en la legislación aplicable. Publicaremos cualquier cambio en esta misma página con la nueva fecha de vigencia.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <p class="footer-copy">&copy; 2026 MotoClick &mdash; Todos los derechos reservados. Teziutlán, Puebla.</p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
