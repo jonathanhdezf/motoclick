@@ -360,8 +360,99 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
-    .role-selection-section { padding: var(--space-2xl) 0; }
-    .role-selection-grid { max-width: 700px; margin: 0 auto; }
+    /* ── Promo Popup ── */
+    .promo-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .promo-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+    .promo-modal {
+      width: 100%;
+      max-width: 450px;
+      background: #0a0f1a;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+      transform: translateY(20px);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .promo-overlay.active .promo-modal { transform: translateY(0); }
+    
+    .promo-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+    .promo-content {
+      padding: 30px;
+      text-align: center;
+    }
+    .promo-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: var(--color-primary, #f97316);
+      color: white;
+      font-weight: 800;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+    .promo-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      margin-bottom: 15px;
+      line-height: 1.2;
+      color: var(--text-primary);
+    }
+    .promo-title span { color: #22c55e; } /* Green for Mexico team vibe */
+    .promo-desc {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+    .promo-price {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+    .promo-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+    }
+    .promo-close:hover { background: rgba(0, 0, 0, 0.6); transform: scale(1.1); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -688,6 +779,25 @@
     </footer>
   </div>
 
+  <!-- Promo Match Modal -->
+  <div class="promo-overlay" id="promoPopup">
+    <div class="promo-modal">
+      <button class="promo-close" id="closePromo" aria-label="Cerrar">&times;</button>
+      <img src="./assets/mexico_vs_portugal_promo.png" alt="México vs Portugal" class="promo-image">
+      <div class="promo-content">
+        <div class="promo-badge">¡Especial del Sábado! ⚽</div>
+        <h2 class="promo-title">MÉXICO vs <span>PORTUGAL</span></h2>
+        <p class="promo-desc">
+          No te pierdas ni un minuto del partido. ¡MotoClick te lleva la botana y las bebidas directo a tu casa!
+        </p>
+        <a href="https://wa.me/522331072438?text=Hola! Quiero pedir botana para el partido de Mexico vs Portugal ⚽🇲🇽" target="_blank" class="btn btn-primary btn-block btn-lg" style="border-radius: 12px; font-weight: 700; height: 50px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <i class="fab fa-whatsapp"></i> Pedir Botana Ahora
+        </a>
+        <span class="promo-price">En zona centro desde <strong>$40 pesos</strong> el mandado</span>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* ── Dynamic News Ticker (Senior implementation) ── */
     async function updateDynamicTicker() {
@@ -888,11 +998,38 @@
         if (e.target === menuModal) closeMenu();
       });
 
-      // Close on link click
       menuModal.querySelectorAll('.menu-card').forEach(link => {
         link.addEventListener('click', closeMenu);
       });
     }
+
+    /* ── Promo Popup Logic ── */
+    window.addEventListener('load', () => {
+      const promoPopup = document.getElementById('promoPopup');
+      const closePromo = document.getElementById('closePromo');
+      
+      if (promoPopup && closePromo) {
+        // Show after 2 seconds
+        setTimeout(() => {
+          // Check if already closed this session
+          if (!sessionStorage.getItem('promoClosed')) {
+            promoPopup.classList.add('active');
+            document.body.style.overflow = 'hidden';
+          }
+        }, 2000);
+
+        const hidePromo = () => {
+          promoPopup.classList.remove('active');
+          document.body.style.overflow = '';
+          sessionStorage.setItem('promoClosed', 'true');
+        };
+
+        closePromo.addEventListener('click', hidePromo);
+        promoPopup.addEventListener('click', (e) => {
+          if (e.target === promoPopup) hidePromo();
+        });
+      }
+    });
   </script>
 </body>
 </html>
