@@ -193,7 +193,7 @@
             <div class="section-title">💰 Forma de pago</div>
             <div class="payment-options">
               <label class="payment-card">
-                <input type="radio" name="paymentMethod" value="cash" checked>
+                <input type="radio" name="paymentMethod" value="cash" checked onchange="toggleTransferInfo(false)">
                 <div class="payment-card-body">
                   <span class="payment-icon">💵</span>
                   <span class="payment-label">Efectivo</span>
@@ -201,7 +201,7 @@
                 </div>
               </label>
               <label class="payment-card">
-                <input type="radio" name="paymentMethod" value="card">
+                <input type="radio" name="paymentMethod" value="card" onchange="toggleTransferInfo(false)">
                 <div class="payment-card-body">
                   <span class="payment-icon">💳</span>
                   <span class="payment-label">Tarjeta</span>
@@ -209,13 +209,23 @@
                 </div>
               </label>
               <label class="payment-card">
-                <input type="radio" name="paymentMethod" value="transfer">
+                <input type="radio" name="paymentMethod" value="transfer" onchange="toggleTransferInfo(true)">
                 <div class="payment-card-body">
                   <span class="payment-icon">🏦</span>
                   <span class="payment-label">Transferencia</span>
                   <span class="text-muted payment-subtext">SPEI / bancaria</span>
                 </div>
               </label>
+            </div>
+
+            <!-- Transfer Info Block -->
+            <div id="transfer-info-block" class="card-glass mt-md hidden" style="border: 1px solid var(--border-active); background: rgba(59, 130, 246, 0.05); padding: var(--space-md);">
+              <div style="font-size: 0.85rem; line-height: 1.5;">
+                <p style="margin-bottom: var(--space-xs); font-weight: 700; color: var(--text-primary);">📍 Datos para transferencia:</p>
+                <p style="margin-bottom: 2px;"><span style="color: var(--text-muted);">Banco:</span> <strong>Spin by Oxxo</strong></p>
+                <p style="margin-bottom: var(--space-sm);"><span style="color: var(--text-muted);">Cuenta/CLABE:</span> <strong>728969000095700385</strong></p>
+                <p style="font-size: 0.75rem; color: #3b82f6; font-style: italic; margin-top: var(--space-xs);">* El pedido se realizará en cuanto se acredite la transferencia como recibida.</p>
+              </div>
             </div>
 
             <!-- Servicios Especiales -->
@@ -606,6 +616,15 @@
           currentPriceEstimate = { min: 0, max: 0, distanceText: 'N/A' };
         }
       });
+    }
+
+
+    function toggleTransferInfo(show) {
+      const block = document.getElementById('transfer-info-block');
+      if (block) {
+        if (show) block.classList.remove('hidden');
+        else block.classList.add('hidden');
+      }
     }
 
     function init() {
