@@ -493,55 +493,71 @@
   </div>
 
   <script>
-    /* ── Dynamic News Ticker ── */
+    /* ── Dynamic News Ticker (Senior implementation) ── */
     async function updateDynamicTicker() {
       const tickerContent = document.querySelector('.ticker-content');
       if (!tickerContent) return;
 
-      // 1. Weather Data (Live tracking via wttr.in)
-      let weatherText = "🌤️ Teziutlán: 18°C Nublado";
-      try {
-        const res = await fetch('https://wttr.in/19.87468,-97.00122?format=%c+%t+%C&lang=es');
-        if (res.ok) {
-          const data = await res.text();
-          weatherText = `<span>${data.split(' ')[0]}</span> Teziutlán: ${data.split(' ').slice(1).join(' ')}`;
-        }
-      } catch (e) { console.log("Weather fetch failed, using fallback"); }
+      const now = new Date();
+      const hour = now.getHours();
 
-      // 2. Traffic Logic (Hourly based)
-      const hour = new Date().getHours();
-      let trafficStatus = "🟢 Centro: Tráfico Fluido";
-      let trafficPoint = "Av. Hidalgo";
-      
-      if ((hour >= 7 && hour <= 9) || (hour >= 18 && hour <= 20)) {
-        trafficStatus = "🔴 Centro: Tráfico Intenso";
-        trafficPoint = "Paseo de la Candelaria";
-      } else if (hour >= 13 && hour <= 15) {
-        trafficStatus = "🟡 Centro: Tráfico Moderado";
-        trafficPoint = "Calle Juárez";
+      // 1. Robust Weather Data
+      let weatherText = "🌤️ Teziutlán: 18°C Nublado";
+      const weatherQueries = [
+        'https://wttr.in/Teziutlan,Puebla?format=%c+%t+%C&lang=es',
+        'https://wttr.in/19.81,-97.36?format=%c+%t+%C&lang=es' // Regional coordinates
+      ];
+
+      for (let query of weatherQueries) {
+        try {
+          const res = await fetch(query);
+          if (res.ok) {
+            const data = await res.text();
+            if (!data.includes("Unknown") && !data.includes("please try")) {
+              weatherText = `<span>${data.split(' ')[0]}</span> Teziutlán: ${data.split(' ').slice(1).join(' ')}`;
+              break;
+            }
+          }
+        } catch (e) { console.error("Weather fetch failed for " + query); }
       }
 
+      // 2. Traffic Logic (Rotating points: Hidalgo, Juárez, Cuauhtémoc)
+      const trafficPoints = [
+        { name: "Av. Hidalgo", peakHours: [7, 8, 9, 18, 19, 20] },
+        { name: "Av. Juárez", peakHours: [8, 9, 10, 13, 14, 18, 19] },
+        { name: "Av. Cuauhtémoc", peakHours: [7, 8, 11, 12, 17, 18] }
+      ];
+
+      const currentPoint = trafficPoints[hour % trafficPoints.length];
+      const isPeak = currentPoint.peakHours.includes(hour);
+      
+      let trafficStatus = isPeak ? "🔴 Centro: Tráfico Intenso" : (hour >= 23 || hour <= 6 ? "🟢 Centro: Tráfico Despejado" : "🟡 Centro: Tráfico Moderado");
+      const trafficEmoji = trafficStatus.split(' ')[0];
+      const trafficDesc = trafficStatus.split(' ').slice(1).join(' ');
+
       // 3. Active Drivers (Dynamic simulation)
-      const baseDrivers = 10;
-      const hourEffect = hour > 22 || hour < 7 ? -5 : (hour > 11 && hour < 20 ? 8 : 2);
-      const randomShift = Math.floor(Math.random() * 5);
-      const activeDrivers = Math.max(3, baseDrivers + hourEffect + randomShift);
+      const baseDrivers = 12;
+      const driversPeakEffect = (hour >= 12 && hour <= 15) || (hour >= 18 && hour <= 21) ? 6 : 0;
+      const nightEffect = (hour >= 23 || hour <= 6) ? -8 : 0;
+      const randomShift = Math.floor(now.getMinutes() / 15); // Changes slightly every 15 mins
+      const activeDrivers = Math.max(4, baseDrivers + driversPeakEffect + nightEffect + randomShift);
 
       // Construct items
       const items = [
         `<span class="ticker-item">${weatherText}</span>`,
-        `<span class="ticker-item"><span>${trafficStatus.split(' ')[0]}</span> ${trafficStatus.split(' ').slice(1).join(' ')} en ${trafficPoint}</span>`,
+        `<span class="ticker-item"><span>${trafficEmoji}</span> ${trafficDesc} en ${currentPoint.name}</span>`,
         `<span class="ticker-item"><span>🛵</span> ${activeDrivers} repartidores activos</span>`,
         `<span class="ticker-item"><span>✨</span> Servicio flash en Teziutlán, Puebla</span>`
       ];
 
-      // Duplicate for infinite scroll effect
+      // Refresh ticker content
       tickerContent.innerHTML = [...items, ...items].join('');
     }
 
-    // Initial call and set interval for every hour
+    // Initialize
     updateDynamicTicker();
-    setInterval(updateDynamicTicker, 3600000); // 1 hour
+    // Rotate/Refresh every 30 mins to feel more alive
+    setInterval(updateDynamicTicker, 1800000); 
 
     /* ── Trust Carousel (mobile only) ── */
     (function() {
