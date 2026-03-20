@@ -493,11 +493,62 @@
   </div>
 
   <script>
+    /* ── Dynamic News Ticker ── */
+    async function updateDynamicTicker() {
+      const tickerContent = document.querySelector('.ticker-content');
+      if (!tickerContent) return;
+
+      // 1. Weather Data (Live tracking via wttr.in)
+      let weatherText = "🌤️ Teziutlán: 18°C Nublado";
+      try {
+        const res = await fetch('https://wttr.in/Teziutlan?format=%c+%t+%C&lang=es');
+        if (res.ok) {
+          const data = await res.text();
+          weatherText = `<span>${data.split(' ')[0]}</span> Teziutlán: ${data.split(' ').slice(1).join(' ')}`;
+        }
+      } catch (e) { console.log("Weather fetch failed, using fallback"); }
+
+      // 2. Traffic Logic (Hourly based)
+      const hour = new Date().getHours();
+      let trafficStatus = "🟢 Centro: Tráfico Fluido";
+      let trafficPoint = "Av. Hidalgo";
+      
+      if ((hour >= 7 && hour <= 9) || (hour >= 18 && hour <= 20)) {
+        trafficStatus = "🔴 Centro: Tráfico Intenso";
+        trafficPoint = "Paseo de la Candelaria";
+      } else if (hour >= 13 && hour <= 15) {
+        trafficStatus = "🟡 Centro: Tráfico Moderado";
+        trafficPoint = "Calle Juárez";
+      }
+
+      // 3. Active Drivers (Dynamic simulation)
+      const baseDrivers = 10;
+      const hourEffect = hour > 22 || hour < 7 ? -5 : (hour > 11 && hour < 20 ? 8 : 2);
+      const randomShift = Math.floor(Math.random() * 5);
+      const activeDrivers = Math.max(3, baseDrivers + hourEffect + randomShift);
+
+      // Construct items
+      const items = [
+        `<span class="ticker-item">${weatherText}</span>`,
+        `<span class="ticker-item"><span>${trafficStatus.split(' ')[0]}</span> ${trafficStatus.split(' ').slice(1).join(' ')} en ${trafficPoint}</span>`,
+        `<span class="ticker-item"><span>🛵</span> ${activeDrivers} repartidores activos</span>`,
+        `<span class="ticker-item"><span>✨</span> Servicio flash en Teziutlán, Puebla</span>`
+      ];
+
+      // Duplicate for infinite scroll effect
+      tickerContent.innerHTML = [...items, ...items].join('');
+    }
+
+    // Initial call and set interval for every hour
+    updateDynamicTicker();
+    setInterval(updateDynamicTicker, 3600000); // 1 hour
+
     /* ── Trust Carousel (mobile only) ── */
     (function() {
       const carousel = document.getElementById('trustCarousel');
       const dotsContainer = document.getElementById('trustDots');
       if (!carousel) return;
+
 
       const cards = Array.from(carousel.querySelectorAll('.trust-card'));
       const CARD_COUNT = cards.length;
