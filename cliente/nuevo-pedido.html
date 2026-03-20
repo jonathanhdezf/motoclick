@@ -219,13 +219,43 @@
             </div>
 
             <!-- Transfer Info Block -->
-            <div id="transfer-info-block" class="card-glass mt-md hidden" style="border: 1px solid var(--border-active); background: rgba(59, 130, 246, 0.05); padding: var(--space-md);">
+            <div id="transfer-info-block" class="card-glass mt-md hidden" style="border: 1px solid var(--border-active); background: rgba(59, 130, 246, 0.05); padding: var(--space-md); border-radius: var(--radius-md);">
               <div style="font-size: 0.85rem; line-height: 1.5;">
                 <p style="margin-bottom: var(--space-xs); font-weight: 700; color: var(--text-primary);">📍 Datos para transferencia:</p>
+                <p style="margin-bottom: 2px;"><span style="color: var(--text-muted);">Titular:</span> <strong>Jonathan Hernández</strong></p>
                 <p style="margin-bottom: 2px;"><span style="color: var(--text-muted);">Banco:</span> <strong>Spin by Oxxo</strong></p>
-                <p style="margin-bottom: var(--space-sm);"><span style="color: var(--text-muted);">Cuenta/CLABE:</span> <strong>728969000095700385</strong></p>
-                <p style="font-size: 0.75rem; color: #3b82f6; font-style: italic; margin-top: var(--space-xs);">* El pedido se realizará en cuanto se acredite la transferencia como recibida.</p>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin: var(--space-sm) 0; border: 1px dashed rgba(59, 130, 246, 0.3); padding: 8px; border-radius: 8px; background: rgba(0,0,0,0.2);">
+                    <div style="overflow: hidden;">
+                        <span style="color: var(--text-muted); font-size: 0.75rem; display: block;">CLABE Interbancaria:</span>
+                        <strong id="clabe-number" style="letter-spacing: 1px; font-family: monospace; font-size: 0.95rem;">728969000095700385</strong>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline" style="padding: 6px 10px; font-size: 0.7rem;" onclick="copyClabe()">📋 Copiar</button>
+                </div>
+                
+                <!-- QR Button -->
+                <button type="button" class="btn btn-block" style="background: #e31a1a; color: white; border: none; padding: 10px; font-size: 0.8rem; font-weight: 600; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="openQrModal()">
+                    <i class="fas fa-qrcode"></i> Pagar con QR en OXXO
+                </button>
+                
+                <p style="font-size: 0.75rem; color: #3b82f6; font-style: italic; margin-top: var(--space-sm);">* El pedido se realizará en cuanto se acredite la transferencia como recibida.</p>
               </div>
+            </div>
+
+            <!-- QR Modal -->
+            <div class="modal-overlay hidden" id="qr-modal" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+                <div class="modal-content card-glass" style="max-width: 320px; text-align: center; padding: var(--space-lg);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">Depósito OXXO</h4>
+                        <button type="button" onclick="closeQrModal()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 12px; margin-bottom: 15px;">
+                        <img src="../assets/qr-transfer.jpeg" alt="QR OXXO" style="width: 100%; height: auto; display: block;">
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+                        Muestra este QR en cualquier tienda <strong>OXXO</strong> del país para realizar tu transferencia de forma inmediata.
+                    </p>
+                    <button type="button" class="btn btn-primary btn-block mt-md" onclick="closeQrModal()">Entendido</button>
+                </div>
             </div>
 
             <!-- Servicios Especiales -->
@@ -625,6 +655,28 @@
         if (show) block.classList.remove('hidden');
         else block.classList.add('hidden');
       }
+    }
+
+    function copyClabe() {
+        const clabe = document.getElementById('clabe-number').innerText;
+        navigator.clipboard.writeText(clabe).then(() => {
+            showToast('CLABE copiada al portapapeles', 'success');
+        }).catch(err => {
+            console.error('Error al copiar: ', err);
+            showToast('Error al copiar CLABE', 'error');
+        });
+    }
+
+    function openQrModal() {
+        const modal = document.getElementById('qr-modal');
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+    }
+
+    function closeQrModal() {
+        const modal = document.getElementById('qr-modal');
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
     }
 
     function init() {
