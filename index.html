@@ -501,7 +501,7 @@
       // 1. Weather Data (Live tracking via wttr.in)
       let weatherText = "🌤️ Teziutlán: 18°C Nublado";
       try {
-        const res = await fetch('https://wttr.in/19.87399,-97.37156?format=%c+%t+%C&lang=es');
+        const res = await fetch('https://wttr.in/19.87428,-97.00133?format=%c+%t+%C&lang=es');
         if (res.ok) {
           const data = await res.text();
           weatherText = `<span>${data.split(' ')[0]}</span> Teziutlán: ${data.split(' ').slice(1).join(' ')}`;
