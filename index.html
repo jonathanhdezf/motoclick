@@ -7,7 +7,44 @@
   <title>MotoClick — Tu mandado, a un click</title>
   <link rel="stylesheet" href="styles/main.css">
   <link rel="icon" type="image/png" href="assets/logo-moto.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
+    /* Navbar specific enhancements */
+    .nav-login-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .nav-login-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--color-primary, #f97316);
+      transform: translateY(-1px);
+    }
+    .nav-login-btn.btn-driver:hover {
+      border-color: #3b82f6; /* Blue for drivers */
+    }
+    .nav-login-btn i {
+      font-size: 1rem;
+      color: var(--color-primary, #f97316);
+    }
+    .btn-driver i {
+      color: #3b82f6;
+    }
+    @media (max-width: 480px) {
+      .btn-text { display: none; }
+      .nav-login-btn { padding: 8px; aspect-ratio: 1; justify-content: center; }
+      .nav-login-btn i { font-size: 1.2rem; }
+    }
+
     .role-card {
       cursor: pointer;
       text-align: center;
@@ -221,9 +258,13 @@
         <img src="./assets/logo.png" alt="MotoClick Logo" class="brand-logo">
       </div>
       <div class="navbar-actions">
-        <a href="./cliente/" class="nav-login-btn">
-          <i class="fas fa-user-circle"></i>
+        <a href="./cliente/" class="nav-login-btn btn-client" title="Soy Cliente">
+          <i class="fas fa-shopping-basket"></i>
           <span class="btn-text">Soy Cliente</span>
+        </a>
+        <a href="./repartidor/" class="nav-login-btn btn-driver" title="Soy Repartidor">
+          <i class="fas fa-motorcycle"></i>
+          <span class="btn-text">Soy Repartidor</span>
         </a>
       </div>
     </nav>
