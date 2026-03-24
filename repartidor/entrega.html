@@ -100,6 +100,17 @@
     .section-title-md { margin-bottom: var(--space-md); font-size: 1rem; }
     .section-title-sm { margin-bottom: var(--space-sm); font-size: 1rem; }
 
+    /* Fix Toast visibility over modal */
+    .toast-container {
+      z-index: 20000 !important;
+    }
+    .toast {
+      background: rgba(15, 23, 42, 0.95) !important;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
     /* Premium Stop Modal */
     .stop-modal-overlay {
       position: fixed;
@@ -192,6 +203,16 @@
       font-size: 0.85rem;
       font-weight: 700;
       margin-bottom: 5px;
+    }
+    
+    .shake {
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
     }
   </style>
 </head>
@@ -550,13 +571,26 @@
 
     function confirmParada() {
       const order = store.getOrderById(orderId);
-      if (!order) return;
+      if (!order) {
+        showToast('Error: No se encontró el pedido.', 'error');
+        return;
+      }
 
-      const desc = document.getElementById('stop-desc-input').value.trim();
+      const input = document.getElementById('stop-desc-input');
+      const desc = input.value.trim();
+      
       if (!desc) {
+          // Vibración o feedback visual si no hay texto
+          input.style.borderColor = '#ef4444';
+          input.classList.add('shake');
+          setTimeout(() => input.classList.remove('shake'), 400);
           showToast('Describe la parada por favor.', 'warning');
+          input.focus();
           return;
       }
+
+      // Reset border if valid
+      input.style.borderColor = '';
 
       const stops = order.stops || [];
       stops.push({ desc, time: new Date().toISOString() });
@@ -571,10 +605,14 @@
         estimatedPriceMax: currentMax + 15
       };
 
-      store.updateOrder(orderId, updates);
-      showToast('Parada agregada con éxito ($15 extra).', 'success');
-      closeStopModal();
-      loadOrder();
+      const result = store.updateOrder(orderId, updates);
+      if (result) {
+        showToast('Parada agregada con éxito ($15 extra).', 'success');
+        closeStopModal();
+        loadOrder();
+      } else {
+        showToast('Error al actualizar el pedido.', 'error');
+      }
     }
 
     function startMovement(from, to) {
