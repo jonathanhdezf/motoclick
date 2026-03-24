@@ -271,6 +271,14 @@
             <div class="info-row-value">${getPaymentLabel(order.paymentMethod)}</div>
           </div>
         </div>
+        <div class="info-row" style="background: rgba(34, 197, 94, 0.05); border-radius: 8px; border: 1px dashed rgba(34, 197, 94, 0.2);">
+          <span class="info-row-icon">💰</span>
+          <div class="info-row-content">
+            <div class="info-row-label">Total Mandado</div>
+            <div class="info-row-value"><strong style="color: #22c55e; font-size: 1.1rem;">$${order.estimatedPriceMin || 0} - $${order.estimatedPriceMax || 0}</strong></div>
+            ${order.stops && order.stops.length > 0 ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Incluye ${order.stops.length} parada(s) extra (+$${order.stops.length * 15})</div>` : ''}
+          </div>
+        </div>
       `;
     }
 
@@ -364,13 +372,24 @@
       };
 
       const next = nextSteps[s];
+      let html = '';
       if (next) {
-        container.innerHTML = `
+        html += `
           <button class="btn ${next.cls} btn-block" onclick="changeStatus('${next.status}')">
             ${next.label}
           </button>
         `;
       }
+
+      // Add "Hacer Parada" button if not delivered
+      if (s !== 'entregado') {
+        html += `
+          <button class="btn btn-outline btn-block mt-sm" onclick="hacerParada()" style="border-color: #3b82f6; color: #3b82f6;">
+            📍 Hacer Parada extra (+$15)
+          </button>
+        `;
+      }
+      container.innerHTML = html;
     }
 
     function changeStatus(newStatus) {
@@ -379,7 +398,6 @@
 
       showToast(`Estado actualizado: ${getStatusLabel(newStatus)}`, 'success');
 
-      // Simulate driver movement when status changes
       if (newStatus === 'en_camino') {
         startMovement(order.pickupCoords, order.deliveryCoords);
       }
@@ -392,6 +410,28 @@
           document.getElementById('completed-overlay').classList.remove('hidden');
         }, 500);
       }
+    }
+
+    function hacerParada() {
+      const order = store.getOrderById(orderId);
+      if (!order) return;
+
+      const desc = prompt("Describe la parada (ej. OXXO por cigarros):");
+      if (!desc) return;
+
+      const stops = order.stops || [];
+      stops.push({ desc, time: new Date().toISOString() });
+
+      const updates = {
+        stops,
+        description: order.description + `\n[PARADA: ${desc}]`,
+        estimatedPriceMin: (order.estimatedPriceMin || 0) + 15,
+        estimatedPriceMax: (order.estimatedPriceMax || 0) + 15
+      };
+
+      store.updateOrder(orderId, updates);
+      showToast('Parada agregada. Total actualizado.', 'success');
+      loadOrder();
     }
 
     function startMovement(from, to) {
@@ -407,6 +447,13 @@
         store.updateDriverLocation(orderId, point);
       }, 2000);
     }
+
+    // Listen for real-time updates from other tabs (like if price changes)
+    store.on('order_updated', (updatedOrder) => {
+      if (updatedOrder.id === orderId) {
+        loadOrder();
+      }
+    });
 
     init();
   </script>

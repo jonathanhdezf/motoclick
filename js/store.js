@@ -191,6 +191,18 @@ class MotoClickStore {
     return orders[idx];
   }
 
+  updateOrder(orderId, updates) {
+    const orders = this.getOrders();
+    const idx = orders.findIndex(o => o.id === orderId);
+    if (idx === -1) return null;
+
+    orders[idx] = { ...orders[idx], ...updates, updatedAt: new Date().toISOString() };
+    this._saveOrders(orders);
+    this._broadcast('order_updated', orders[idx]);
+    this._emit('order_updated', orders[idx]);
+    return orders[idx];
+  }
+
   updateDriverLocation(orderId, location) {
     const orders = this.getOrders();
     const idx = orders.findIndex(o => o.id === orderId);
