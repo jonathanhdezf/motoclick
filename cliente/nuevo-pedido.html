@@ -135,6 +135,73 @@
       font-weight: 700;
     }
 
+    /* Description Enhancements */
+    .description-container {
+      position: relative;
+    }
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+      padding-right: 45px;
+      line-height: 1.5;
+      font-size: 1rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s ease;
+    }
+    .form-textarea:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+      background: rgba(255,255,255,0.02);
+    }
+    .voice-btn {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .voice-btn:hover {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+    .suggestion-chips {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .suggestion-chips::-webkit-scrollbar { display: none; }
+    .chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover {
+      background: rgba(249, 115, 22, 0.1);
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
   </style>
 </head>
 <body>
@@ -163,10 +230,20 @@
             <!-- Mandado -->
             <div class="section-title">📝 ¿Qué necesitas?</div>
             <div class="form-group">
-              <label class="form-label" for="description">Descripción del mandado</label>
-              <div style="position:relative;">
+              <label class="form-label" for="description">¿Qué llevamos hasta tu puerta?</label>
+              <div class="description-container">
                 <textarea class="form-textarea" id="description" name="description"
-                  placeholder="Ej. Quiero 1 leche Lala 1L, 2 manzanas, pan Bimbo..." rows="3"></textarea>
+                  placeholder="Ej. Tráeme una hamburguesa de El Tío y 2 refrescos de naranja..." rows="4"></textarea>
+                <button type="button" class="voice-btn" title="Dictar por voz (Próximamente)" onclick="showToast('Dictado por voz llegará próximamente 🎙️', 'info')">
+                  🎤
+                </button>
+              </div>
+              <div class="suggestion-chips">
+                <span class="chip" onclick="addChipText('🛒 Súper: ')">🛒 Súper</span>
+                <span class="chip" onclick="addChipText('💊 Farmacia: ')">💊 Farmacia</span>
+                <span class="chip" onclick="addChipText('🍔 Comida: ')">🍔 Comida</span>
+                <span class="chip" onclick="addChipText('📦 Paquetería: ')">📦 Envío</span>
+                <span class="chip" onclick="addChipText('🧾 Pago: ')">🧾 Pago</span>
               </div>
               <span class="form-error"></span>
             </div>
@@ -736,6 +813,16 @@
       store.logout();
       showToast('Sesión cerrada.', 'info');
       setTimeout(() => navigateTo('../'), 600);
+    }
+
+    function addChipText(text) {
+      const desc = document.getElementById('description');
+      if (desc.value.length > 0 && !desc.value.endsWith('\n')) {
+        desc.value += '\n' + text;
+      } else {
+        desc.value += text;
+      }
+      desc.focus();
     }
 
     document.addEventListener('DOMContentLoaded', init);
