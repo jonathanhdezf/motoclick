@@ -274,9 +274,13 @@
         <div class="info-row" style="background: rgba(34, 197, 94, 0.05); border-radius: 8px; border: 1px dashed rgba(34, 197, 94, 0.2);">
           <span class="info-row-icon">💰</span>
           <div class="info-row-content">
-            <div class="info-row-label">Total Mandado</div>
-            <div class="info-row-value"><strong style="color: #22c55e; font-size: 1.1rem;">$${order.estimatedPriceMin || 0} - $${order.estimatedPriceMax || 0}</strong></div>
-            ${order.stops && order.stops.length > 0 ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Incluye ${order.stops.length} parada(s) extra (+$${order.stops.length * 15})</div>` : ''}
+            <div class="info-row-label">Costo Total (Aprox)</div>
+            <div class="info-row-value"><strong style="color: #22c55e; font-size: 1.2rem;">$${Number(order.estimatedPriceMin) || 0} - $${Number(order.estimatedPriceMax) || 0}</strong></div>
+            ${order.stops && order.stops.length > 0 ? `
+              <div style="font-size: 0.75rem; color: #22c55e; margin-top: 4px; font-weight: 600;">
+                ✓ Incluye $${order.stops.length * 15} por ${order.stops.length} parada(s) extra
+              </div>
+            ` : ''}
           </div>
         </div>
       `;
@@ -416,21 +420,25 @@
       const order = store.getOrderById(orderId);
       if (!order) return;
 
-      const desc = prompt("Describe la parada (ej. OXXO por cigarros):");
+      const desc = prompt("📍 Describe la parada adicional (ej. Comprar refrescos en el OXXO):");
       if (!desc) return;
 
       const stops = order.stops || [];
       stops.push({ desc, time: new Date().toISOString() });
 
+      // Convert to numbers to avoid accidental string concatenation
+      const currentMin = Number(order.estimatedPriceMin) || 0;
+      const currentMax = Number(order.estimatedPriceMax) || 0;
+
       const updates = {
         stops,
-        description: order.description + `\n[PARADA: ${desc}]`,
-        estimatedPriceMin: (order.estimatedPriceMin || 0) + 15,
-        estimatedPriceMax: (order.estimatedPriceMax || 0) + 15
+        description: order.description + `\n📍 [PARADA EXTRA: ${desc}]`,
+        estimatedPriceMin: currentMin + 15,
+        estimatedPriceMax: currentMax + 15
       };
 
       store.updateOrder(orderId, updates);
-      showToast('Parada agregada. Total actualizado.', 'success');
+      showToast('Parada agregada con éxito ($15 extra).', 'success');
       loadOrder();
     }
 
