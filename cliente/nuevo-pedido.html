@@ -134,6 +134,228 @@
       font-size: 1.5rem; 
       font-weight: 700;
     }
+
+    /* ── Tienda Chedraui ── */
+    .btn-tienda {
+      background: linear-gradient(135deg, #e31a1a, #c00000);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: var(--space-md);
+      box-shadow: 0 4px 14px rgba(227, 26, 26, 0.3);
+    }
+    .btn-tienda:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(227,26,26,0.4); }
+
+    .tienda-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(5, 8, 15, 0.92);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      z-index: 10000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .tienda-overlay.active { display: flex; }
+
+    .tienda-sheet {
+      width: 100%;
+      max-width: 600px;
+      height: 92vh;
+      background: #0d1220;
+      border-radius: 24px 24px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-bottom: none;
+      animation: slideUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .tienda-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 20px 0;
+      flex-shrink: 0;
+    }
+    .tienda-logo {
+      height: 32px;
+    }
+    .tienda-header h3 {
+      flex: 1;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    .tienda-close-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: white;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .tienda-search {
+      padding: 14px 20px 0;
+      flex-shrink: 0;
+    }
+    .tienda-search input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: white;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .tienda-search input::placeholder { color: rgba(255,255,255,0.3); }
+    .tienda-search input:focus { border-color: #e31a1a; }
+
+    .tienda-categories {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px;
+      overflow-x: auto;
+      flex-shrink: 0;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .tienda-categories::-webkit-scrollbar { display: none; }
+    .cat-chip {
+      white-space: nowrap;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+    .cat-chip.active, .cat-chip:hover {
+      background: #e31a1a;
+      border-color: #e31a1a;
+      color: white;
+    }
+
+    .tienda-products {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .product-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card:hover { border-color: rgba(227,26,26,0.4); transform: translateY(-2px); }
+    .product-card.in-cart { border-color: #22c55e; background: rgba(34,197,94,0.06); }
+
+    .product-img {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      background: #fff;
+      padding: 10px;
+    }
+    .product-info {
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .product-brand {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .product-price {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #e31a1a;
+      margin-bottom: 8px;
+    }
+    .product-add-btn {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(227,26,26,0.1);
+      color: #e31a1a;
+      border: 1px solid rgba(227,26,26,0.3);
+    }
+    .product-add-btn:hover, .product-card.in-cart .product-add-btn {
+      background: #22c55e;
+      color: white;
+      border-color: #22c55e;
+    }
+
+    .tienda-footer {
+      flex-shrink: 0;
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: #0d1220;
+    }
+    .tienda-cart-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .tienda-total {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .no-products {
+      grid-column: 1/-1;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 40px 0;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -163,10 +385,25 @@
             <div class="section-title">📝 ¿Qué necesitas?</div>
             <div class="form-group">
               <label class="form-label" for="description">Descripción del mandado</label>
-              <textarea class="form-textarea" id="description" name="description"
-                placeholder="Ej. Recoger un paquete en la tienda X y entregarlo en mi casa. El paquete es una caja pequeña de color azul."></textarea>
+              <div style="position:relative;">
+                <textarea class="form-textarea" id="description" name="description"
+                  placeholder="Ej. Quiero 1 leche Lala 1L, 2 manzanas, pan Bimbo..." rows="3"></textarea>
+              </div>
               <span class="form-error"></span>
             </div>
+            <!-- Cart Summary (visible when items added) -->
+            <div id="cart-summary" class="hidden" style="border:1px solid rgba(249,115,22,0.3); background:rgba(249,115,22,0.05); border-radius:12px; padding:16px; margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <strong style="font-size:0.9rem;">🛒 Carrito Chedraui</strong>
+                <span id="cart-total-badge" style="background:var(--color-primary,#f97316); color:#fff; font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:999px;">$0</span>
+              </div>
+              <div id="cart-items-list" style="font-size:0.82rem; color:var(--text-secondary); line-height:1.8;"></div>
+              <button type="button" onclick="clearCart()" style="margin-top:8px; font-size:0.75rem; color:var(--text-muted); background:none; border:none; cursor:pointer; text-decoration:underline;">Limpiar carrito</button>
+            </div>
+            <!-- Tienda Button -->
+            <button type="button" class="btn btn-block btn-tienda" id="btn-tienda" onclick="openTiendaModal()">
+              🛒 Agregar productos de Tienda Chedraui
+            </button>
 
             <!-- Addresses -->
             <div class="section-title">📍 Direcciones</div>
@@ -310,6 +547,53 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <!-- Tienda Chedraui Modal (Bottom Sheet) -->
+    <div class="tienda-overlay" id="tienda-overlay">
+      <div class="tienda-sheet">
+        <!-- Header -->
+        <div class="tienda-header">
+          <div style="display:flex;flex-direction:column;">
+            <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#e31a1a;">Pedir en</span>
+            <strong style="font-size:1.1rem;color:white;">Chedraui Teziutlán</strong>
+          </div>
+          <button class="tienda-close-btn" onclick="closeTiendaModal()" aria-label="Cerrar tienda" title="Cerrar">&times;</button>
+        </div>
+
+        <!-- Search -->
+        <div class="tienda-search">
+          <input type="search" id="tienda-search-input" placeholder="🔍 Buscar producto..." autocomplete="off">
+        </div>
+
+        <!-- Category Chips -->
+        <div class="tienda-categories">
+          <button class="cat-chip active" data-cat="Todos" onclick="filterCategory('Todos')">Todos</button>
+          <button class="cat-chip" data-cat="Lácteos" onclick="filterCategory('Lácteos')">🥛 Lácteos</button>
+          <button class="cat-chip" data-cat="Bebidas" onclick="filterCategory('Bebidas')">🥤 Bebidas</button>
+          <button class="cat-chip" data-cat="Panadería" onclick="filterCategory('Panadería')">🍞 Panadería</button>
+          <button class="cat-chip" data-cat="Botanas" onclick="filterCategory('Botanas')">🍿 Botanas</button>
+          <button class="cat-chip" data-cat="Frutas" onclick="filterCategory('Frutas')">🍎 Frutas</button>
+          <button class="cat-chip" data-cat="Higiene" onclick="filterCategory('Higiene')">🧴 Higiene</button>
+          <button class="cat-chip" data-cat="Despensa" onclick="filterCategory('Despensa')">🧺 Despensa</button>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="tienda-products" id="tienda-products-grid">
+          <!-- Products rendered by JS -->
+        </div>
+
+        <!-- Cart Footer -->
+        <div class="tienda-footer">
+          <div class="tienda-cart-info">
+            <span id="tienda-cart-count">0 productos</span>
+            <span class="tienda-total" id="tienda-cart-total">$0</span>
+          </div>
+          <button class="btn btn-primary btn-block btn-lg" onclick="closeTiendaModal()" style="border-radius: 14px; font-weight: 700; height: 52px;">
+            ✅ Agregar al Mandado
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- QR Modal (Always outside containers to avoid transform bugs) -->
@@ -727,6 +1011,190 @@
     }
 
     document.addEventListener('DOMContentLoaded', init);
+
+    /* ══════════════════════════════════
+       TIENDA CHEDRAUI — Catálogo Local
+    ══════════════════════════════════ */
+    const CHEDRAUI_CATALOG = [
+      // --- Lácteos ---
+      { id:1, name:'Leche Entera Lala 1L',      brand:'Lala',      cat:'Lácteos',    price:28, img:'https://images.openfoodfacts.org/images/products/750/305/480/0182/front_es.200.jpg' },
+      { id:2, name:'Leche Deslactosada Lala 1L', brand:'Lala',      cat:'Lácteos',    price:30, img:'https://images.openfoodfacts.org/images/products/750/305/480/0267/front_es.200.jpg' },
+      { id:3, name:'Yogurt Alpura Natural 1kg',  brand:'Alpura',    cat:'Lácteos',    price:52, img:'https://images.openfoodfacts.org/images/products/750/358/100/0121/front_es.200.jpg' },
+      { id:4, name:'Queso Manchego 400g',        brand:'Chipilo',   cat:'Lácteos',    price:78, img:'https://images.openfoodfacts.org/images/products/750/103/680/1059/front_es.200.jpg' },
+      { id:5, name:'Mantequilla Gloria 90g',     brand:'Gloria',    cat:'Lácteos',    price:29, img:'https://images.openfoodfacts.org/images/products/750/254/830/0013/front_es.200.jpg' },
+      // --- Bebidas ---
+      { id:6, name:'Coca-Cola 2L',               brand:'Coca-Cola', cat:'Bebidas',    price:38, img:'https://images.openfoodfacts.org/images/products/541/014/824/7403/front_en.200.jpg' },
+      { id:7, name:'Agua Ciel 1.5L',             brand:'Ciel',      cat:'Bebidas',    price:14, img:'https://images.openfoodfacts.org/images/products/750/509/600/8302/front_es.200.jpg' },
+      { id:8, name:'Jugo Jumex Mango 1L',        brand:'Jumex',     cat:'Bebidas',    price:22, img:'https://images.openfoodfacts.org/images/products/750/106/002/9017/front_es.200.jpg' },
+      { id:9, name:'Gatorade Limón 500ml',       brand:'Gatorade',  cat:'Bebidas',    price:21, img:'https://images.openfoodfacts.org/images/products/001/200/010/8900/front_en.200.jpg' },
+      { id:10,name:'Café Nescafé Clásico 200g',  brand:'Nescafé',   cat:'Bebidas',    price:89, img:'https://images.openfoodfacts.org/images/products/750/102/120/0111/front_es.200.jpg' },
+      // --- Panadería ---
+      { id:11,name:'Pan Bimbo Blanco 680g',       brand:'Bimbo',     cat:'Panadería',  price:45, img:'https://images.openfoodfacts.org/images/products/750/300/240/1095/front_es.200.jpg' },
+      { id:12,name:'Pan Integral Bimbo 680g',     brand:'Bimbo',     cat:'Panadería',  price:49, img:'https://images.openfoodfacts.org/images/products/750/300/240/4393/front_es.200.jpg' },
+      { id:13,name:'Tortillas de Maíz 1kg',       brand:'Maseca',    cat:'Panadería',  price:32, img:'https://images.openfoodfacts.org/images/products/750/302/006/4018/front_es.200.jpg' },
+      { id:14,name:'Galletas Marías Gamesa 200g', brand:'Gamesa',    cat:'Panadería',  price:19, img:'https://images.openfoodfacts.org/images/products/750/300/090/0037/front_es.200.jpg' },
+      // --- Frituras & Botanas ---
+      { id:15,name:'Sabritas Adobadas 45g',       brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7029/front_es.200.jpg' },
+      { id:16,name:'Cheetos Flamin Hot 42g',      brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7074/front_es.200.jpg' },
+      { id:17,name:'Doritos Nacho 45g',           brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7050/front_es.200.jpg' },
+      { id:18,name:'Ruffles Queso 45g',           brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7036/front_es.200.jpg' },
+      { id:19,name:'Palomitas Act II Extra Mant.',brand:'Act II',    cat:'Botanas',    price:26, img:'https://images.openfoodfacts.org/images/products/041/331/219/3800/front_en.200.jpg' },
+      // --- Frutas & Verduras ---
+      { id:20,name:'Manzana Roja (kg)',           brand:'Natural',   cat:'Frutas',     price:38, img:'https://images.openfoodfacts.org/images/products/000/000/063/8313/front_en.200.jpg' },
+      { id:21,name:'Plátano (kg)',                brand:'Natural',   cat:'Frutas',     price:22, img:'https://images.openfoodfacts.org/images/products/000/000/012/6904/front_en.200.jpg' },
+      { id:22,name:'Jitomate Bola (kg)',          brand:'Natural',   cat:'Frutas',     price:25, img:'https://images.openfoodfacts.org/images/products/000/000/039/7776/front_en.200.jpg' },
+      { id:23,name:'Cebolla Blanca (pza)',        brand:'Natural',   cat:'Frutas',     price:8,  img:'https://images.openfoodfacts.org/images/products/000/000/004/6742/front_en.200.jpg' },
+      // --- Higiene ---
+      { id:24,name:'Jabón Dove Original 90g',     brand:'Dove',      cat:'Higiene',    price:29, img:'https://images.openfoodfacts.org/images/products/801/006/117/7704/front_en.200.jpg' },
+      { id:25,name:'Shampoo Head & Shoulders 375ml',brand:'H&S',     cat:'Higiene',    price:68, img:'https://images.openfoodfacts.org/images/products/037/000/030/0053/front_en.200.jpg' },
+      { id:26,name:'Pasta Colgate Triple 75ml',   brand:'Colgate',   cat:'Higiene',    price:39, img:'https://images.openfoodfacts.org/images/products/008/842/990/3205/front_en.200.jpg' },
+      { id:27,name:'Desodorante Speed Stick 45g', brand:'Mennen',    cat:'Higiene',    price:49, img:'https://images.openfoodfacts.org/images/products/037/000/432/5009/front_en.200.jpg' },
+      // --- Despensa ---
+      { id:28,name:'Arroz Extra Morelos 1kg',     brand:'Morelos',   cat:'Despensa',   price:28, img:'https://images.openfoodfacts.org/images/products/750/406/250/7010/front_es.200.jpg' },
+      { id:29,name:'Frijoles Negros La Sierra 560g',brand:'La Sierra',cat:'Despensa',  price:32, img:'https://images.openfoodfacts.org/images/products/750/134/300/3027/front_es.200.jpg' },
+      { id:30,name:'Aceite Cristal 900ml',        brand:'Cristal',   cat:'Despensa',   price:58, img:'https://images.openfoodfacts.org/images/products/750/300/360/2048/front_es.200.jpg' },
+      { id:31,name:'Sal La Fina 1kg',             brand:'La Fina',   cat:'Despensa',   price:18, img:'https://images.openfoodfacts.org/images/products/750/101/060/3137/front_es.200.jpg' },
+      { id:32,name:'Azúcar Estándar 1kg',         brand:'Zulka',     cat:'Despensa',   price:29, img:'https://images.openfoodfacts.org/images/products/750/102/910/2024/front_es.200.jpg' },
+      { id:33,name:'Atún en Agua Herdez 140g',    brand:'Herdez',    cat:'Despensa',   price:22, img:'https://images.openfoodfacts.org/images/products/750/315/500/0029/front_es.200.jpg' },
+      { id:34,name:'Salsa Valentina 370ml',       brand:'Valentina', cat:'Despensa',   price:28, img:'https://images.openfoodfacts.org/images/products/750/217/803/0017/front_es.200.jpg' },
+    ];
+
+    let cart = {}; // { productId: quantity }
+    let currentCategory = 'Todos';
+    let searchQuery = '';
+
+    function openTiendaModal() {
+      document.getElementById('tienda-overlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      renderProducts();
+    }
+
+    function closeTiendaModal() {
+      document.getElementById('tienda-overlay').classList.remove('active');
+      document.body.style.overflow = '';
+      updateCartSummary();
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('tienda-products-grid');
+      const query = searchQuery.toLowerCase();
+      const filtered = CHEDRAUI_CATALOG.filter(p => {
+        const matchCat = currentCategory === 'Todos' || p.cat === currentCategory;
+        const matchSearch = !query ||
+          p.name.toLowerCase().includes(query) ||
+          p.brand.toLowerCase().includes(query);
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="no-products">No se encontraron productos 😕</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const qty = cart[p.id] || 0;
+        const inCart = qty > 0;
+        return `
+          <div class="product-card ${inCart ? 'in-cart' : ''}" id="pc-${p.id}">
+            <img class="product-img" src="${p.img}" alt="${p.name}" onerror="this.src='https://placehold.co/120x120/f5f5f5/cccccc?text=📦'">
+            <div class="product-info">
+              <div class="product-name">${p.name}</div>
+              <div class="product-brand">${p.brand}</div>
+              <div class="product-price">$${p.price}</div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                ${inCart ? `
+                  <button onclick="changeQty(${p.id}, -1)" style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">−</button>
+                  <span style="flex:1;text-align:center;font-weight:700;font-size:0.9rem;">${qty}</span>
+                  <button onclick="changeQty(${p.id}, 1)" style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">+</button>
+                ` : `
+                  <button class="product-add-btn" onclick="addToCart(${p.id})">+ Agregar</button>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      updateCartBadge();
+    }
+
+    function addToCart(id) {
+      cart[id] = (cart[id] || 0) + 1;
+      renderProducts();
+    }
+
+    function changeQty(id, delta) {
+      cart[id] = (cart[id] || 0) + delta;
+      if (cart[id] <= 0) delete cart[id];
+      renderProducts();
+    }
+
+    function clearCart() {
+      cart = {};
+      updateCartSummary();
+      renderProducts();
+    }
+
+    function getCartTotal() {
+      return Object.entries(cart).reduce((sum, [id, qty]) => {
+        const p = CHEDRAUI_CATALOG.find(x => x.id == id);
+        return sum + (p ? p.price * qty : 0);
+      }, 0);
+    }
+
+    function updateCartBadge() {
+      const count = Object.values(cart).reduce((a, b) => a + b, 0);
+      const total = getCartTotal();
+      const badge = document.getElementById('tienda-cart-count');
+      const totalEl = document.getElementById('tienda-cart-total');
+      if (badge) badge.textContent = `${count} producto${count !== 1 ? 's' : ''}`;
+      if (totalEl) totalEl.textContent = `$${total}`;
+    }
+
+    function updateCartSummary() {
+      const summary = document.getElementById('cart-summary');
+      const listEl = document.getElementById('cart-items-list');
+      const totalBadge = document.getElementById('cart-total-badge');
+      const descEl = document.getElementById('description');
+      const count = Object.keys(cart).length;
+      
+      if (count === 0) {
+        summary.classList.add('hidden');
+        return;
+      }
+
+      summary.classList.remove('hidden');
+      const items = Object.entries(cart).map(([id, qty]) => {
+        const p = CHEDRAUI_CATALOG.find(x => x.id == id);
+        return p ? `${qty}x ${p.name} — $${p.price * qty}` : '';
+      }).filter(Boolean);
+
+      listEl.innerHTML = items.map(i => `<div>• ${i}</div>`).join('');
+      const total = getCartTotal();
+      totalBadge.textContent = `$${total}`;
+
+      // Auto-fill description
+      descEl.value = 'Compra en Chedraui Teziutlán:\n' + items.join('\n') + `\n\nTotal productos: $${total}`;
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.cat === cat);
+      });
+      renderProducts();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('tienda-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          searchQuery = e.target.value;
+          renderProducts();
+        });
+      }
+      init();
+    });
   </script>
 </body>
 </html>
