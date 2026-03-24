@@ -1013,52 +1013,11 @@
 
     document.addEventListener('DOMContentLoaded', init);
 
-    /* ══════════════════════════════════
-       TIENDA CHEDRAUI — Catálogo Local
-    ══════════════════════════════════ */
-    const CHEDRAUI_CATALOG = [
-      // --- Lácteos ---
-      { id:1, name:'Leche Entera Lala 1L',      brand:'Lala',      cat:'Lácteos',    price:28, img:'https://images.openfoodfacts.org/images/products/750/305/480/0182/front_es.200.jpg' },
-      { id:2, name:'Leche Deslactosada Lala 1L', brand:'Lala',      cat:'Lácteos',    price:30, img:'https://images.openfoodfacts.org/images/products/750/305/480/0267/front_es.200.jpg' },
-      { id:3, name:'Yogurt Alpura Natural 1kg',  brand:'Alpura',    cat:'Lácteos',    price:52, img:'https://images.openfoodfacts.org/images/products/750/358/100/0121/front_es.200.jpg' },
-      { id:4, name:'Queso Manchego 400g',        brand:'Chipilo',   cat:'Lácteos',    price:78, img:'https://images.openfoodfacts.org/images/products/750/103/680/1059/front_es.200.jpg' },
-      { id:5, name:'Mantequilla Gloria 90g',     brand:'Gloria',    cat:'Lácteos',    price:29, img:'https://images.openfoodfacts.org/images/products/750/254/830/0013/front_es.200.jpg' },
-      // --- Bebidas ---
-      { id:6, name:'Coca-Cola 2L',               brand:'Coca-Cola', cat:'Bebidas',    price:38, img:'https://images.openfoodfacts.org/images/products/541/014/824/7403/front_en.200.jpg' },
-      { id:7, name:'Agua Ciel 1.5L',             brand:'Ciel',      cat:'Bebidas',    price:14, img:'https://images.openfoodfacts.org/images/products/750/509/600/8302/front_es.200.jpg' },
-      { id:8, name:'Jugo Jumex Mango 1L',        brand:'Jumex',     cat:'Bebidas',    price:22, img:'https://images.openfoodfacts.org/images/products/750/106/002/9017/front_es.200.jpg' },
-      { id:9, name:'Gatorade Limón 500ml',       brand:'Gatorade',  cat:'Bebidas',    price:21, img:'https://images.openfoodfacts.org/images/products/001/200/010/8900/front_en.200.jpg' },
-      { id:10,name:'Café Nescafé Clásico 200g',  brand:'Nescafé',   cat:'Bebidas',    price:89, img:'https://images.openfoodfacts.org/images/products/750/102/120/0111/front_es.200.jpg' },
-      // --- Panadería ---
-      { id:11,name:'Pan Bimbo Blanco 680g',       brand:'Bimbo',     cat:'Panadería',  price:45, img:'https://images.openfoodfacts.org/images/products/750/300/240/1095/front_es.200.jpg' },
-      { id:12,name:'Pan Integral Bimbo 680g',     brand:'Bimbo',     cat:'Panadería',  price:49, img:'https://images.openfoodfacts.org/images/products/750/300/240/4393/front_es.200.jpg' },
-      { id:13,name:'Tortillas de Maíz 1kg',       brand:'Maseca',    cat:'Panadería',  price:32, img:'https://images.openfoodfacts.org/images/products/750/302/006/4018/front_es.200.jpg' },
-      { id:14,name:'Galletas Marías Gamesa 200g', brand:'Gamesa',    cat:'Panadería',  price:19, img:'https://images.openfoodfacts.org/images/products/750/300/090/0037/front_es.200.jpg' },
-      // --- Frituras & Botanas ---
-      { id:15,name:'Sabritas Adobadas 45g',       brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7029/front_es.200.jpg' },
-      { id:16,name:'Cheetos Flamin Hot 42g',      brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7074/front_es.200.jpg' },
-      { id:17,name:'Doritos Nacho 45g',           brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7050/front_es.200.jpg' },
-      { id:18,name:'Ruffles Queso 45g',           brand:'Sabritas',  cat:'Botanas',    price:16, img:'https://images.openfoodfacts.org/images/products/750/103/023/7036/front_es.200.jpg' },
-      { id:19,name:'Palomitas Act II Extra Mant.',brand:'Act II',    cat:'Botanas',    price:26, img:'https://images.openfoodfacts.org/images/products/041/331/219/3800/front_en.200.jpg' },
-      // --- Frutas & Verduras ---
-      { id:20,name:'Manzana Roja (kg)',           brand:'Natural',   cat:'Frutas',     price:38, img:'https://images.openfoodfacts.org/images/products/000/000/063/8313/front_en.200.jpg' },
-      { id:21,name:'Plátano (kg)',                brand:'Natural',   cat:'Frutas',     price:22, img:'https://images.openfoodfacts.org/images/products/000/000/012/6904/front_en.200.jpg' },
-      { id:22,name:'Jitomate Bola (kg)',          brand:'Natural',   cat:'Frutas',     price:25, img:'https://images.openfoodfacts.org/images/products/000/000/039/7776/front_en.200.jpg' },
-      { id:23,name:'Cebolla Blanca (pza)',        brand:'Natural',   cat:'Frutas',     price:8,  img:'https://images.openfoodfacts.org/images/products/000/000/004/6742/front_en.200.jpg' },
-      // --- Higiene ---
-      { id:24,name:'Jabón Dove Original 90g',     brand:'Dove',      cat:'Higiene',    price:29, img:'https://images.openfoodfacts.org/images/products/801/006/117/7704/front_en.200.jpg' },
-      { id:25,name:'Shampoo Head & Shoulders 375ml',brand:'H&S',     cat:'Higiene',    price:68, img:'https://images.openfoodfacts.org/images/products/037/000/030/0053/front_en.200.jpg' },
-      { id:26,name:'Pasta Colgate Triple 75ml',   brand:'Colgate',   cat:'Higiene',    price:39, img:'https://images.openfoodfacts.org/images/products/008/842/990/3205/front_en.200.jpg' },
-      { id:27,name:'Desodorante Speed Stick 45g', brand:'Mennen',    cat:'Higiene',    price:49, img:'https://images.openfoodfacts.org/images/products/037/000/432/5009/front_en.200.jpg' },
-      // --- Despensa ---
-      { id:28,name:'Arroz Extra Morelos 1kg',     brand:'Morelos',   cat:'Despensa',   price:28, img:'https://images.openfoodfacts.org/images/products/750/406/250/7010/front_es.200.jpg' },
-      { id:29,name:'Frijoles Negros La Sierra 560g',brand:'La Sierra',cat:'Despensa',  price:32, img:'https://images.openfoodfacts.org/images/products/750/134/300/3027/front_es.200.jpg' },
-      { id:30,name:'Aceite Cristal 900ml',        brand:'Cristal',   cat:'Despensa',   price:58, img:'https://images.openfoodfacts.org/images/products/750/300/360/2048/front_es.200.jpg' },
-      { id:31,name:'Sal La Fina 1kg',             brand:'La Fina',   cat:'Despensa',   price:18, img:'https://images.openfoodfacts.org/images/products/750/101/060/3137/front_es.200.jpg' },
-      { id:32,name:'Azúcar Estándar 1kg',         brand:'Zulka',     cat:'Despensa',   price:29, img:'https://images.openfoodfacts.org/images/products/750/102/910/2024/front_es.200.jpg' },
-      { id:33,name:'Atún en Agua Herdez 140g',    brand:'Herdez',    cat:'Despensa',   price:22, img:'https://images.openfoodfacts.org/images/products/750/315/500/0029/front_es.200.jpg' },
-      { id:34,name:'Salsa Valentina 370ml',       brand:'Valentina', cat:'Despensa',   price:28, img:'https://images.openfoodfacts.org/images/products/750/217/803/0017/front_es.200.jpg' },
-    ];
+    function handleLogout() {
+      store.logout();
+      showToast('Sesión cerrada.', 'info');
+      setTimeout(() => navigateTo('../'), 600);
+    }
 
     let cart = {}; // { productId: quantity }
     let currentCategory = 'Todos';
