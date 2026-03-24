@@ -99,6 +99,100 @@
     .user-greeting { cursor: pointer; }
     .section-title-md { margin-bottom: var(--space-md); font-size: 1rem; }
     .section-title-sm { margin-bottom: var(--space-sm); font-size: 1rem; }
+
+    /* Premium Stop Modal */
+    .stop-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 26, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .stop-modal-overlay.active { display: flex; }
+    
+    .stop-modal-card {
+      background: rgba(20, 25, 40, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 420px;
+      padding: 30px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    
+    .stop-modal-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .stop-modal-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stop-modal-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .stop-modal-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .stop-modal-input-group {
+      margin-bottom: 25px;
+    }
+    .stop-modal-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 15px;
+      color: #fff;
+      font-size: 0.95rem;
+      resize: none;
+      min-height: 100px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .stop-modal-textarea:focus {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.03);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+    
+    .stop-modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .stop-price-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 <body>
@@ -160,6 +254,33 @@
       <button class="btn btn-primary btn-lg" onclick="navigateTo('panel.html')">
         Volver al Panel
       </button>
+    </div>
+
+    <!-- Stop Modal Overlay -->
+    <div class="stop-modal-overlay" id="stop-modal-overlay">
+      <div class="stop-modal-card">
+        <div class="stop-modal-header">
+          <div class="stop-modal-icon">📍</div>
+          <h2 class="stop-modal-title">Agregar Parada Extra</h2>
+          <p class="stop-modal-subtitle">Indica el motivo de la desviación o escala.</p>
+        </div>
+        
+        <div class="stop-modal-input-group">
+          <textarea class="stop-modal-textarea" id="stop-desc-input" placeholder="Ej. Pasar al banco, recoger paquete en el centro..." maxlength="60"></textarea>
+        </div>
+        
+        <div class="stop-modal-actions">
+          <div class="stop-price-badge">
+            🪙 Costo adicional: +$15.00
+          </div>
+          <button class="btn btn-primary btn-block btn-lg" onclick="confirmParada()" style="border-radius: 16px; height: 52px; font-weight: 700;">
+            Confirmar Parada
+          </button>
+          <button class="btn btn-block" onclick="closeStopModal()" style="color: var(--text-muted); font-size: 0.9rem; background: transparent; border: none; cursor: pointer;">
+            Cancelar
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -388,8 +509,8 @@
       // Add "Hacer Parada" button if not delivered
       if (s !== 'entregado') {
         html += `
-          <button class="btn btn-outline btn-block mt-sm" onclick="hacerParada()" style="border-color: #3b82f6; color: #3b82f6;">
-            📍 Hacer Parada extra (+$15)
+          <button class="btn btn-outline btn-block mt-sm" onclick="openStopModal()" style="border-color: #3b82f6; color: #3b82f6; border-width: 2px;">
+            💎 Hacer Parada extra (+$15)
           </button>
         `;
       }
@@ -416,17 +537,30 @@
       }
     }
 
-    function hacerParada() {
+    function openStopModal() {
+      document.getElementById('stop-modal-overlay').classList.add('active');
+      const input = document.getElementById('stop-desc-input');
+      input.value = '';
+      input.focus();
+    }
+
+    function closeStopModal() {
+      document.getElementById('stop-modal-overlay').classList.remove('active');
+    }
+
+    function confirmParada() {
       const order = store.getOrderById(orderId);
       if (!order) return;
 
-      const desc = prompt("📍 Describe la parada adicional (ej. Comprar refrescos en el OXXO):");
-      if (!desc) return;
+      const desc = document.getElementById('stop-desc-input').value.trim();
+      if (!desc) {
+          showToast('Describe la parada por favor.', 'warning');
+          return;
+      }
 
       const stops = order.stops || [];
       stops.push({ desc, time: new Date().toISOString() });
 
-      // Convert to numbers to avoid accidental string concatenation
       const currentMin = Number(order.estimatedPriceMin) || 0;
       const currentMax = Number(order.estimatedPriceMax) || 0;
 
@@ -439,6 +573,7 @@
 
       store.updateOrder(orderId, updates);
       showToast('Parada agregada con éxito ($15 extra).', 'success');
+      closeStopModal();
       loadOrder();
     }
 
