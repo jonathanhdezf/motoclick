@@ -626,6 +626,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
+  <script src="../js/catalog.js"></script>
   <script>
     const user = requireAuth('client');
     if (user) {
@@ -1094,9 +1095,11 @@
       grid.innerHTML = filtered.map(p => {
         const qty = cart[p.id] || 0;
         const inCart = qty > 0;
+        const thumbBg = p.color || '#f5f5f5';
+        const thumbEmoji = p.emoji || '📦';
         return `
           <div class="product-card ${inCart ? 'in-cart' : ''}" id="pc-${p.id}">
-            <img class="product-img" src="${p.img}" alt="${p.name}" onerror="this.src='https://placehold.co/120x120/f5f5f5/cccccc?text=📦'">
+            <div class="product-img" style="background:${thumbBg}; display:flex; align-items:center; justify-content:center; font-size:3rem;">${thumbEmoji}</div>
             <div class="product-info">
               <div class="product-name">${p.name}</div>
               <div class="product-brand">${p.brand}</div>
