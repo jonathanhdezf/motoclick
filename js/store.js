@@ -264,6 +264,22 @@ class MotoClickStore {
     await this._sb.from('orders').update({ driver_location: location }).eq('id', orderId);
   }
 
+  async deleteOrder(orderId) {
+    if (this._useFallback) return this._fb_deleteOrder(orderId);
+    const { error } = await this._sb.from('orders').delete().eq('id', orderId);
+    if (error) { console.error('[Store] deleteOrder:', error); return false; }
+    return true;
+  }
+
+  async createCompletedOrder(orderData) {
+    if (this._useFallback) return this._fb_createCompletedOrder(orderData);
+    const id = 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+    const row = this._toDB({ id, ...orderData, status: 'entregado' });
+    const { data, error } = await this._sb.from('orders').insert([row]).select().single();
+    if (error) { console.error('[Store] createCompletedOrder:', error); return null; }
+    return this._fromDB(data);
+  }
+
   // ══════════════════════════════════════════════════════════════
   // FALLBACK localStorage
   // ══════════════════════════════════════════════════════════════
@@ -306,6 +322,21 @@ class MotoClickStore {
     const idx = orders.findIndex(o => o.id === orderId); if (idx === -1) return;
     orders[idx].driverLocation = location; this._fb_save(orders);
     this._broadcast('location_update', { orderId, location }); this._emit('location_update', { orderId, location });
+  }
+  _fb_deleteOrder(orderId) {
+    let orders = this._fb_getOrders();
+    const initLen = orders.length;
+    orders = orders.filter(o => o.id !== orderId);
+    this._fb_save(orders);
+    return orders.length !== initLen;
+  }
+  _fb_createCompletedOrder(d) {
+    const orders = this._fb_getOrders();
+    const order = { id: 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2,8), ...d, status: 'entregado', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    if (!order.acceptedAt) order.acceptedAt = order.createdAt;
+    if (!order.deliveredAt) order.deliveredAt = order.createdAt;
+    orders.push(order); this._fb_save(orders);
+    return order;
   }
   _fb_registerUser(d) {
     const users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');

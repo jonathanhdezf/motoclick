@@ -138,6 +138,15 @@
       color: var(--text-muted);
       font-size: 0.9rem;
     }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-content {
+      background: var(--bg-secondary); border-radius: var(--radius-md);
+      padding: var(--space-xl); width: 90%; max-width: 400px;
+    }
   </style>
 </head>
 <body>
@@ -190,8 +199,9 @@
 
         <!-- History -->
         <div class="history-section">
-          <div class="history-header">
-            <h3>📜 Tu Historial de Viajes</h3>
+          <div class="history-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0;">📜 Tu Historial de Viajes</h3>
+            <button class="btn btn-sm btn-outline" style="border-width:2px; font-weight:700;" onclick="openManualTripModal()">+ Agregar Viaje</button>
           </div>
           <div class="history-list" id="history-list">
             <!-- Cargando... -->
@@ -200,6 +210,39 @@
       </div>
     </div>
   </div>
+
+    <!-- Add/Edit Trip Modal -->
+    <div class="modal-overlay hidden" id="manual-trip-modal">
+      <div class="modal-content animate-fade-in-up">
+        <h3 id="manual-trip-title" style="margin-bottom: var(--space-xs);">Agregar Viaje Manual</h3>
+        <p class="text-secondary mb-md" style="font-size: 0.9rem;">Registra un viaje que no entró por la app.</p>
+        <form id="manual-trip-form" onsubmit="saveManualTrip(event)">
+          <input type="hidden" id="mt-id" />
+          <div class="form-group">
+            <label class="form-label" for="mt-desc">Descripción / Cliente</label>
+            <input class="form-input" type="text" id="mt-desc" required placeholder="Ej. Mandado a Doña Flor" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mt-addr">Dirección de Entrega</label>
+            <input class="form-input" type="text" id="mt-addr" required placeholder="Ej. Cruz de Ayala" />
+          </div>
+          <div class="form-group" style="display: flex; gap: var(--space-sm);">
+            <div style="flex:1;">
+              <label class="form-label" for="mt-price">Costo ($)</label>
+              <input class="form-input" type="number" id="mt-price" required placeholder="40" min="0" />
+            </div>
+            <div style="flex:1;">
+              <label class="form-label" for="mt-duration">Duración (Mins)</label>
+              <input class="form-input" type="number" id="mt-duration" placeholder="15" min="0" />
+            </div>
+          </div>
+          <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg);">
+            <button type="button" class="btn btn-secondary btn-block" onclick="closeManualTripModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
@@ -327,7 +370,7 @@
             const price = order.estimatedPriceMin || 0;
             return `
               <div class="history-item">
-                <div class="history-main">
+                <div class="history-main" style="flex: 1;">
                   <div class="history-info">${desc}${suffix}</div>
                   <div class="history-meta">
                     <span>📅 ${timeAgo(order.createdAt)}</span>
@@ -336,7 +379,13 @@
                     ${duration ? `<span>•</span><span>⏱️ ${duration}</span>` : ''}
                   </div>
                 </div>
-                <div class="history-price">$${price}</div>
+                <div class="history-actions" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                  <div class="history-price" style="margin-bottom: 2px;">$${price}</div>
+                  <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 0.8rem; border-color: #6b7280; color: #9ca3af;" onclick="editManualTrip('${order.id}')" title="Editar">✏️</button>
+                    <button class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteTrip('${order.id}')" title="Borrar">🗑️</button>
+                  </div>
+                </div>
               </div>`;
           } catch (e) {
             return '';
@@ -380,6 +429,97 @@
     function handleLogout() {
       store.logout();
       navigateTo('./');
+    }
+
+    // --- MANUAL TRIP LOGIC --- //
+    function openManualTripModal() {
+      document.getElementById('manual-trip-title').textContent = 'Agregar Viaje Manual';
+      document.getElementById('manual-trip-form').reset();
+      document.getElementById('mt-id').value = '';
+      document.getElementById('manual-trip-modal').classList.remove('hidden');
+    }
+
+    function closeManualTripModal() {
+      document.getElementById('manual-trip-modal').classList.add('hidden');
+    }
+
+    async function saveManualTrip(e) {
+      e.preventDefault();
+      const id = document.getElementById('mt-id').value;
+      const desc = document.getElementById('mt-desc').value.trim();
+      const addr = document.getElementById('mt-addr').value.trim();
+      const price = Number(document.getElementById('mt-price').value);
+      const dur = Number(document.getElementById('mt-duration').value);
+
+      const submitBtn = e.target.querySelector('[type="submit"]');
+      submitBtn.disabled = true;
+
+      const deliveredAt = new Date();
+      let acceptedAt = new Date(deliveredAt.getTime() - (dur || 10) * 60000);
+
+      if (id) {
+         const updates = {
+           description: desc,
+           deliveryAddress: addr,
+           estimatedPriceMin: price,
+           estimatedPriceMax: price,
+         };
+         if (dur) {
+            updates.acceptedAt = acceptedAt.toISOString();
+            updates.deliveredAt = deliveredAt.toISOString();
+         }
+         await store.updateOrder(id, updates);
+         showToast('Viaje modificado con éxito.', 'success');
+      } else {
+         await store.createCompletedOrder({
+           description: desc,
+           deliveryAddress: addr,
+           pickupAddress: 'Agregado manualmente',
+           estimatedPriceMin: price,
+           estimatedPriceMax: price,
+           driverId: user.id,
+           driverName: user.name,
+           acceptedAt: acceptedAt.toISOString(),
+           deliveredAt: deliveredAt.toISOString()
+         });
+         showToast('Viaje manual agregado.', 'success');
+      }
+
+      closeManualTripModal();
+      submitBtn.disabled = false;
+      renderHistory();
+    }
+
+    async function editManualTrip(id) {
+      showToast('Cargando viaje...', 'info');
+      const allMyOrders = await store.getOrdersByDriver(user.id);
+      const trip = allMyOrders.find(o => o.id === id);
+      if (!trip) return;
+
+      document.getElementById('manual-trip-title').textContent = 'Modificar Viaje';
+      document.getElementById('mt-id').value = trip.id;
+      document.getElementById('mt-desc').value = trip.description || '';
+      document.getElementById('mt-addr').value = trip.deliveryAddress || '';
+      document.getElementById('mt-price').value = trip.estimatedPriceMin || 0;
+      
+      const durMs = new Date(trip.deliveredAt || new Date()).getTime() - new Date(trip.acceptedAt || new Date()).getTime();
+      const durMins = durMs > 0 ? Math.round(durMs / 60000) : '';
+      document.getElementById('mt-duration').value = durMins;
+
+      document.getElementById('manual-trip-modal').classList.remove('hidden');
+    }
+
+    async function deleteTrip(id) {
+      if (confirm('¿Estás seguro de que deseas eliminar este viaje del historial? Esto no se puede deshacer.')) {
+        showToast('Eliminando...', 'warning');
+        const success = await store.deleteOrder(id);
+        if (success) {
+           showToast('Viaje eliminado.', 'success');
+           renderHistory();
+        } else {
+           showToast('Error al eliminar.', 'error');
+        }
+      }
     }
   </script>
 </body>
