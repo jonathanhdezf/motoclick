@@ -100,6 +100,10 @@
                 <option value="auto">🚗 Automóvil</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-code">Código de Acceso (Seguridad)</label>
+              <input class="form-input" type="password" id="reg-code" name="code" placeholder="Ingresa el código secreto" required>
+            </div>
             <button type="submit" class="btn btn-primary btn-block btn-lg mt-lg">
               Registrarme como Repartidor
             </button>
@@ -154,6 +158,13 @@
         phone: { required: true, phone: true }
       });
       if (!valid) return;
+      
+      const accessCode = form.code.value.trim();
+      if (accessCode !== '1010001') {
+         showToast('Código de acceso incorrecto. No autorizado.', 'error');
+         return;
+      }
+
       const btn = form.querySelector('[type="submit"]');
       btn.disabled = true; btn.textContent = 'Registrando...';
       const result = await store.registerUser({
