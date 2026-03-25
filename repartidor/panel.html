@@ -199,10 +199,26 @@
 
         <!-- History -->
         <div class="history-section">
-          <div class="history-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin: 0;">📜 Tu Historial de Viajes</h3>
-            <button class="btn btn-sm btn-outline" style="border-width:2px; font-weight:700;" onclick="openManualTripModal()">+ Agregar Viaje</button>
+          <div class="history-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+            <h3 style="margin: 0;">📜 Tu Historial</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="date" id="history-date-filter" class="form-input" style="padding: 4px 8px; font-size: 0.9rem; width: auto;" onchange="renderHistory()">
+              <button class="btn btn-sm btn-outline" style="border-width:2px; font-weight:700;" onclick="openManualTripModal()">+ Viaje</button>
+            </div>
           </div>
+          
+          <!-- Totals Widget -->
+          <div class="history-totals" style="display:flex; gap: 1rem; margin-bottom: 1rem;">
+             <div class="card-glass" style="flex:1; padding: var(--space-md); text-align: center; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Viajes del Día</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);" id="total-trips">0</div>
+             </div>
+             <div class="card-glass" style="flex:1; padding: var(--space-md); text-align: center; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Ganancias Aprox.</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: #22c55e;" id="total-earnings">$0</div>
+             </div>
+          </div>
+
           <div class="history-list" id="history-list">
             <!-- Cargando... -->
           </div>
@@ -255,6 +271,12 @@
     if (user) {
       document.getElementById('user-greeting').innerHTML =
         `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
+        
+      const todayString = new Date().toISOString().split('T')[0];
+      const datePicker = document.getElementById('history-date-filter');
+      datePicker.max = todayString;
+      datePicker.value = todayString;
+
       loadOrders();
       renderHistory();
 
@@ -349,17 +371,34 @@
 
       try {
         const allMyOrders = await store.getOrdersByDriver(user.id);
-        const completed = allMyOrders.filter(o => o.status === 'entregado').reverse();
+        
+        let targetDate = document.getElementById('history-date-filter').value;
+        if (!targetDate) targetDate = new Date().toISOString().split('T')[0];
 
-        if (completed.length === 0) {
+        const dateFiltered = allMyOrders.filter(o => o.status === 'entregado').filter(o => {
+           let d = o.deliveredAt || o.createdAt;
+           if (!d) return false;
+           // Local timezone adjustment approximation
+           const objDate = new Date(d);
+           return objDate.toISOString().split('T')[0] === targetDate || objDate.toLocaleDateString('en-CA') === targetDate;
+        }).reverse();
+        
+        // Sum Totals
+        let sumEarnings = 0;
+        dateFiltered.forEach(o => { sumEarnings += (o.estimatedPriceMin || 0); });
+        
+        document.getElementById('total-trips').textContent = dateFiltered.length;
+        document.getElementById('total-earnings').textContent = `$${sumEarnings}`;
+
+        if (dateFiltered.length === 0) {
           historyList.innerHTML = `
             <div class="history-empty">
-              Aún no has completado ningún viaje. Los viajes entregados aparecerán aquí automáticamente.
+              No se han completado viajes en esta fecha.
             </div>`;
           return;
         }
 
-        const cards = completed.slice(0, 10).map(order => {
+        const cards = dateFiltered.slice(0, 50).map(order => {
           try {
             const duration = (typeof tripDuration === 'function')
               ? tripDuration(order.acceptedAt, order.deliveredAt)
