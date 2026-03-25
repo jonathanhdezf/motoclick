@@ -74,6 +74,15 @@
       color: var(--text-secondary);
       margin-bottom: var(--space-xl);
     }
+    .completed-duration {
+      font-size: 1rem;
+      color: #22c55e;
+      font-weight: 700;
+      margin-bottom: var(--space-lg);
+      background: rgba(34, 197, 94, 0.1);
+      padding: 10px 24px;
+      border-radius: 999px;
+    }
 
     .client-contact {
       display: flex;
@@ -106,6 +115,7 @@
     }
     .toast {
       background: rgba(15, 23, 42, 0.95) !important;
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
@@ -116,8 +126,8 @@
       position: fixed;
       inset: 0;
       background: rgba(10, 15, 26, 0.85);
-      backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
       z-index: 10000;
       display: none;
       align-items: center;
@@ -151,6 +161,7 @@
       display: inline-block;
       background: linear-gradient(135deg, #3b82f6, #2563eb);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .stop-modal-title {
@@ -190,6 +201,18 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+    }
+    .stop-modal-submit {
+      border-radius: 16px;
+      height: 52px;
+      font-weight: 700;
+    }
+    .stop-modal-cancel {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
     }
     .stop-price-badge {
       display: flex;
@@ -272,6 +295,7 @@
       <div class="completed-check">🎉</div>
       <div class="completed-title text-gradient">¡Entrega Completada!</div>
       <div class="completed-text">Has entregado el mandado con éxito.</div>
+      <div id="completed-duration" class="completed-duration"></div>
       <button class="btn btn-primary btn-lg" onclick="navigateTo('panel.html')">
         Volver al Panel
       </button>
@@ -294,10 +318,10 @@
           <div class="stop-price-badge">
             🪙 Costo adicional: +$15.00
           </div>
-          <button class="btn btn-primary btn-block btn-lg" onclick="confirmParada()" style="border-radius: 16px; height: 52px; font-weight: 700;">
+          <button class="btn btn-primary btn-block btn-lg stop-modal-submit" onclick="confirmParada()">
             Confirmar Parada
           </button>
-          <button class="btn btn-block" onclick="closeStopModal()" style="color: var(--text-muted); font-size: 0.9rem; background: transparent; border: none; cursor: pointer;">
+          <button class="btn btn-block stop-modal-cancel" onclick="closeStopModal()">
             Cancelar
           </button>
         </div>
@@ -306,6 +330,8 @@
   </div>
 
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
@@ -334,18 +360,16 @@
       loadOrder();
     }
 
-    function loadOrder() {
-      const order = store.getOrderById(orderId);
+    async function loadOrder() {
+      const order = await store.getOrderById(orderId);
       if (!order) {
         showToast('Pedido no encontrado.', 'error');
         return;
       }
-
       renderStatus(order.status);
       renderDetails(order);
       renderMap(order);
       renderActions(order);
-
       if (order.status === 'entregado') {
         document.getElementById('completed-overlay').classList.remove('hidden');
       }
@@ -406,6 +430,34 @@
             <div class="info-row-value">${order.deliveryAddress}</div>
           </div>
         </div>
+        ${(order.stops && order.stops.length > 0) || order.stopDescription ? `
+          <div class="info-row" style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid #3b82f6; border-radius: 4px; padding: 12px; margin-bottom: 10px;">
+            <span class="info-row-icon">📍</span>
+            <div class="info-row-content">
+              <div class="info-row-label" style="color: #3b82f6;">Paradas Extra</div>
+              <div class="info-row-value" style="font-weight: 500; display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                ${order.stops ? order.stops.map(s => {
+                  const desc = typeof s === 'string' ? s : s.desc;
+                  return `<div>• ${desc}</div>`;
+                }).join('') : `<div>• ${order.stopDescription}</div>`}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+        ${order.specialServices && order.specialServices.length > 0 ? `
+          <div class="info-row" style="background: rgba(249, 115, 22, 0.05); border-left: 3px solid var(--color-primary); border-radius: 4px; padding: 12px; margin-bottom: 10px;">
+            <span class="info-row-icon">⚡</span>
+            <div class="info-row-content">
+              <div class="info-row-label" style="color: var(--color-primary);">Servicios Especiales</div>
+              <div class="info-row-value" style="font-weight: 600; font-size: 0.85rem; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                ${order.specialServices.map(s => {
+                  const labels = { urgent: '🔴 Mandado Urgente', wait: '⏳ Espera > 10 min', line: '🛒 Fila Larga', stop: '📍 Parada Extra' };
+                  return `<span>${labels[s] || s}</span>`;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
         <div class="info-row">
           <span class="info-row-icon">${order.paymentMethod === 'cash' ? '💵' : order.paymentMethod === 'card' ? '💳' : '🏦'}</span>
           <div class="info-row-content">
@@ -538,23 +590,22 @@
       container.innerHTML = html;
     }
 
-    function changeStatus(newStatus) {
-      const order = store.updateOrderStatus(orderId, newStatus);
+    async function changeStatus(newStatus) {
+      const order = await store.updateOrderStatus(orderId, newStatus);
       if (!order) return;
 
       showToast(`Estado actualizado: ${getStatusLabel(newStatus)}`, 'success');
 
-      if (newStatus === 'en_camino') {
-        startMovement(order.pickupCoords, order.deliveryCoords);
-      }
+      if (newStatus === 'en_camino') startMovement(order.pickupCoords, order.deliveryCoords);
 
       loadOrder();
 
       if (newStatus === 'entregado') {
         if (movementTimer) clearInterval(movementTimer);
-        setTimeout(() => {
-          document.getElementById('completed-overlay').classList.remove('hidden');
-        }, 500);
+        const duration = tripDuration(order.acceptedAt, order.deliveredAt);
+        const durationEl = document.getElementById('completed-duration');
+        if (durationEl && duration) durationEl.textContent = `⏱️ Duración del viaje: ${duration}`;
+        setTimeout(() => document.getElementById('completed-overlay').classList.remove('hidden'), 500);
       }
     }
 
@@ -569,47 +620,30 @@
       document.getElementById('stop-modal-overlay').classList.remove('active');
     }
 
-    function confirmParada() {
-      const order = store.getOrderById(orderId);
-      if (!order) {
-        showToast('Error: No se encontró el pedido.', 'error');
-        return;
-      }
-
+    async function confirmParada() {
+      const order = await store.getOrderById(orderId);
+      if (!order) { showToast('Error: No se encontró el pedido.', 'error'); return; }
       const input = document.getElementById('stop-desc-input');
       const desc = input.value.trim();
-      
       if (!desc) {
-          // Vibración o feedback visual si no hay texto
-          input.style.borderColor = '#ef4444';
-          input.classList.add('shake');
-          setTimeout(() => input.classList.remove('shake'), 400);
-          showToast('Describe la parada por favor.', 'warning');
-          input.focus();
-          return;
+        input.style.borderColor = '#ef4444';
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 400);
+        showToast('Describe la parada por favor.', 'warning');
+        input.focus(); return;
       }
-
-      // Reset border if valid
       input.style.borderColor = '';
-
-      const stops = order.stops || [];
+      const stops = Array.isArray(order.stops) ? order.stops : [];
       stops.push({ desc, time: new Date().toISOString() });
-
-      const currentMin = Number(order.estimatedPriceMin) || 0;
-      const currentMax = Number(order.estimatedPriceMax) || 0;
-
-      const updates = {
+      const result = await store.updateOrder(orderId, {
         stops,
         description: order.description + `\n📍 [PARADA EXTRA: ${desc}]`,
-        estimatedPriceMin: currentMin + 15,
-        estimatedPriceMax: currentMax + 15
-      };
-
-      const result = store.updateOrder(orderId, updates);
+        estimatedPriceMin: (Number(order.estimatedPriceMin) || 0) + 15,
+        estimatedPriceMax: (Number(order.estimatedPriceMax) || 0) + 15,
+      });
       if (result) {
         showToast('Parada agregada con éxito ($15 extra).', 'success');
-        closeStopModal();
-        loadOrder();
+        closeStopModal(); loadOrder();
       } else {
         showToast('Error al actualizar el pedido.', 'error');
       }

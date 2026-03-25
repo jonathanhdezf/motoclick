@@ -6,6 +6,7 @@
   <meta name="description" content="MotoClick — Inicia sesión o regístrate como cliente para enviar mandados.">
   <title>MotoClick — Cliente</title>
   <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     .tab-bar {
       display: flex;
@@ -102,15 +103,14 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
-    // Check if already logged in
     (function() {
       const user = store.getCurrentUser();
-      if (user && user.role === 'client') {
-        window.location.href = 'nuevo-pedido.html';
-      }
+      if (user && user.role === 'client') window.location.href = 'nuevo-pedido.html';
     })();
 
     function switchTab(tab) {
@@ -120,16 +120,14 @@
       document.getElementById('tab-' + tab + '-btn').classList.add('active');
     }
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const form = e.target;
-      const valid = validateForm(form, {
-        phone: { required: true, phone: true }
-      });
-      if (!valid) return;
-
-      const phone = form.phone.value.trim();
-      const result = store.loginUser(phone, 'client');
+      if (!validateForm(form, { phone: { required: true, phone: true } })) return;
+      const btn = document.getElementById('login-submit');
+      btn.disabled = true; btn.textContent = 'Verificando...';
+      const result = await store.loginUser(form.phone.value.trim(), 'client');
+      btn.disabled = false; btn.textContent = 'Iniciar Sesión';
       if (result.success) {
         showToast('¡Bienvenido de vuelta! 🎉', 'success');
         setTimeout(() => navigateTo('nuevo-pedido.html'), 600);
@@ -138,21 +136,18 @@
       }
     }
 
-    function handleRegister(e) {
+    async function handleRegister(e) {
       e.preventDefault();
       const form = e.target;
-      const valid = validateForm(form, {
-        name: { required: true, minLength: 2 },
-        phone: { required: true, phone: true }
-      });
-      if (!valid) return;
-
-      const result = store.registerUser({
+      if (!validateForm(form, { name: { required: true, minLength: 2 }, phone: { required: true, phone: true } })) return;
+      const btn = document.getElementById('register-submit');
+      btn.disabled = true; btn.textContent = 'Creando cuenta...';
+      const result = await store.registerUser({
         name: form.name.value.trim(),
         phone: form.phone.value.trim(),
         role: 'client'
       });
-
+      btn.disabled = false; btn.textContent = 'Crear Cuenta';
       if (result.success) {
         showToast('¡Cuenta creada con éxito! 🚀', 'success');
         setTimeout(() => navigateTo('nuevo-pedido.html'), 600);

@@ -104,6 +104,17 @@ function timeAgo(dateStr) {
   return formatDate(dateStr);
 }
 
+function tripDuration(startIso, endIso) {
+  if (!startIso || !endIso) return null;
+  const diffMs = new Date(endIso) - new Date(startIso);
+  const totalMin = Math.floor(diffMs / 60000);
+  if (totalMin < 1) return 'Menos de 1 min';
+  if (totalMin < 60) return `${totalMin} min`;
+  const hrs = Math.floor(totalMin / 60);
+  const mins = totalMin % 60;
+  return mins > 0 ? `${hrs}h ${mins}min` : `${hrs}h`;
+}
+
 // ── Payment helpers ──
 const PAYMENT_LABELS = {
   cash: '💵 Efectivo',

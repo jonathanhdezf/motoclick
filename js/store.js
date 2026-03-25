@@ -1,225 +1,337 @@
 /**
- * MotoClick — Store (estado global + comunicación en tiempo real)
- * Usa localStorage como base de datos y BroadcastChannel para sincronizar pestañas.
+ * MotoClick — Store con Supabase
+ * Las funciones que antes eran síncronas ahora son async/await.
+ * Si Supabase no está configurado, usa localStorage como fallback.
  */
-
-const CHANNEL_NAME = 'motoclick-sync';
-const STORAGE_KEY_ORDERS = 'motoclick_orders';
-const STORAGE_KEY_USERS = 'motoclick_users';
-const STORAGE_KEY_CURRENT_USER = 'motoclick_current_user';
 
 class MotoClickStore {
   constructor() {
     this._listeners = {};
-    this._channel = null;
-    this._initChannel();
+    this._sb = null;
+    this._useFallback = true;
+    this._currentUser = null;
+    this._init();
   }
 
-  // ── BroadcastChannel ──
-  _initChannel() {
+  _init() {
     try {
-      this._channel = new BroadcastChannel(CHANNEL_NAME);
-      this._channel.onmessage = (event) => {
-        const { type, payload } = event.data;
-        this._emit(type, payload);
-      };
-    } catch (e) {
-      console.warn('BroadcastChannel not supported, real-time sync disabled.');
+      this._currentUser = JSON.parse(localStorage.getItem('motoclick_current_user'));
+    } catch { this._currentUser = null; }
+
+    if (typeof supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON !== 'undefined') {
+      this._sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      this._useFallback = false;
+      this._subscribeRealtime();
+    } else {
+      console.warn('[MotoClick] Supabase no disponible — usando localStorage.');
+      this._useFallback = true;
+      this._initBroadcast();
     }
+  }
+
+  // ── Realtime (Supabase) ───────────────────────────────────────
+  _subscribeRealtime() {
+    this._sb.channel('orders-rt')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+        this._emit('new_order', this._fromDB(payload.new));
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
+        const order = this._fromDB(payload.new);
+        this._emit('status_change', order);
+        this._emit('order_updated', order);
+        if (JSON.stringify(payload.new.driver_location) !== JSON.stringify(payload.old?.driver_location)) {
+          this._emit('location_update', { orderId: order.id, location: order.driverLocation });
+        }
+      })
+      .subscribe();
+  }
+
+  // ── BroadcastChannel fallback ─────────────────────────────────
+  _initBroadcast() {
+    try {
+      this._channel = new BroadcastChannel('motoclick-sync');
+      this._channel.onmessage = (e) => this._emit(e.data.type, e.data.payload);
+    } catch (e) {}
   }
 
   _broadcast(type, payload) {
-    if (this._channel) {
-      this._channel.postMessage({ type, payload });
-    }
+    if (this._channel) this._channel.postMessage({ type, payload });
   }
 
-  // ── Event System ──
-  on(event, callback) {
+  // ── Event System ──────────────────────────────────────────────
+  on(event, cb) {
     if (!this._listeners[event]) this._listeners[event] = [];
-    this._listeners[event].push(callback);
-    return () => {
-      this._listeners[event] = this._listeners[event].filter(cb => cb !== callback);
-    };
+    this._listeners[event].push(cb);
+    return () => { this._listeners[event] = this._listeners[event].filter(f => f !== cb); };
   }
 
   _emit(event, data) {
-    if (this._listeners[event]) {
-      this._listeners[event].forEach(cb => cb(data));
-    }
+    (this._listeners[event] || []).forEach(cb => { try { cb(data); } catch(e) {} });
   }
 
-  // ── Users ──
-  getUsers() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
-    } catch { return []; }
-  }
-
-  _saveUsers(users) {
-    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
-  }
-
-  registerUser(userData) {
-    const users = this.getUsers();
-    const exists = users.find(u => u.phone === userData.phone && u.role === userData.role);
-    if (exists) return { success: false, error: 'Ya existe una cuenta con ese teléfono.' };
-
-    const user = {
-      id: generateId(),
-      ...userData,
-      createdAt: new Date().toISOString()
+  // ── DB mapping ────────────────────────────────────────────────
+  _fromDB(row) {
+    if (!row) return null;
+    return {
+      id:                row.id,
+      clientId:          row.client_id,
+      clientName:        row.client_name,
+      clientPhone:       row.client_phone,
+      driverId:          row.driver_id,
+      driverName:        row.driver_name,
+      driverPhoto:       row.driver_photo,
+      driverLocation:    row.driver_location,
+      status:            row.status,
+      description:       row.description,
+      pickupAddress:     row.pickup_address,
+      deliveryAddress:   row.delivery_address,
+      pickupCoords:      row.pickup_coords,
+      deliveryCoords:    row.delivery_coords,
+      paymentMethod:     row.payment_method,
+      estimatedPriceMin: row.estimated_price_min,
+      estimatedPriceMax: row.estimated_price_max,
+      routeDistanceText: row.route_distance_text,
+      specialServices:   row.special_services || [],
+      stops:             row.stops || [],
+      stopDescription:   row.stop_description,
+      acceptedAt:        row.accepted_at,
+      deliveredAt:       row.delivered_at,
+      createdAt:         row.created_at,
+      updatedAt:         row.updated_at,
     };
-    users.push(user);
-    this._saveUsers(users);
-    this.setCurrentUser(user);
-    return { success: true, user };
   }
 
-  loginUser(phone, role) {
-    const users = this.getUsers();
-    const user = users.find(u => u.phone === phone && u.role === role);
-    if (!user) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
-    this.setCurrentUser(user);
-    return { success: true, user };
+  _toDB(obj) {
+    const r = {};
+    if (obj.id !== undefined)               r.id                  = obj.id;
+    if (obj.clientId !== undefined)         r.client_id           = obj.clientId;
+    if (obj.clientName !== undefined)       r.client_name         = obj.clientName;
+    if (obj.clientPhone !== undefined)      r.client_phone        = obj.clientPhone;
+    if (obj.driverId !== undefined)         r.driver_id           = obj.driverId;
+    if (obj.driverName !== undefined)       r.driver_name         = obj.driverName;
+    if (obj.driverPhoto !== undefined)      r.driver_photo        = obj.driverPhoto;
+    if (obj.driverLocation !== undefined)   r.driver_location     = obj.driverLocation;
+    if (obj.status !== undefined)           r.status              = obj.status;
+    if (obj.description !== undefined)      r.description         = obj.description;
+    if (obj.pickupAddress !== undefined)    r.pickup_address      = obj.pickupAddress;
+    if (obj.deliveryAddress !== undefined)  r.delivery_address    = obj.deliveryAddress;
+    if (obj.pickupCoords !== undefined)     r.pickup_coords       = obj.pickupCoords;
+    if (obj.deliveryCoords !== undefined)   r.delivery_coords     = obj.deliveryCoords;
+    if (obj.paymentMethod !== undefined)    r.payment_method      = obj.paymentMethod;
+    if (obj.estimatedPriceMin !== undefined)r.estimated_price_min = obj.estimatedPriceMin;
+    if (obj.estimatedPriceMax !== undefined)r.estimated_price_max = obj.estimatedPriceMax;
+    if (obj.routeDistanceText !== undefined)r.route_distance_text = obj.routeDistanceText;
+    if (obj.specialServices !== undefined)  r.special_services    = obj.specialServices;
+    if (obj.stops !== undefined)            r.stops               = obj.stops;
+    if (obj.stopDescription !== undefined)  r.stop_description    = obj.stopDescription;
+    if (obj.acceptedAt !== undefined)       r.accepted_at         = obj.acceptedAt;
+    if (obj.deliveredAt !== undefined)      r.delivered_at        = obj.deliveredAt;
+    return r;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // USERS
+  // ══════════════════════════════════════════════════════════════
+  async registerUser(userData) {
+    if (this._useFallback) return this._fb_registerUser(userData);
+    const { data, error } = await this._sb.from('users')
+      .insert([{ name: userData.name, phone: userData.phone, role: userData.role,
+                 vehicle: userData.vehicle || null, address: userData.address || null }])
+      .select().single();
+    if (error) {
+      const msg = error.code === '23505' ? 'Ya existe una cuenta con ese teléfono.' : (error.message || 'Error al registrar.');
+      return { success: false, error: msg };
+    }
+    this.setCurrentUser(data);
+    return { success: true, user: data };
+  }
+
+  async loginUser(phone, role) {
+    if (this._useFallback) return this._fb_loginUser(phone, role);
+    const { data, error } = await this._sb.from('users')
+      .select('*').eq('phone', phone).eq('role', role).maybeSingle();
+    if (error || !data) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
+    this.setCurrentUser(data);
+    return { success: true, user: data };
+  }
+
+  async updateUser(id, updates) {
+    if (this._useFallback) return this._fb_updateUser(id, updates);
+    const { data, error } = await this._sb.from('users')
+      .update(updates).eq('id', id).select().single();
+    if (error) return { success: false, error: error.message };
+    const cur = this.getCurrentUser();
+    if (cur && cur.id === id) this.setCurrentUser(data);
+    return { success: true, user: data };
   }
 
   setCurrentUser(user) {
-    localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(user));
+    this._currentUser = user;
+    localStorage.setItem('motoclick_current_user', JSON.stringify(user));
   }
 
-  getCurrentUser() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_CURRENT_USER));
-    } catch { return null; }
-  }
+  getCurrentUser() { return this._currentUser; }
 
   logout() {
-    localStorage.removeItem(STORAGE_KEY_CURRENT_USER);
+    this._currentUser = null;
+    localStorage.removeItem('motoclick_current_user');
   }
 
-  updateUser(id, data) {
-    const users = this.getUsers();
-    const idx = users.findIndex(u => u.id === id);
-    if (idx === -1) return { success: false, error: 'Usuario no encontrado.' };
+  // ══════════════════════════════════════════════════════════════
+  // ORDERS
+  // ══════════════════════════════════════════════════════════════
+  async getOrders() {
+    if (this._useFallback) return this._fb_getOrders();
+    const { data } = await this._sb.from('orders').select('*').order('created_at', { ascending: false });
+    return (data || []).map(r => this._fromDB(r));
+  }
 
-    users[idx] = { ...users[idx], ...data };
-    this._saveUsers(users);
+  async getOrderById(id) {
+    if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
+    const { data } = await this._sb.from('orders').select('*').eq('id', id).maybeSingle();
+    return this._fromDB(data);
+  }
 
-    const currentUser = this.getCurrentUser();
-    if (currentUser && currentUser.id === id) {
-      this.setCurrentUser(users[idx]);
+  async getOrdersByClient(clientId) {
+    if (this._useFallback) return this._fb_getOrders().filter(o => o.clientId === clientId);
+    const { data } = await this._sb.from('orders').select('*').eq('client_id', clientId).order('created_at', { ascending: false });
+    return (data || []).map(r => this._fromDB(r));
+  }
+
+  async getOrdersByDriver(driverId) {
+    if (this._useFallback) return this._fb_getOrders().filter(o => o.driverId === driverId);
+    const { data } = await this._sb.from('orders').select('*').eq('driver_id', driverId).order('created_at', { ascending: false });
+    return (data || []).map(r => this._fromDB(r));
+  }
+
+  async getPendingOrders() {
+    if (this._useFallback) return this._fb_getOrders().filter(o => o.status === 'pending');
+    const { data } = await this._sb.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: true });
+    return (data || []).map(r => this._fromDB(r));
+  }
+
+  async getActiveOrderForDriver(driverId) {
+    if (this._useFallback) {
+      return this._fb_getOrders().find(o => o.driverId === driverId && o.status !== 'entregado' && o.status !== 'pending') || null;
     }
-
-    return { success: true, user: users[idx] };
+    const { data } = await this._sb.from('orders').select('*')
+      .eq('driver_id', driverId)
+      .not('status', 'in', '("pending","entregado")')
+      .maybeSingle();
+    return this._fromDB(data);
   }
 
-  // ── Orders ──
-  getOrders() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_ORDERS)) || [];
-    } catch { return []; }
+  async createOrder(orderData) {
+    if (this._useFallback) return this._fb_createOrder(orderData);
+    const id = 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+    const row = this._toDB({ id, ...orderData, status: 'pending', driverId: null });
+    const { data, error } = await this._sb.from('orders').insert([row]).select().single();
+    if (error) { console.error('[Store] createOrder:', error); return null; }
+    return this._fromDB(data);
   }
 
-  _saveOrders(orders) {
-    localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders));
+  async acceptOrder(orderId, driver) {
+    if (this._useFallback) return this._fb_acceptOrder(orderId, driver);
+    const { data, error } = await this._sb.from('orders').update({
+      status: 'accepted',
+      driver_id: driver.id,
+      driver_name: driver.name,
+      driver_photo: driver.photo || null,
+      accepted_at: new Date().toISOString(),
+    }).eq('id', orderId).select().single();
+    if (error) return null;
+    return this._fromDB(data);
   }
 
-  createOrder(orderData) {
-    const orders = this.getOrders();
-    const order = {
-      id: generateId(),
-      ...orderData,
-      status: 'pending',       // pending | accepted | en_camino | recolectado | entregado
-      driverId: null,
-      driverName: null,
-      driverLocation: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    orders.push(order);
-    this._saveOrders(orders);
-    this._broadcast('new_order', order);
-    this._emit('new_order', order);
+  async updateOrderStatus(orderId, status) {
+    if (this._useFallback) return this._fb_updateOrderStatus(orderId, status);
+    const upd = { status };
+    if (status === 'entregado') upd.delivered_at = new Date().toISOString();
+    const { data, error } = await this._sb.from('orders').update(upd).eq('id', orderId).select().single();
+    if (error) return null;
+    return this._fromDB(data);
+  }
+
+  async updateOrder(orderId, updates) {
+    if (this._useFallback) return this._fb_updateOrder(orderId, updates);
+    const { data, error } = await this._sb.from('orders').update(this._toDB(updates)).eq('id', orderId).select().single();
+    if (error) return null;
+    return this._fromDB(data);
+  }
+
+  async updateDriverLocation(orderId, location) {
+    if (this._useFallback) return this._fb_updateDriverLocation(orderId, location);
+    await this._sb.from('orders').update({ driver_location: location }).eq('id', orderId);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // FALLBACK localStorage
+  // ══════════════════════════════════════════════════════════════
+  _fb_getOrders() {
+    try { return JSON.parse(localStorage.getItem('motoclick_orders')) || []; } catch { return []; }
+  }
+  _fb_save(orders) { localStorage.setItem('motoclick_orders', JSON.stringify(orders)); }
+
+  _fb_createOrder(d) {
+    const orders = this._fb_getOrders();
+    const order = { id: 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2,8), ...d, status: 'pending', driverId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    orders.push(order); this._fb_save(orders);
+    this._broadcast('new_order', order); this._emit('new_order', order);
     return order;
   }
-
-  getOrderById(id) {
-    return this.getOrders().find(o => o.id === id) || null;
-  }
-
-  getOrdersByClient(clientId) {
-    return this.getOrders().filter(o => o.clientId === clientId);
-  }
-
-  getPendingOrders() {
-    return this.getOrders().filter(o => o.status === 'pending');
-  }
-
-  getActiveOrderForDriver(driverId) {
-    return this.getOrders().find(o => o.driverId === driverId && o.status !== 'entregado' && o.status !== 'pending');
-  }
-
-  acceptOrder(orderId, driver) {
-    const orders = this.getOrders();
-    const idx = orders.findIndex(o => o.id === orderId);
-    if (idx === -1) return null;
-
-    orders[idx].status = 'accepted';
-    orders[idx].driverId = driver.id;
-    orders[idx].driverName = driver.name;
-    orders[idx].driverPhoto = driver.photo || null;
-    orders[idx].updatedAt = new Date().toISOString();
-
-    this._saveOrders(orders);
-    this._broadcast('order_accepted', orders[idx]);
-    this._emit('order_accepted', orders[idx]);
+  _fb_acceptOrder(orderId, driver) {
+    const orders = this._fb_getOrders();
+    const idx = orders.findIndex(o => o.id === orderId); if (idx === -1) return null;
+    Object.assign(orders[idx], { status: 'accepted', driverId: driver.id, driverName: driver.name, driverPhoto: driver.photo || null, acceptedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    this._fb_save(orders); this._broadcast('order_accepted', orders[idx]); this._emit('order_accepted', orders[idx]);
     return orders[idx];
   }
-
-  updateOrderStatus(orderId, status) {
-    const orders = this.getOrders();
-    const idx = orders.findIndex(o => o.id === orderId);
-    if (idx === -1) return null;
-
-    orders[idx].status = status;
-    orders[idx].updatedAt = new Date().toISOString();
-
-    this._saveOrders(orders);
-    this._broadcast('status_change', orders[idx]);
-    this._emit('status_change', orders[idx]);
+  _fb_updateOrderStatus(orderId, status) {
+    const orders = this._fb_getOrders();
+    const idx = orders.findIndex(o => o.id === orderId); if (idx === -1) return null;
+    orders[idx].status = status; orders[idx].updatedAt = new Date().toISOString();
+    if (status === 'entregado') orders[idx].deliveredAt = new Date().toISOString();
+    this._fb_save(orders); this._broadcast('status_change', orders[idx]); this._emit('status_change', orders[idx]);
     return orders[idx];
   }
-
-  updateOrder(orderId, updates) {
-    const orders = this.getOrders();
-    const idx = orders.findIndex(o => o.id === orderId);
-    if (idx === -1) return null;
-
+  _fb_updateOrder(orderId, updates) {
+    const orders = this._fb_getOrders();
+    const idx = orders.findIndex(o => o.id === orderId); if (idx === -1) return null;
     orders[idx] = { ...orders[idx], ...updates, updatedAt: new Date().toISOString() };
-    this._saveOrders(orders);
-    this._broadcast('order_updated', orders[idx]);
-    this._emit('order_updated', orders[idx]);
+    this._fb_save(orders); this._broadcast('order_updated', orders[idx]); this._emit('order_updated', orders[idx]);
     return orders[idx];
   }
-
-  updateDriverLocation(orderId, location) {
-    const orders = this.getOrders();
-    const idx = orders.findIndex(o => o.id === orderId);
-    if (idx === -1) return;
-
-    orders[idx].driverLocation = location;
-    this._saveOrders(orders);
-    this._broadcast('location_update', { orderId, location });
-    this._emit('location_update', { orderId, location });
+  _fb_updateDriverLocation(orderId, location) {
+    const orders = this._fb_getOrders();
+    const idx = orders.findIndex(o => o.id === orderId); if (idx === -1) return;
+    orders[idx].driverLocation = location; this._fb_save(orders);
+    this._broadcast('location_update', { orderId, location }); this._emit('location_update', { orderId, location });
+  }
+  _fb_registerUser(d) {
+    const users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+    if (users.find(u => u.phone === d.phone && u.role === d.role)) return { success: false, error: 'Ya existe una cuenta con ese teléfono.' };
+    const user = { id: 'u_' + Date.now().toString(36), ...d, createdAt: new Date().toISOString() };
+    users.push(user); localStorage.setItem('motoclick_users', JSON.stringify(users));
+    this.setCurrentUser(user); return { success: true, user };
+  }
+  _fb_loginUser(phone, role) {
+    const users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+    const user = users.find(u => u.phone === phone && u.role === role);
+    if (!user) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
+    this.setCurrentUser(user); return { success: true, user };
+  }
+  _fb_updateUser(id, data) {
+    const users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+    const idx = users.findIndex(u => u.id === id); if (idx === -1) return { success: false, error: 'Usuario no encontrado.' };
+    users[idx] = { ...users[idx], ...data }; localStorage.setItem('motoclick_users', JSON.stringify(users));
+    const cur = this.getCurrentUser(); if (cur && cur.id === id) this.setCurrentUser(users[idx]);
+    return { success: true, user: users[idx] };
   }
 }
 
-// ── Singleton ──
 function generateId() {
   return 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
 }
 
-// Export singleton
 window.MotoClickStore = window.MotoClickStore || new MotoClickStore();
 window.store = window.MotoClickStore;

@@ -370,8 +370,8 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
     }
     .promo-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
     .promo-modal {
@@ -448,6 +448,16 @@
       transition: all 0.2s ease;
     }
     .promo-close:hover { background: rgba(0, 0, 0, 0.6); transform: scale(1.1); }
+
+    .promo-cta-btn {
+      border-radius: 12px;
+      font-weight: 700;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -790,7 +800,7 @@
         <p class="promo-desc">
           No te pierdas ni un minuto del partido. ¡MotoClick te lleva la botana y las bebidas directo a tu casa!
         </p>
-        <a href="https://wa.me/522331072438?text=Hola! Quiero pedir botana para el partido de Mexico vs Portugal ⚽🇲🇽" target="_blank" class="btn btn-primary btn-block btn-lg" style="border-radius: 12px; font-weight: 700; height: 50px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <a href="https://wa.me/522331072438?text=Hola! Quiero pedir botana para el partido de Mexico vs Portugal ⚽🇲🇽" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block btn-lg promo-cta-btn">
           <i class="fab fa-whatsapp"></i> Pedir Botana Ahora
         </a>
         <span class="promo-price">En zona centro desde <strong>$40 pesos</strong> el mandado</span>

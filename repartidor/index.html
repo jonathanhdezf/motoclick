@@ -109,6 +109,8 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
@@ -127,15 +129,15 @@
       document.getElementById('tab-' + tab + '-btn').classList.add('active');
     }
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const form = e.target;
-      const valid = validateForm(form, {
-        phone: { required: true, phone: true }
-      });
+      const valid = validateForm(form, { phone: { required: true, phone: true } });
       if (!valid) return;
-
-      const result = store.loginUser(form.phone.value.trim(), 'driver');
+      const btn = form.querySelector('[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Verificando...';
+      const result = await store.loginUser(form.phone.value.trim(), 'driver');
+      btn.disabled = false; btn.textContent = 'Iniciar Sesión';
       if (result.success) {
         showToast('¡Bienvenido de vuelta! 🏍️', 'success');
         setTimeout(() => navigateTo('panel.html'), 600);
@@ -144,7 +146,7 @@
       }
     }
 
-    function handleRegister(e) {
+    async function handleRegister(e) {
       e.preventDefault();
       const form = e.target;
       const valid = validateForm(form, {
@@ -152,14 +154,15 @@
         phone: { required: true, phone: true }
       });
       if (!valid) return;
-
-      const result = store.registerUser({
+      const btn = form.querySelector('[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Registrando...';
+      const result = await store.registerUser({
         name: form.name.value.trim(),
         phone: form.phone.value.trim(),
         vehicle: form.vehicle.value,
         role: 'driver'
       });
-
+      btn.disabled = false; btn.textContent = 'Registrarme como Repartidor';
       if (result.success) {
         showToast('¡Registro exitoso! 🚀', 'success');
         setTimeout(() => navigateTo('panel.html'), 600);

@@ -93,6 +93,51 @@
     .banner-title { font-weight: 600; }
     .banner-text { font-size: 0.85rem; color: var(--text-secondary); }
     .panel-subtitle { font-size: 0.9rem; }
+
+    /* Historial */
+    .history-section {
+      margin-top: var(--space-3xl);
+      padding-bottom: var(--space-2xl);
+    }
+    .history-header {
+      margin-bottom: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .history-header h3 { font-size: 1.2rem; font-weight: 700; }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .history-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-active);
+    }
+    .history-main { display: flex; flex-direction: column; gap: 4px; }
+    .history-info { font-size: 0.95rem; font-weight: 500; }
+    .history-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+    .history-price { font-weight: 700; color: #22c55e; font-size: 1.1rem; }
+    .history-empty {
+      padding: var(--space-xl);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -142,10 +187,22 @@
             <div class="empty-state-text">Cuando un cliente solicite un mandado, aparecerá aquí automáticamente.</div>
           </div>
         </div>
+
+        <!-- History -->
+        <div class="history-section">
+          <div class="history-header">
+            <h3>📜 Tu Historial de Viajes</h3>
+          </div>
+          <div class="history-list" id="history-list">
+            <!-- Cargando... -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
@@ -156,6 +213,7 @@
       document.getElementById('user-greeting').innerHTML =
         `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
       loadOrders();
+      renderHistory();
 
       // Listen for new orders
       store.on('new_order', () => {
@@ -165,37 +223,37 @@
       });
 
       // Poll as fallback
-      setInterval(() => loadOrders(), 3000);
+      setInterval(() => {
+        loadOrders();
+        renderHistory();
+      }, 5000);
     }
 
-    function loadOrders(isNew = false) {
-      const pending = store.getPendingOrders();
+    async function loadOrders(isNew = false) {
+      const [pending, activeOrder] = await Promise.all([
+        store.getPendingOrders(),
+        store.getActiveOrderForDriver(user.id)
+      ]);
       const container = document.getElementById('orders-list');
-      const emptyState = document.getElementById('empty-state');
       const countBadge = document.getElementById('order-count');
+      const banner    = document.getElementById('active-banner');
 
-      // Check for active delivery
-      const activeOrder = store.getActiveOrderForDriver(user.id);
-      const banner = document.getElementById('active-banner');
       if (activeOrder) {
         banner.classList.remove('hidden');
         document.getElementById('active-banner-detail').textContent =
-          `${activeOrder.description.substring(0, 50)}... — ${getStatusLabel(activeOrder.status)}`;
+          `${(activeOrder.description || '').substring(0, 50)}... — ${getStatusLabel(activeOrder.status)}`;
       } else {
         banner.classList.add('hidden');
       }
 
       countBadge.textContent = pending.length;
 
-      // Detect new orders
-      if (pending.length > previousCount && previousCount > 0) {
-        playNotificationSound();
-      }
+      if (pending.length > previousCount && previousCount > 0) playNotificationSound();
       previousCount = pending.length;
 
       if (pending.length === 0) {
         container.innerHTML = '';
-        container.appendChild(emptyState.cloneNode ? createEmptyState() : emptyState);
+        container.appendChild(createEmptyState());
         return;
       }
 
@@ -226,6 +284,12 @@
               <span class="order-detail-icon">🏠</span>
               <span class="order-detail-text"><strong>Entregar:</strong> ${order.deliveryAddress}</span>
             </div>
+            ${order.stopDescription ? `
+              <div class="order-detail" style="border-left: 2px solid #3b82f6; padding-left: 10px; margin-top: 8px;">
+                <span class="order-detail-icon">📍</span>
+                <span class="order-detail-text"><strong style="color: #3b82f6;">Parada:</strong> ${order.stopDescription}</span>
+              </div>
+            ` : ''}
           </div>
           <div class="order-card-footer">
             <button class="btn btn-primary btn-block" onclick="acceptOrder('${order.id}')">
@@ -234,6 +298,56 @@
           </div>
         </div>
       `).join('');
+    }
+
+    function renderHistory() {
+      const historyList = document.getElementById('history-list');
+      if (!historyList) return;
+
+      try {
+        const allMyOrders = store.getOrdersByDriver(user.id);
+        const completed = allMyOrders.filter(o => o.status === 'entregado').reverse();
+
+        if (completed.length === 0) {
+          historyList.innerHTML = `
+            <div class="history-empty">
+              Aún no has completado ningún viaje. Los viajes entregados aparecerán aquí automáticamente.
+            </div>`;
+          return;
+        }
+
+        const cards = completed.slice(0, 10).map(order => {
+          try {
+            const duration = (typeof tripDuration === 'function')
+              ? tripDuration(order.acceptedAt, order.deliveredAt)
+              : null;
+            const desc = (order.description || '').substring(0, 50);
+            const suffix = (order.description || '').length > 50 ? '...' : '';
+            const addr = (order.deliveryAddress || 'Sin dirección').split(',')[0];
+            const price = order.estimatedPriceMin || 0;
+            return `
+              <div class="history-item">
+                <div class="history-main">
+                  <div class="history-info">${desc}${suffix}</div>
+                  <div class="history-meta">
+                    <span>📅 ${timeAgo(order.createdAt)}</span>
+                    <span>•</span>
+                    <span>📍 ${addr}</span>
+                    ${duration ? `<span>•</span><span>⏱️ ${duration}</span>` : ''}
+                  </div>
+                </div>
+                <div class="history-price">$${price}</div>
+              </div>`;
+          } catch (e) {
+            return '';
+          }
+        });
+
+        historyList.innerHTML = cards.join('');
+      } catch (err) {
+        historyList.innerHTML = `<div class="history-empty">Error cargando historial.</div>`;
+        console.error('renderHistory error:', err);
+      }
     }
 
     function createEmptyState() {
@@ -247,8 +361,8 @@
       return div;
     }
 
-    function acceptOrder(orderId) {
-      const order = store.acceptOrder(orderId, user);
+    async function acceptOrder(orderId) {
+      const order = await store.acceptOrder(orderId, user);
       if (order) {
         showToast('¡Mandado aceptado! Revisa los detalles.', 'success');
         setTimeout(() => navigateTo(`entrega.html?id=${order.id}`), 600);
@@ -258,11 +372,9 @@
       }
     }
 
-    function goToActiveDelivery() {
-      const active = store.getActiveOrderForDriver(user.id);
-      if (active) {
-        navigateTo(`entrega.html?id=${active.id}`);
-      }
+    async function goToActiveDelivery() {
+      const active = await store.getActiveOrderForDriver(user.id);
+      if (active) navigateTo(`entrega.html?id=${active.id}`);
     }
 
     function handleLogout() {

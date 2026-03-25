@@ -150,6 +150,8 @@
   </div>
 
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
@@ -196,8 +198,8 @@
       }
     }
 
-    function loadOrder() {
-      const order = store.getOrderById(orderId);
+    async function loadOrder() {
+      const order = await store.getOrderById(orderId);
       if (!order) return;
 
       renderStatus(order.status);
@@ -279,6 +281,20 @@
             <div class="order-summary-value">${getPaymentLabel(order.paymentMethod)}</div>
           </div>
         </div>
+        ${(order.stops && order.stops.length > 0) || order.stopDescription ? `
+          <div class="order-summary-row" style="background: rgba(59, 130, 246, 0.05); padding: 12px; border-radius: 12px; border-left: 3px solid #3b82f6; margin-top: 10px;">
+            <span class="order-summary-icon">📍</span>
+            <div class="order-summary-content">
+              <div class="order-summary-label">Paradas Extra</div>
+              <div class="order-summary-value" style="font-weight: 500; color: #3b82f6; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                ${order.stops ? order.stops.map(s => {
+                  const desc = typeof s === 'string' ? s : s.desc;
+                  return `<div>• ${desc}</div>`;
+                }).join('') : `<div>• ${order.stopDescription}</div>`}
+              </div>
+            </div>
+          </div>
+        ` : ''}
         <div class="order-summary-row" style="background: rgba(34, 197, 94, 0.05); padding: 14px; border-radius: 12px; border: 1px dashed rgba(34, 197, 94, 0.3); margin: 15px 0;">
           <span class="order-summary-icon">💰</span>
           <div class="order-summary-content">

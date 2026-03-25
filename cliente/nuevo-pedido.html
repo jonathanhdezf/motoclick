@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="MotoClick — Solicita un nuevo mandado y elige tu forma de pago.">
   <title>MotoClick — Nuevo Pedido</title>
-  <link rel="stylesheet" href="../styles/main.css">
-  <style>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
     .order-form-header {
       text-align: center;
       margin-bottom: var(--space-xl);
@@ -181,7 +182,6 @@
       overflow-x: auto;
       padding-bottom: 4px;
       -ms-overflow-style: none;
-      scrollbar-width: none;
     }
     .suggestion-chips::-webkit-scrollbar { display: none; }
     .chip {
@@ -200,6 +200,199 @@
       background: rgba(249, 115, 22, 0.1);
       color: var(--color-primary);
       border-color: var(--color-primary);
+    }
+
+    /* Utility Helpers */
+    .fs-xs { font-size: 0.75rem; }
+    .mt-sm { margin-top: var(--space-sm); }
+    .italic { font-style: italic; }
+    .text-info { color: #3b82f6; }
+    .d-block { display: block; }
+    .u-overflow-hidden { overflow: hidden; }
+
+    .service-info-icon {
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .service-info-icon:hover { color: var(--color-primary); }
+    
+    .stop-desc-field {
+      margin-top: var(--space-sm);
+      margin-bottom: var(--space-md);
+      animation: fadeIn 0.3s ease;
+    }
+    .stop-desc-field.hidden { display: none; }
+
+    /* Stops List */
+    .stop-row {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-sm);
+      animation: slideIn 0.3s ease;
+    }
+    .stop-row .form-input { flex: 1; min-height: unset; height: 42px; padding: 10px 14px; }
+    .btn-remove-stop {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.05); cursor: pointer;
+    }
+    .btn-remove-stop:hover { background: #ef4444; color: white; }
+    
+    .btn-add-stop {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; font-weight: 600; color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1); border: 1px dashed rgba(59, 130, 246, 0.3);
+      padding: 8px 16px; border-radius: 12px; cursor: pointer;
+      width: 100%; justify-content: center; margin-bottom: var(--space-md);
+    }
+    .btn-add-stop:hover { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
+
+    .service-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: 32px;
+      margin-top: -8px;
+      margin-bottom: 12px;
+      padding: 4px 10px;
+      border-left: 2px solid var(--color-primary);
+      background: rgba(249, 115, 22, 0.03);
+      border-radius: 0 4px 4px 0;
+      animation: slideIn 0.2s ease;
+    }
+    .service-desc.hidden { display: none; }
+
+    /* Transfer & QR Modal Enhancements */
+    .transfer-info-card {
+      border: 1px solid var(--border-active);
+      background: rgba(59, 130, 246, 0.05);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+    }
+    .transfer-info-content {
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .transfer-info-title {
+      margin-bottom: var(--space-xs);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .transfer-info-row {
+      margin-bottom: 2px;
+    }
+    .transfer-clabe-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      margin: var(--space-sm) 0;
+      border: 1px dashed rgba(59, 130, 246, 0.3);
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
+    }
+    .clabe-number {
+      letter-spacing: 1px;
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+    .btn-oxxo-qr {
+      background: #e31a1a;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .qr-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      background: rgba(10, 15, 26, 0.9);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    .qr-modal-card {
+      width: 90%;
+      max-width: 360px;
+      text-align: center;
+      padding: 30px;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .qr-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    .qr-modal-title {
+      text-align: left;
+    }
+    .qr-modal-title h4 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .qr-modal-subtitle {
+      font-size: 0.75rem;
+      color: #3b82f6;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .qr-close-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-image-container {
+      background: #fff;
+      padding: 15px;
+      border-radius: 20px;
+      margin-bottom: 25px;
+      position: relative;
+    }
+    .qr-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+    .qr-modal-footer {
+      background: rgba(255,255,255,0.03);
+      padding: 15px;
+      border-radius: 16px;
+      margin-bottom: 25px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .qr-submit-btn {
+      border-radius: 16px;
+      font-weight: 700;
+      height: 54px;
     }
 
   </style>
@@ -299,57 +492,83 @@
             </div>
 
             <!-- Transfer Info Block -->
-            <div id="transfer-info-block" class="card-glass mt-md hidden" style="border: 1px solid var(--border-active); background: rgba(59, 130, 246, 0.05); padding: var(--space-md); border-radius: var(--radius-md);">
-              <div style="font-size: 0.85rem; line-height: 1.5;">
-                <p style="margin-bottom: var(--space-xs); font-weight: 700; color: var(--text-primary);">📍 Datos para transferencia:</p>
-                <p style="margin-bottom: 2px;"><span style="color: var(--text-muted);">Titular:</span> <strong>Jonathan Hernández</strong></p>
-                <p style="margin-bottom: 2px;"><span style="color: var(--text-muted);">Banco:</span> <strong>Spin by Oxxo</strong></p>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin: var(--space-sm) 0; border: 1px dashed rgba(59, 130, 246, 0.3); padding: 8px; border-radius: 8px; background: rgba(0,0,0,0.2);">
-                    <div style="overflow: hidden;">
-                        <span style="color: var(--text-muted); font-size: 0.75rem; display: block;">CLABE Interbancaria:</span>
-                        <strong id="clabe-number" style="letter-spacing: 1px; font-family: monospace; font-size: 0.95rem;">728969000095700385</strong>
+            <div id="transfer-info-block" class="card-glass mt-md hidden transfer-info-card">
+              <div class="transfer-info-content">
+                <p class="transfer-info-title">📍 Datos para transferencia:</p>
+                <p class="transfer-info-row"><span class="text-muted">Titular:</span> <strong>Jonathan Hernández</strong></p>
+                <p class="transfer-info-row"><span class="text-muted">Banco:</span> <strong>Spin by Oxxo</strong></p>
+                <div class="transfer-clabe-box">
+                    <div class="u-overflow-hidden">
+                        <span class="text-muted fs-xs d-block">CLABE Interbancaria:</span>
+                        <strong id="clabe-number" class="clabe-number">728969000095700385</strong>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline" style="padding: 6px 10px; font-size: 0.7rem;" onclick="copyClabe()">📋 Copiar</button>
+                    <button type="button" class="btn btn-sm btn-outline fs-xs" onclick="copyClabe()">📋 Copiar</button>
                 </div>
                 
-                <!-- QR Button -->
-                <button type="button" class="btn btn-block" style="background: #e31a1a; color: white; border: none; padding: 10px; font-size: 0.8rem; font-weight: 600; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="openQrModal()">
+                <button type="button" class="btn btn-block btn-oxxo-qr" onclick="openQrModal()">
                     <i class="fas fa-qrcode"></i> Pagar con QR en OXXO
                 </button>
                 
-                <p style="font-size: 0.75rem; color: #3b82f6; font-style: italic; margin-top: var(--space-sm);">* El pedido se realizará en cuanto se acredite la transferencia como recibida.</p>
+                <p class="fs-xs mt-sm text-info italic">* El pedido se realizará en cuanto se acredite la transferencia como recibida.</p>
               </div>
             </div>
 
-            </div>
-
             <!-- Servicios Especiales -->
-            <div class="section-title mt-md">⚡ Servicios Especiales (+extra)</div>
+            <div class="section-title mt-md">
+              ⚡ Servicios Especiales (+extra)
+              <i class="fas fa-info-circle service-info-icon" onclick="showExtraServicesInfo()" title="Ver cómo funcionan los extras"></i>
+            </div>
             <div class="form-group" id="special-services-container">
                <label class="custom-checkbox m-b-sm">
-                  <input type="checkbox" name="urgent" value="20" onchange="calculateRouteDistance()">
+                  <input type="checkbox" name="urgent" value="20" onchange="handleSpecialServiceChange(this)">
                   <span class="checkmark"></span>
                   <div class="service-checkbox-label">
                     <span>Mandado urgente</span>
                     <span class="text-accent">+$20</span>
                   </div>
                </label>
+               <div id="desc-urgent" class="service-desc hidden">Prioridad máxima. Un repartidor tomará en menos de 10 minutos tu viaje. 🚀</div>
+
                <label class="custom-checkbox m-b-sm">
-                  <input type="checkbox" name="wait" value="10" onchange="calculateRouteDistance()">
+                  <input type="checkbox" name="wait" value="10" onchange="handleSpecialServiceChange(this)">
                   <span class="checkmark"></span>
                   <div class="service-checkbox-label">
                     <span>Espera mayor a 10 min</span>
                     <span class="text-accent">+$10</span>
                   </div>
                </label>
+               <div id="desc-wait" class="service-desc hidden">Cubre el tiempo adicional que el repartidor dedica esperando en el establecimiento. ⏱️</div>
+
                <label class="custom-checkbox m-b-sm">
-                  <input type="checkbox" name="line" value="15" onchange="calculateRouteDistance()">
+                  <input type="checkbox" name="line" value="15" onchange="handleSpecialServiceChange(this)">
                   <span class="checkmark"></span>
                   <div class="service-checkbox-label">
                     <span>Compras en fila larga</span>
                     <span class="text-accent">+$15</span>
                   </div>
                </label>
+               <div id="desc-line" class="service-desc hidden">Para establecimientos con alta afluencia (ej. bancos, súper o farmacias con mucha gente). 🛒</div>
+
+               <label class="custom-checkbox m-b-sm">
+                  <input type="checkbox" name="stop" id="checkbox-stop" value="15" onchange="handleSpecialServiceChange(this); toggleStopDescription()">
+                  <span class="checkmark"></span>
+                  <div class="service-checkbox-label">
+                    <span>Agregar parada</span>
+                    <span class="text-accent">+$15</span>
+                  </div>
+               </label>
+               <div id="desc-stop" class="service-desc hidden">Se añade una escala adicional a la ruta principal de entrega. 📍</div>
+            </div>
+
+            <!-- Stop Description -->
+            <div id="stop-desc-container" class="stop-desc-field hidden">
+              <label class="form-label fs-xs">Detalles de las paradas extra</label>
+              <div id="stops-list">
+                <!-- Paradas dinámicas aquí -->
+              </div>
+              <button type="button" class="btn-add-stop" onclick="addStopRow()">
+                <i class="fas fa-plus"></i> + Agregar otra parada (+$15)
+              </button>
             </div>
 
             <!-- Price Estimator -->
@@ -393,34 +612,34 @@
     </div>
 
 
-    <!-- QR Modal (Always outside containers to avoid transform bugs) -->
-    <div class="modal-overlay hidden" id="qr-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 9999; background: rgba(10, 15, 26, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
-        <div class="modal-content card-glass animate-pop-in" style="width: 90%; max-width: 360px; text-align: center; padding: 30px; border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <div style="text-align: left;">
-                    <h4 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #fff;">Pago en OXXO</h4>
-                    <span style="font-size: 0.75rem; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px;">Depósito Inmediato</span>
+    <!-- QR Modal -->
+    <div class="modal-overlay hidden qr-modal-overlay" id="qr-modal">
+        <div class="modal-content card-glass animate-pop-in qr-modal-card">
+            <div class="qr-modal-header">
+                <div class="qr-modal-title">
+                    <h4>Pago en OXXO</h4>
+                    <span class="qr-modal-subtitle">Depósito Inmediato</span>
                 </div>
-                <button type="button" aria-label="Cerrar" onclick="closeQrModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+                <button type="button" class="qr-close-btn" aria-label="Cerrar" onclick="closeQrModal()">&times;</button>
             </div>
             
-            <div style="background: #fff; padding: 15px; border-radius: 20px; margin-bottom: 25px; position: relative;">
-                <img src="../assets/qr-transfer.jpeg" alt="QR OXXO" style="width: 100%; height: auto; display: block; border-radius: 8px;">
+            <div class="qr-image-container">
+                <img src="../assets/qr-transfer.jpeg" alt="QR OXXO" class="qr-image">
             </div>
             
-            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 16px; margin-bottom: 25px;">
-                <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6; margin: 0;">
-                    Presenta este código en caja al pagar. El movimiento se acredita al instante.
-                </p>
+            <div class="qr-modal-footer">
+                <p>Presenta este código en caja al pagar. El movimiento se acredita al instante.</p>
             </div>
             
-            <button type="button" class="btn btn-primary btn-block btn-lg" onclick="closeQrModal()" style="border-radius: 16px; font-weight: 700; height: 54px;">
+            <button type="button" class="btn btn-primary btn-block btn-lg qr-submit-btn" onclick="closeQrModal()">
                 Cerrar Ventana
             </button>
         </div>
     </div>
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
@@ -431,19 +650,20 @@
       renderHistory();
     }
 
-    function handleSubmitOrder(e) {
+    async function handleSubmitOrder(e) {
       e.preventDefault();
       const form = e.target;
-
       const valid = validateForm(form, {
         description: { required: true, minLength: 5, requiredMessage: 'Describe tu mandado.' },
         pickupAddress: { required: true, minLength: 5, requiredMessage: 'Ingresa la dirección de recolección.' },
         deliveryAddress: { required: true, minLength: 5, requiredMessage: 'Ingresa la dirección de entrega.' }
       });
-
       if (!valid) return;
 
-      const order = store.createOrder({
+      const submitBtn = form.querySelector('[type="submit"]');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Enviando...'; }
+
+      const order = await store.createOrder({
         clientId: user.id,
         clientName: user.name,
         clientPhone: user.phone,
@@ -451,26 +671,29 @@
         pickupAddress: form.pickupAddress.value.trim(),
         deliveryAddress: form.deliveryAddress.value.trim(),
         paymentMethod: form.paymentMethod.value,
-        ...currentCoords, // Fallbacks
         pickupCoords: currentCoords.pickup || GMAP_DEFAULT_CENTER,
         deliveryCoords: currentCoords.delivery || GMAP_DEFAULT_CENTER,
         estimatedPriceMin: currentPriceEstimate.min,
         estimatedPriceMax: currentPriceEstimate.max,
         routeDistanceText: currentPriceEstimate.distanceText,
-        specialServices: Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.name)
+        stopDescription: Array.from(form.querySelectorAll('.stop-desc-input')).map(i => i.value.trim()).filter(v => v).join(' | '),
+        stops: Array.from(form.querySelectorAll('.stop-desc-input')).map(i => i.value.trim()).filter(v => v),
+        specialServices: Array.from(form.querySelectorAll('#special-services-container input[type="checkbox"]:checked')).map(cb => cb.name)
       });
 
+      if (!order) {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Solicitar Mandado'; }
+        showToast('Error al crear el pedido. Intenta de nuevo.', 'error');
+        return;
+      }
       showToast('¡Mandado solicitado! Buscando repartidor...', 'success');
       setTimeout(() => navigateTo(`rastreo.html?id=${order.id}`), 800);
     }
 
-    function renderHistory() {
+    async function renderHistory() {
       const container = document.getElementById('orders-history');
-      const orders = store.getOrdersByClient(user.id).reverse();
-      if (orders.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
+      const orders = (await store.getOrdersByClient(user.id)).reverse();
+      if (orders.length === 0) { container.innerHTML = ''; return; }
       container.innerHTML = `
         <h3 style="margin-bottom: var(--space-md); color: var(--text-secondary);">📜 Tus mandados recientes</h3>
         ${orders.slice(0, 5).map(o => `
@@ -490,6 +713,61 @@
     function handleLogout() {
       store.logout();
       navigateTo('./');
+    }
+
+    function showExtraServicesInfo() {
+      showToast('Los servicios extra ayudan a cubrir el tiempo y esfuerzo adicional del repartidor. Se suman al costo base del mandado. 🛵', 'info');
+    }
+
+    function handleSpecialServiceChange(cb) {
+      const descEl = document.getElementById(`desc-${cb.name}`);
+      if (descEl) {
+        if (cb.checked) descEl.classList.remove('hidden');
+        else descEl.classList.add('hidden');
+      }
+      calculateRouteDistance();
+    }
+
+    function toggleStopDescription() {
+      const isChecked = document.getElementById('checkbox-stop').checked;
+      const container = document.getElementById('stop-desc-container');
+      const stopsList = document.getElementById('stops-list');
+      
+      if (isChecked) {
+        container.classList.remove('hidden');
+        if (stopsList.children.length === 0) {
+          addStopRow();
+        }
+      } else {
+        container.classList.add('hidden');
+        stopsList.innerHTML = '';
+      }
+      calculateRouteDistance();
+    }
+
+    function addStopRow() {
+      const stopsList = document.getElementById('stops-list');
+      const row = document.createElement('div');
+      row.className = 'stop-row';
+      row.innerHTML = `
+        <input type="text" class="form-input stop-desc-input" placeholder="¿Qué haremos en esta parada?" oninput="calculateRouteDistance()">
+        <button type="button" class="btn-remove-stop" onclick="removeStopRow(this)">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
+      stopsList.appendChild(row);
+      row.querySelector('input').focus();
+      calculateRouteDistance();
+    }
+
+    function removeStopRow(btn) {
+      btn.closest('.stop-row').remove();
+      const stopsList = document.getElementById('stops-list');
+      if (stopsList.children.length === 0) {
+        document.getElementById('checkbox-stop').checked = false;
+        document.getElementById('stop-desc-container').classList.add('hidden');
+      }
+      calculateRouteDistance();
     }
 
     // --- Map Picker Logic (Google Maps) ---
@@ -714,8 +992,14 @@
           const checkboxes = document.querySelectorAll('#special-services-container input[type="checkbox"]:checked');
           let extrasCost = 0;
           checkboxes.forEach(cb => {
-             extrasCost += parseInt(cb.value);
+             if (cb.name !== 'stop') {
+                extrasCost += parseInt(cb.value);
+             }
           });
+
+          // Add Stops Cost (Special logic)
+          const stopsCount = document.querySelectorAll('.stop-row').length;
+          extrasCost += (stopsCount * 15);
 
           minPrice += extrasCost;
           maxPrice += extrasCost;
