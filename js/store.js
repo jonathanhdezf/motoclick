@@ -146,11 +146,16 @@ class MotoClickStore {
     return { success: true, user: data };
   }
 
-  async loginUser(phone, role) {
-    if (this._useFallback) return this._fb_loginUser(phone, role);
+  async loginUser(phone, role, pin) {
+    if (this._useFallback) return this._fb_loginUser(phone, role, pin);
     const { data, error } = await this._sb.from('users')
       .select('*').eq('phone', phone).eq('role', role).maybeSingle();
     if (error || !data) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
+    
+    if (role === 'driver' && pin) {
+      if (pin !== phone.slice(-4)) return { success: false, error: 'PIN incorrecto. Si deseas cambiarlo consulta con el administrador.' };
+    }
+
     this.setCurrentUser(data);
     return { success: true, user: data };
   }
@@ -345,10 +350,15 @@ class MotoClickStore {
     users.push(user); localStorage.setItem('motoclick_users', JSON.stringify(users));
     this.setCurrentUser(user); return { success: true, user };
   }
-  _fb_loginUser(phone, role) {
+  _fb_loginUser(phone, role, pin) {
     const users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');
     const user = users.find(u => u.phone === phone && u.role === role);
     if (!user) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
+    
+    if (role === 'driver' && pin) {
+      if (pin !== phone.slice(-4)) return { success: false, error: 'PIN incorrecto. Si deseas cambiarlo consulta con el administrador.' };
+    }
+    
     this.setCurrentUser(user); return { success: true, user };
   }
   _fb_updateUser(id, data) {

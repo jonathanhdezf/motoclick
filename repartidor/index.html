@@ -73,6 +73,10 @@
               <input class="form-input" type="tel" id="login-phone" name="phone" placeholder="Ej. 5512345678" maxlength="10">
               <span class="form-error"></span>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="login-pin">PIN de Seguridad (4 dígitos)</label>
+              <input class="form-input" type="password" id="login-pin" name="pin" placeholder="Últimos 4 dígitos de tu celular" maxlength="4" required>
+            </div>
             <button type="submit" class="btn btn-primary btn-block btn-lg mt-lg">
               Iniciar Sesión
             </button>
@@ -138,9 +142,12 @@
       const form = e.target;
       const valid = validateForm(form, { phone: { required: true, phone: true } });
       if (!valid) return;
+      
+      const pin = form.pin ? form.pin.value.trim() : null;
+
       const btn = form.querySelector('[type="submit"]');
       btn.disabled = true; btn.textContent = 'Verificando...';
-      const result = await store.loginUser(form.phone.value.trim(), 'driver');
+      const result = await store.loginUser(form.phone.value.trim(), 'driver', pin);
       btn.disabled = false; btn.textContent = 'Iniciar Sesión';
       if (result.success) {
         showToast('¡Bienvenido de vuelta! 🏍️', 'success');
