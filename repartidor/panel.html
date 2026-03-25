@@ -140,13 +140,32 @@
     }
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999;
-      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; 
+      -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     }
     .modal-overlay.hidden { display: none; }
     .modal-content {
       background: var(--bg-secondary); border-radius: var(--radius-md);
       padding: var(--space-xl); width: 90%; max-width: 400px;
     }
+    .history-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
+    .history-header-wrapper h3 { margin: 0; }
+    .history-header-actions { display: flex; gap: 10px; align-items: center; }
+    .date-filter-input { padding: 4px 8px; font-size: 0.9rem; width: auto; }
+    .btn-bold { border-width: 2px; font-weight: 700; }
+    .btn-danger { border-color: #ef4444; color: #ef4444; }
+    .history-totals-wrapper { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .history-totals-wrapper .card-glass { flex: 1; padding: var(--space-md); text-align: center; border: 1px solid var(--border-color); }
+    .totals-label { font-size: 0.8rem; color: var(--text-muted); }
+    .totals-val { font-size: 1.5rem; font-weight: bold; color: var(--text-primary); }
+    .totals-val-success { font-size: 1.5rem; font-weight: bold; color: #22c55e; }
+    .title-danger { margin-bottom: var(--space-xs); color: #ef4444; }
+    .title-primary { margin-bottom: var(--space-xs); }
+    .modal-subtitle { font-size: 0.9rem; }
+    .form-group-row { display: flex; gap: var(--space-sm); }
+    .form-group-col { flex: 1; }
+    .modal-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
+    .btn-bg-danger { background: #ef4444; border-color: #ef4444; }
   </style>
 </head>
 <body>
@@ -199,24 +218,24 @@
 
         <!-- History -->
         <div class="history-section">
-          <div class="history-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
-            <h3 style="margin: 0;">📜 Tu Historial</h3>
-            <div style="display: flex; gap: 10px; align-items: center;">
-              <input type="date" id="history-date-filter" class="form-input" style="padding: 4px 8px; font-size: 0.9rem; width: auto;" onchange="renderHistory()">
-              <button class="btn btn-sm btn-outline" style="border-width:2px; font-weight:700; border-color: #ef4444; color: #ef4444;" onclick="openExpenseModal()">+ Gasto</button>
-              <button class="btn btn-sm btn-outline" style="border-width:2px; font-weight:700;" onclick="openManualTripModal()">+ Viaje</button>
+          <div class="history-header-wrapper">
+            <h3>📜 Tu Historial</h3>
+            <div class="history-header-actions">
+              <input type="date" id="history-date-filter" class="form-input date-filter-input" aria-label="Filtrar por fecha" title="Filtrar por fecha" onchange="renderHistory()">
+              <button class="btn btn-sm btn-outline btn-bold btn-danger" onclick="openExpenseModal()">+ Gasto</button>
+              <button class="btn btn-sm btn-outline btn-bold" onclick="openManualTripModal()">+ Viaje</button>
             </div>
           </div>
           
           <!-- Totals Widget -->
-          <div class="history-totals" style="display:flex; gap: 1rem; margin-bottom: 1rem;">
-             <div class="card-glass" style="flex:1; padding: var(--space-md); text-align: center; border: 1px solid var(--border-color);">
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Viajes del Día</div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);" id="total-trips">0</div>
+          <div class="history-totals-wrapper">
+             <div class="card-glass">
+                <div class="totals-label">Viajes del Día</div>
+                <div class="totals-val" id="total-trips">0</div>
              </div>
-             <div class="card-glass" style="flex:1; padding: var(--space-md); text-align: center; border: 1px solid var(--border-color);">
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Ganancias Aprox.</div>
-                <div style="font-size: 1.5rem; font-weight: bold; color: #22c55e;" id="total-earnings">$0</div>
+             <div class="card-glass">
+                <div class="totals-label">Ganancias Aprox.</div>
+                <div class="totals-val-success" id="total-earnings">$0</div>
              </div>
           </div>
 
@@ -231,8 +250,8 @@
     <!-- Add Expense Modal -->
     <div class="modal-overlay hidden" id="expense-modal">
       <div class="modal-content animate-fade-in-up">
-        <h3 id="expense-title" style="margin-bottom: var(--space-xs); color: #ef4444;">Agregar Gasto del Día</h3>
-        <p class="text-secondary mb-md" style="font-size: 0.9rem;">Registra compras de combustible u otros gastos.</p>
+        <h3 id="expense-title" class="title-danger">Agregar Gasto del Día</h3>
+        <p class="text-secondary mb-md modal-subtitle">Registra compras de combustible u otros gastos.</p>
         <form id="expense-form" onsubmit="saveExpense(event)">
           <div class="form-group">
             <label class="form-label" for="exp-desc">Concepto (Ej. Combustible)</label>
@@ -242,9 +261,9 @@
             <label class="form-label" for="exp-price">Monto a Descontar ($)</label>
             <input class="form-input" type="number" id="exp-price" required placeholder="100" min="1" />
           </div>
-          <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg);">
+          <div class="modal-actions">
             <button type="button" class="btn btn-secondary btn-block" onclick="closeExpenseModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary btn-block" style="background: #ef4444;">Guardar Gasto</button>
+            <button type="submit" class="btn btn-primary btn-block btn-bg-danger">Guardar Gasto</button>
           </div>
         </form>
       </div>
@@ -253,8 +272,8 @@
     <!-- Add/Edit Trip Modal -->
     <div class="modal-overlay hidden" id="manual-trip-modal">
       <div class="modal-content animate-fade-in-up">
-        <h3 id="manual-trip-title" style="margin-bottom: var(--space-xs);">Agregar Viaje Manual</h3>
-        <p class="text-secondary mb-md" style="font-size: 0.9rem;">Registra un viaje que no entró por la app.</p>
+        <h3 id="manual-trip-title" class="title-primary">Agregar Viaje Manual</h3>
+        <p class="text-secondary mb-md modal-subtitle">Registra un viaje que no entró por la app.</p>
         <form id="manual-trip-form" onsubmit="saveManualTrip(event)">
           <input type="hidden" id="mt-id" />
           <div class="form-group">
@@ -265,17 +284,17 @@
             <label class="form-label" for="mt-addr">Dirección de Entrega</label>
             <input class="form-input" type="text" id="mt-addr" required placeholder="Ej. Cruz de Ayala" />
           </div>
-          <div class="form-group" style="display: flex; gap: var(--space-sm);">
-            <div style="flex:1;">
+          <div class="form-group form-group-row">
+            <div class="form-group-col">
               <label class="form-label" for="mt-price">Costo ($)</label>
               <input class="form-input" type="number" id="mt-price" required placeholder="40" min="0" />
             </div>
-            <div style="flex:1;">
+            <div class="form-group-col">
               <label class="form-label" for="mt-duration">Duración (Mins)</label>
               <input class="form-input" type="number" id="mt-duration" placeholder="15" min="0" />
             </div>
           </div>
-          <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg);">
+          <div class="modal-actions">
             <button type="button" class="btn btn-secondary btn-block" onclick="closeManualTripModal()">Cancelar</button>
             <button type="submit" class="btn btn-primary btn-block">Guardar</button>
           </div>
