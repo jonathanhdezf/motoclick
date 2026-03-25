@@ -203,6 +203,7 @@
             <h3 style="margin: 0;">📜 Tu Historial</h3>
             <div style="display: flex; gap: 10px; align-items: center;">
               <input type="date" id="history-date-filter" class="form-input" style="padding: 4px 8px; font-size: 0.9rem; width: auto;" onchange="renderHistory()">
+              <button class="btn btn-sm btn-outline" style="border-width:2px; font-weight:700; border-color: #ef4444; color: #ef4444;" onclick="openExpenseModal()">+ Gasto</button>
               <button class="btn btn-sm btn-outline" style="border-width:2px; font-weight:700;" onclick="openManualTripModal()">+ Viaje</button>
             </div>
           </div>
@@ -226,6 +227,28 @@
       </div>
     </div>
   </div>
+
+    <!-- Add Expense Modal -->
+    <div class="modal-overlay hidden" id="expense-modal">
+      <div class="modal-content animate-fade-in-up">
+        <h3 id="expense-title" style="margin-bottom: var(--space-xs); color: #ef4444;">Agregar Gasto del Día</h3>
+        <p class="text-secondary mb-md" style="font-size: 0.9rem;">Registra compras de combustible u otros gastos.</p>
+        <form id="expense-form" onsubmit="saveExpense(event)">
+          <div class="form-group">
+            <label class="form-label" for="exp-desc">Concepto (Ej. Combustible)</label>
+            <input class="form-input" type="text" id="exp-desc" required placeholder="Combustible" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp-price">Monto a Descontar ($)</label>
+            <input class="form-input" type="number" id="exp-price" required placeholder="100" min="1" />
+          </div>
+          <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg);">
+            <button type="button" class="btn btn-secondary btn-block" onclick="closeExpenseModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-block" style="background: #ef4444;">Guardar Gasto</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Add/Edit Trip Modal -->
     <div class="modal-overlay hidden" id="manual-trip-modal">
@@ -385,9 +408,14 @@
         
         // Sum Totals
         let sumEarnings = 0;
-        dateFiltered.forEach(o => { sumEarnings += (o.estimatedPriceMin || 0); });
+        let tripsCount = 0;
+        dateFiltered.forEach(o => { 
+           const p = Number(o.estimatedPriceMin) || 0;
+           sumEarnings += p; 
+           if (p >= 0) tripsCount++;
+        });
         
-        document.getElementById('total-trips').textContent = dateFiltered.length;
+        document.getElementById('total-trips').textContent = tripsCount;
         document.getElementById('total-earnings').textContent = `$${sumEarnings}`;
 
         if (dateFiltered.length === 0) {
@@ -406,11 +434,15 @@
             const desc = (order.description || '').substring(0, 50);
             const suffix = (order.description || '').length > 50 ? '...' : '';
             const addr = (order.deliveryAddress || 'Sin dirección').split(',')[0];
-            const price = order.estimatedPriceMin || 0;
+            const price = Number(order.estimatedPriceMin) || 0;
+            const isExpense = price < 0;
+            const priceStr = isExpense ? `-$${Math.abs(price)}` : `$${price}`;
+            const priceColor = isExpense ? '#ef4444' : '#22c55e';
+            
             return `
               <div class="history-item">
                 <div class="history-main" style="flex: 1;">
-                  <div class="history-info">${desc}${suffix}</div>
+                  <div class="history-info" style="${isExpense ? 'color:#ef4444;' : ''}">${desc}${suffix}</div>
                   <div class="history-meta">
                     <span>📅 ${timeAgo(order.createdAt)}</span>
                     <span>•</span>
@@ -419,9 +451,9 @@
                   </div>
                 </div>
                 <div class="history-actions" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                  <div class="history-price" style="margin-bottom: 2px;">$${price}</div>
+                  <div class="history-price" style="margin-bottom: 2px; color: ${priceColor};">${priceStr}</div>
                   <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 0.8rem; border-color: #6b7280; color: #9ca3af;" onclick="editManualTrip('${order.id}')" title="Editar">✏️</button>
+                    ${isExpense ? '' : `<button class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 0.8rem; border-color: #6b7280; color: #9ca3af;" onclick="editManualTrip('${order.id}')" title="Editar">✏️</button>`}
                     <button class="btn btn-sm btn-outline" style="padding: 4px 8px; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="deleteTrip('${order.id}')" title="Borrar">🗑️</button>
                   </div>
                 </div>
@@ -468,6 +500,42 @@
     function handleLogout() {
       store.logout();
       navigateTo('./');
+    }
+
+    // --- EXPENSES LOGIC --- //
+    function openExpenseModal() {
+      document.getElementById('expense-form').reset();
+      document.getElementById('expense-modal').classList.remove('hidden');
+    }
+
+    function closeExpenseModal() {
+      document.getElementById('expense-modal').classList.add('hidden');
+    }
+
+    async function saveExpense(e) {
+      e.preventDefault();
+      const desc = document.getElementById('exp-desc').value.trim();
+      const price = Number(document.getElementById('exp-price').value);
+      const submitBtn = e.target.querySelector('[type="submit"]');
+      submitBtn.disabled = true;
+
+      const now = new Date().toISOString();
+      await store.createCompletedOrder({
+        description: '[GASTO] ' + desc,
+        deliveryAddress: 'Gasto registrado',
+        pickupAddress: 'N/A',
+        estimatedPriceMin: -price,
+        estimatedPriceMax: -price,
+        driverId: user.id,
+        driverName: user.name,
+        acceptedAt: now,
+        deliveredAt: now,
+        status: 'entregado'
+      });
+      showToast('Gasto agregado exitosamente.', 'success');
+      closeExpenseModal();
+      submitBtn.disabled = false;
+      renderHistory();
     }
 
     // --- MANUAL TRIP LOGIC --- //
