@@ -300,12 +300,12 @@
       `).join('');
     }
 
-    function renderHistory() {
+    async function renderHistory() {
       const historyList = document.getElementById('history-list');
       if (!historyList) return;
 
       try {
-        const allMyOrders = store.getOrdersByDriver(user.id);
+        const allMyOrders = await store.getOrdersByDriver(user.id);
         const completed = allMyOrders.filter(o => o.status === 'entregado').reverse();
 
         if (completed.length === 0) {
