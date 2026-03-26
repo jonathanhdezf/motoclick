@@ -143,7 +143,7 @@ class MotoClickStore {
 
     let { data, error } = await this._sb.from('users').insert([payload]).select().single();
     
-    if (error && error.message && (error.message.includes('Could not find column') || error.message.includes('does not exist'))) {
+    if (error && (error.code === 'PGRST105' || (error.message && error.message.includes('pin') && error.message.includes('column')))) {
       // Intentar de nuevo sin PIN para no romper el registro si el DB schema aún no es actualizado
       delete payload.pin;
       const retry = await this._sb.from('users').insert([payload]).select().single();
