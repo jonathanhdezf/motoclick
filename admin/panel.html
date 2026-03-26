@@ -20,20 +20,30 @@
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-overlay.hidden { display: none; }
     .modal-content { background: var(--bg-secondary); padding: 2rem; border-radius: 8px; width: 90%; max-width: 400px; }
+    .header-wrapper { display: flex; justify-content: space-between; align-items: center; }
+    .card-subtitle { margin-bottom: 1rem; }
+    .table-responsive { overflow-x: auto; }
+    .text-center { text-align: center; }
+    .mt-0 { margin-top: 0; }
+    .sql-alert { background: rgba(239,68,68,0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; }
+    .sql-alert strong { color: #ef4444; }
+    .sql-code { display: block; background: #111; padding: 8px; margin-top: 8px; color: #22c55e; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+    .code-badge { background: rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; }
   </style>
 </head>
 <body>
   
-  <div style="display: flex; justify-content: space-between; align-items: center;">
+  <div class="header-wrapper">
     <h1>Modo Administrador 🛡️</h1>
     <button class="action-btn btn-warn" onclick="logoutAdmin()">Cerrar Sesión</button>
   </div>
 
   <div class="card">
     <h2>Gestión de Usuarios Activos</h2>
-    <p class="text-secondary" style="margin-bottom: 1rem;">Aquí puedes cambiar contraseñas y administrar clientes o repartidores.</p>
+    <p class="text-secondary card-subtitle">Aquí puedes cambiar contraseñas y administrar clientes o repartidores.</p>
     
-    <div style="overflow-x: auto;">
+    <div class="table-responsive">
       <table class="user-table">
         <thead>
           <tr>
@@ -45,7 +55,7 @@
           </tr>
         </thead>
         <tbody id="users-tbody">
-          <tr><td colspan="5" style="text-align:center;">Cargando usuarios...</td></tr>
+          <tr><td colspan="5" class="text-center">Cargando usuarios...</td></tr>
         </tbody>
       </table>
     </div>
@@ -54,15 +64,15 @@
   <!-- Modal para cambiar PIN -->
   <div id="pin-modal" class="modal-overlay hidden">
     <div class="modal-content animate-fade-in-up">
-      <h3 style="margin-top:0;">Cambiar Contraseña</h3>
+      <h3 class="mt-0">Cambiar Contraseña</h3>
       <p id="pin-modal-subtitle" class="text-secondary">Actualizando PIN de usuario</p>
       
-      <div id="sql-alert" class="hidden" style="background: rgba(239,68,68,0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
-        <strong style="color: #ef4444;">¡Paso importante!</strong> Para guardar nuevas contraseñas, debes habilitar la base de datos.<br><br>
+      <div id="sql-alert" class="sql-alert hidden">
+        <strong>¡Paso importante!</strong> Para guardar nuevas contraseñas, debes habilitar la base de datos.<br><br>
         1. Entra a tu proyecto en <b>Supabase</b>.<br>
         2. Ve al <b>SQL Editor</b>.<br>
         3. Copia y ejecuta este código exactamente así:<br>
-        <code style="display:block; background:#111; padding:8px; margin-top:8px; color:#22c55e;">ALTER TABLE users ADD COLUMN IF NOT EXISTS pin TEXT;</code><br>
+        <code class="sql-code">ALTER TABLE users ADD COLUMN IF NOT EXISTS pin TEXT;</code><br>
         4. Luego, cierra esta ventana e inténtalo de nuevo.
       </div>
 
@@ -72,7 +82,7 @@
           <label class="form-label" for="new-pin-input">Nuevo PIN</label>
           <input type="number" id="new-pin-input" class="form-input" placeholder="Ej. 1234" required>
         </div>
-        <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+        <div class="modal-actions">
           <button type="button" class="btn btn-secondary btn-block" onclick="closeModal()">Cancelar</button>
           <button type="submit" class="btn btn-primary btn-block">Guardar</button>
         </div>
@@ -97,7 +107,7 @@
       const tbody = document.getElementById('users-tbody');
       allUsers = await store.getAllUsers();
       if (allUsers.length === 0) {
-         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay usuarios registrados.</td></tr>';
+         tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados.</td></tr>';
          return;
       }
 
@@ -109,7 +119,7 @@
             <td>${u.name || 'Sin nombre'}</td>
             <td>${u.phone || 'S/N'}</td>
             <td>${badge}</td>
-            <td><code style="background: rgba(255,255,255,0.1); padding: 4px; border-radius: 4px;">${currentPin}</code></td>
+            <td><code class="code-badge">${currentPin}</code></td>
             <td>
               <button class="action-btn btn-edit" onclick="openPinModal('${u.id}', '${escapeHTML(u.name)}')">Cambiar PIN</button>
             </td>
