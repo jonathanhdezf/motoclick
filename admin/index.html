@@ -31,7 +31,7 @@
   <script src="../js/utils.js"></script>
   <script>
     if (localStorage.getItem('mc_admin_session') === 'true') {
-       window.location.href = 'panel.html';
+       window.location.replace('/admin/panel.html');
     }
 
     function handleAdminLogin(e) {
@@ -41,7 +41,7 @@
       if (pass === 'admin2026') {
          localStorage.setItem('mc_admin_session', 'true');
          showToast('Acceso concedido.', 'success');
-         setTimeout(() => { window.location.href = 'panel.html'; }, 600);
+         setTimeout(() => { window.location.replace('/admin/panel.html'); }, 600);
       } else {
          showToast('Contraseña incorrecta, acceso denegado.', 'error');
          e.target.password.value = '';
