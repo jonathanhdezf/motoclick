@@ -166,10 +166,11 @@
     .form-group-col { flex: 1; }
     .modal-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
     .btn-bg-danger { background: #ef4444; border-color: #ef4444; }
+    .fade-preloader { opacity: 0; transition: opacity 0.4s ease-out; }
   </style>
 </head>
-<body>
-  <div class="page-wrapper">
+<body class="fade-preloader" id="app-body">
+  <div class="page-wrapper preload">
     <!-- Navbar -->
     <nav class="navbar">
       <a href="../" class="navbar-brand">
@@ -319,8 +320,9 @@
       datePicker.max = todayString;
       datePicker.value = todayString;
 
-      loadOrders();
-      renderHistory();
+      Promise.all([loadOrders(), renderHistory()]).then(() => {
+        document.getElementById('app-body').style.opacity = '1';
+      });
 
       // Listen for new orders
       store.on('new_order', () => {
