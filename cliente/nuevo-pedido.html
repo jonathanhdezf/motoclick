@@ -394,10 +394,10 @@
       font-weight: 700;
       height: 54px;
     }
-
+    body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
   </style>
 </head>
-<body class="fade-preloader" id="app-body">
+<body id="app-body">
   <div class="page-wrapper">
     <!-- Navbar -->
     <nav class="navbar">
@@ -1094,7 +1094,8 @@
     document.addEventListener('DOMContentLoaded', () => {
       init();
       setTimeout(() => {
-        document.getElementById('app-body').style.opacity = '1';
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
       }, 150);
     });
 

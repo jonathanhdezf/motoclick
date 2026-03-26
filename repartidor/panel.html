@@ -166,11 +166,11 @@
     .form-group-col { flex: 1; }
     .modal-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
     .btn-bg-danger { background: #ef4444; border-color: #ef4444; }
-    .fade-preloader { opacity: 0; transition: opacity 0.4s ease-out; }
+    body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
   </style>
 </head>
-<body class="fade-preloader" id="app-body">
-  <div class="page-wrapper preload">
+<body id="app-body">
+  <div class="page-wrapper">
     <!-- Navbar -->
     <nav class="navbar">
       <a href="../" class="navbar-brand">
@@ -321,7 +321,8 @@
       datePicker.value = todayString;
 
       Promise.all([loadOrders(), renderHistory()]).then(() => {
-        document.getElementById('app-body').style.opacity = '1';
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
       });
 
       // Listen for new orders

@@ -50,7 +50,9 @@
     .modal-p { font-size: 0.9rem; }
     .modal-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
     .btn-whatsapp { background: #25D366; border-color: #25D366; color: white; }
+    body { opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
   </style>
+  <script>document.addEventListener("DOMContentLoaded", () => { setTimeout(() => { document.body.style.visibility='visible'; document.body.style.opacity='1'; }, 100); });</script>
 </head>
 <body>
   <div class="page-wrapper">
