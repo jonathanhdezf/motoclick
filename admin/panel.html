@@ -156,7 +156,7 @@
         loadUsers();
       } else {
         // Detect if Supabase threw column error
-        if (result.error && (result.error.includes('Could not find column') || result.error.includes('No se encontró'))) {
+        if (result.error && (result.error.includes('schema cache') || result.error.includes('Could not find') || result.error.includes('PGRST105'))) {
           document.getElementById('sql-alert').classList.remove('hidden');
         } else {
           showToast(result.error, 'error');
