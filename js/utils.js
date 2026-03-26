@@ -2,6 +2,32 @@
  * MotoClick — Utilidades compartidas
  */
 
+/* ── PWA & Service Worker Setup ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifest = document.createElement('link');
+      manifest.rel = 'manifest';
+      manifest.href = '/manifest.json';
+      document.head.appendChild(manifest);
+
+      const theme = document.createElement('meta');
+      theme.name = 'theme-color';
+      theme.content = '#1e293b';
+      document.head.appendChild(theme);
+      
+      const appleTouch = document.createElement('link');
+      appleTouch.rel = 'apple-touch-icon';
+      appleTouch.href = '/assets/logo.png';
+      document.head.appendChild(appleTouch);
+    }
+
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('MotoClick PWA Engine Active:', reg.scope))
+      .catch(err => console.error('PWA Engine Error:', err));
+  });
+}
+
 // ── Toast Notifications ──
 function showToast(message, type = 'info', duration = 3500) {
   let container = document.getElementById('toast-container');
