@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotoClick — Iniciar Sesión de Administrador</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    body { background: var(--bg-primary); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .admin-card { background: var(--bg-secondary); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+    .admin-card img { width: 150px; margin-bottom: 1.5rem; }
+    .admin-card h2 { margin-top: 0; color: #ef4444; margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="admin-card animate-fade-in-up">
+    <img src="../assets/logo.png" alt="MotoClick Logo">
+    <h2>Panel Administrativo</h2>
+    <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
+      <div class="form-group" style="text-align: left;">
+        <label class="form-label" for="admin-pass">Contraseña Maestra</label>
+        <input class="form-input" type="password" id="admin-pass" name="password" placeholder="Tu contraseña de administrador" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="background:#ef4444; border-color:#ef4444;">Acceder al Panel</button>
+      <div style="margin-top: 2rem;">
+        <a href="../" class="btn-sm btn-outline" style="text-decoration: none; padding: 6px 12px; border-radius: 8px;">← Regresar al Inicio</a>
+      </div>
+    </form>
+  </div>
+  
+  <script src="../js/utils.js"></script>
+  <script>
+    if (localStorage.getItem('mc_admin_session') === 'true') {
+       window.location.href = 'panel.html';
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const pass = e.target.password.value;
+      // Contraseña del administrador quemada localmente debido a infraestructura frontend
+      if (pass === 'admin2026') {
+         localStorage.setItem('mc_admin_session', 'true');
+         showToast('Acceso concedido.', 'success');
+         setTimeout(() => { window.location.href = 'panel.html'; }, 600);
+      } else {
+         showToast('Contraseña incorrecta, acceso denegado.', 'error');
+         e.target.password.value = '';
+      }
+    }
+  </script>
+</body>
+</html>

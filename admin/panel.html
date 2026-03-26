@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — MotoClick</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <style>
+    body { background: var(--bg-primary); padding: 2rem; max-width: 1000px; margin: auto; }
+    .card { background: var(--bg-secondary); padding: 2rem; border-radius: var(--radius-lg); margin-top: 1rem; }
+    .user-table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 1rem; }
+    .user-table th, .user-table td { padding: 12px; border-bottom: 1px solid var(--border-color); }
+    .badge-role { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+    .badge-client { background: #3b82f6; color: white; }
+    .badge-driver { background: #eab308; color: black; }
+    .action-btn { padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
+    .btn-edit { background: #10b981; color: white; }
+    .btn-warn { background: #ef4444; color: white; }
+    
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-overlay.hidden { display: none; }
+    .modal-content { background: var(--bg-secondary); padding: 2rem; border-radius: 8px; width: 90%; max-width: 400px; }
+  </style>
+</head>
+<body>
+  
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Modo Administrador 🛡️</h1>
+    <button class="action-btn btn-warn" onclick="logoutAdmin()">Cerrar Sesión</button>
+  </div>
+
+  <div class="card">
+    <h2>Gestión de Usuarios Activos</h2>
+    <p class="text-secondary" style="margin-bottom: 1rem;">Aquí puedes cambiar contraseñas y administrar clientes o repartidores.</p>
+    
+    <div style="overflow-x: auto;">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Rol</th>
+            <th>Contraseña (PIN)</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr><td colspan="5" style="text-align:center;">Cargando usuarios...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal para cambiar PIN -->
+  <div id="pin-modal" class="modal-overlay hidden">
+    <div class="modal-content animate-fade-in-up">
+      <h3 style="margin-top:0;">Cambiar Contraseña</h3>
+      <p id="pin-modal-subtitle" class="text-secondary">Actualizando PIN de usuario</p>
+      
+      <div id="sql-alert" class="hidden" style="background: rgba(239,68,68,0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
+        <strong style="color: #ef4444;">¡Paso importante!</strong> Para guardar nuevas contraseñas, debes habilitar la base de datos.<br><br>
+        1. Entra a tu proyecto en <b>Supabase</b>.<br>
+        2. Ve al <b>SQL Editor</b>.<br>
+        3. Copia y ejecuta este código exactamente así:<br>
+        <code style="display:block; background:#111; padding:8px; margin-top:8px; color:#22c55e;">ALTER TABLE users ADD COLUMN IF NOT EXISTS pin TEXT;</code><br>
+        4. Luego, cierra esta ventana e inténtalo de nuevo.
+      </div>
+
+      <form onsubmit="handleSavePin(event)">
+        <input type="hidden" id="edit-user-id">
+        <div class="form-group">
+          <label class="form-label" for="new-pin-input">Nuevo PIN</label>
+          <input type="number" id="new-pin-input" class="form-input" placeholder="Ej. 1234" required>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary btn-block" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/store.js"></script>
+
+  <script>
+    if (localStorage.getItem('mc_admin_session') !== 'true') {
+      window.location.href = 'index.html';
+    }
+
+    let allUsers = [];
+
+    async function loadUsers() {
+      const tbody = document.getElementById('users-tbody');
+      allUsers = await store.getAllUsers();
+      if (allUsers.length === 0) {
+         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay usuarios registrados.</td></tr>';
+         return;
+      }
+
+      tbody.innerHTML = allUsers.map(u => {
+        const badge = u.role === 'driver' ? '<span class="badge-role badge-driver">Repartidor</span>' : '<span class="badge-role badge-client">Cliente</span>';
+        const currentPin = u.pin ? `****${u.pin}` : `(Defecto) ****${(u.phone||'').slice(-4)}`;
+        return `
+          <tr>
+            <td>${u.name || 'Sin nombre'}</td>
+            <td>${u.phone || 'S/N'}</td>
+            <td>${badge}</td>
+            <td><code style="background: rgba(255,255,255,0.1); padding: 4px; border-radius: 4px;">${currentPin}</code></td>
+            <td>
+              <button class="action-btn btn-edit" onclick="openPinModal('${u.id}', '${escapeHTML(u.name)}')">Cambiar PIN</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openPinModal(id, name) {
+      document.getElementById('edit-user-id').value = id;
+      document.getElementById('pin-modal-subtitle').innerHTML = `Actualizando contraseña de <b>${name}</b>`;
+      document.getElementById('new-pin-input').value = '';
+      document.getElementById('sql-alert').classList.add('hidden');
+      document.getElementById('pin-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('pin-modal').classList.add('hidden');
+    }
+
+    async function handleSavePin(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-user-id').value;
+      const newPin = document.getElementById('new-pin-input').value;
+      const btn = e.target.querySelector('[type="submit"]');
+
+      btn.disabled = true; btn.textContent = 'Guardando...';
+      const result = await store.updateUser(id, { pin: newPin });
+      btn.disabled = false; btn.textContent = 'Guardar';
+
+      if (result.success) {
+        showToast('PIN actualizado correctamente.', 'success');
+        closeModal();
+        loadUsers();
+      } else {
+        // Detect if Supabase threw column error
+        if (result.error && (result.error.includes('Could not find column') || result.error.includes('No se encontró'))) {
+          document.getElementById('sql-alert').classList.remove('hidden');
+        } else {
+          showToast(result.error, 'error');
+        }
+      }
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem('mc_admin_session');
+      window.location.href = 'index.html';
+    }
+
+    function escapeHTML(str) {
+      return (str || '').replace(/[&<>'"]/g, tag => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', loadUsers);
+  </script>
+</body>
+</html>

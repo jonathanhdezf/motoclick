@@ -163,6 +163,12 @@ class MotoClickStore {
     return { success: true, user: data };
   }
 
+  async getAllUsers() {
+    if (this._useFallback) return JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+    const { data } = await this._sb.from('users').select('*').order('created_at', { ascending: false });
+    return data || [];
+  }
+
   async updateUser(id, updates) {
     if (this._useFallback) return this._fb_updateUser(id, updates);
     const { data, error } = await this._sb.from('users')
