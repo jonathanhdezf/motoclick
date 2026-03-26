@@ -111,6 +111,10 @@
               <input class="form-input" type="tel" id="reg-phone" name="phone" placeholder="Ej. 5512345678" maxlength="10">
               <span class="form-error"></span>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-pin">CREAR NIP DE SEGURIDAD (4 dígitos)</label>
+              <input class="form-input" type="password" inputmode="numeric" pattern="[0-9]*" id="reg-pin" name="pin" placeholder="Ej. 1234" maxlength="4" required>
+            </div>
             <button type="submit" class="btn btn-primary btn-block btn-lg mt-lg" id="register-submit">
               Crear Cuenta
             </button>
@@ -182,12 +186,20 @@
       e.preventDefault();
       const form = e.target;
       if (!validateForm(form, { name: { required: true, minLength: 2 }, phone: { required: true, phone: true } })) return;
+      
+      const pin = form.pin ? form.pin.value.trim() : null;
+      if (pin && pin.length !== 4) {
+          showToast('El NIP debe tener exactamente 4 dígitos', 'error');
+          return;
+      }
+
       const btn = document.getElementById('register-submit');
       btn.disabled = true; btn.textContent = 'Creando cuenta...';
       const result = await store.registerUser({
         name: form.name.value.trim(),
         phone: form.phone.value.trim(),
-        role: 'client'
+        role: 'client',
+        pin: pin
       });
       btn.disabled = false; btn.textContent = 'Crear Cuenta';
       if (result.success) {

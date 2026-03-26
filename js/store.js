@@ -134,10 +134,22 @@ class MotoClickStore {
   // ══════════════════════════════════════════════════════════════
   async registerUser(userData) {
     if (this._useFallback) return this._fb_registerUser(userData);
-    const { data, error } = await this._sb.from('users')
-      .insert([{ name: userData.name, phone: userData.phone, role: userData.role,
-                 vehicle: userData.vehicle || null, address: userData.address || null }])
-      .select().single();
+    
+    const payload = {
+      name: userData.name, phone: userData.phone, role: userData.role,
+      vehicle: userData.vehicle || null, address: userData.address || null
+    };
+    if (userData.pin) payload.pin = userData.pin;
+
+    let { data, error } = await this._sb.from('users').insert([payload]).select().single();
+    
+    if (error && error.message && (error.message.includes('Could not find column') || error.message.includes('does not exist'))) {
+      // Intentar de nuevo sin PIN para no romper el registro si el DB schema aún no es actualizado
+      delete payload.pin;
+      const retry = await this._sb.from('users').insert([payload]).select().single();
+      data = retry.data; error = retry.error;
+    }
+
     if (error) {
       const msg = error.code === '23505' ? 'Ya existe una cuenta con ese teléfono.' : (error.message || 'Error al registrar.');
       return { success: false, error: msg };
