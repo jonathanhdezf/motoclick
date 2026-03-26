@@ -152,8 +152,11 @@ class MotoClickStore {
       .select('*').eq('phone', phone).eq('role', role).maybeSingle();
     if (error || !data) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
     
-    if (role === 'driver' && pin) {
-      if (pin !== phone.slice(-4)) return { success: false, error: 'PIN incorrecto. Si deseas cambiarlo consulta con el administrador.' };
+    if (pin) {
+      const expectedPin = data.pin || phone.slice(-4);
+      if (pin !== expectedPin) {
+        return { success: false, error: 'Contraseña o PIN incorrecto. Intente de nuevo.' };
+      }
     }
 
     this.setCurrentUser(data);
@@ -355,8 +358,11 @@ class MotoClickStore {
     const user = users.find(u => u.phone === phone && u.role === role);
     if (!user) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
     
-    if (role === 'driver' && pin) {
-      if (pin !== phone.slice(-4)) return { success: false, error: 'PIN incorrecto. Si deseas cambiarlo consulta con el administrador.' };
+    if (pin) {
+      const expectedPin = user.pin || phone.slice(-4);
+      if (pin !== expectedPin) {
+        return { success: false, error: 'Contraseña o PIN incorrecto. Intente de nuevo.' };
+      }
     }
     
     this.setCurrentUser(user); return { success: true, user };

@@ -33,6 +33,16 @@
     }
     .tab-content { display: none; }
     .tab-content.active { display: block; animation: fadeIn var(--duration-normal) var(--ease-out); }
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999;
+      display: flex; align-items: center; justify-content: center; 
+      -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-content {
+      background: var(--bg-secondary); border-radius: var(--radius-md);
+      padding: var(--space-xl); width: 90%; max-width: 400px;
+    }
   </style>
 </head>
 <body>
@@ -75,7 +85,14 @@
               <input class="form-input" type="tel" id="login-phone" name="phone" placeholder="Ej. 5512345678" maxlength="10">
               <span class="form-error"></span>
             </div>
-            <button type="submit" class="btn btn-primary btn-block btn-lg mt-lg" id="login-submit">
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label class="form-label" for="login-pin">NIP de Seguridad (4 dígitos)</label>
+              <input class="form-input" type="password" inputmode="numeric" pattern="[0-9]*" id="login-pin" name="pin" placeholder="Ingresa tu NIP" maxlength="4" required>
+            </div>
+            <div style="text-align: right; margin-bottom: 24px;">
+              <a href="#" onclick="document.getElementById('forgot-pin-modal').classList.remove('hidden'); return false;" style="font-size: 0.85rem; color: var(--text-muted); text-decoration: underline;">¿Olvidaste tu contraseña?</a>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-submit">
               Iniciar Sesión
             </button>
           </form>
@@ -103,6 +120,28 @@
     </div>
   </div>
 
+  <!-- Forgot PIN Modal -->
+  <div class="modal-overlay hidden" id="forgot-pin-modal">
+    <div class="modal-content animate-fade-in-up">
+      <h3 style="margin-bottom: var(--space-xs); color: var(--text-primary);">Recuperar Contraseña</h3>
+      <p class="text-secondary mb-md" style="font-size: 0.9rem;">Enviaremos tu solicitud por WhatsApp al administrador para cambiar tu NIP.</p>
+      <form onsubmit="sendPinRecoverWhatsApp(event)">
+        <div class="form-group">
+          <label class="form-label" for="recover-phone">Tu Número Registrado</label>
+          <input class="form-input" type="tel" id="recover-phone" required placeholder="Ej. 5512345678" maxlength="10" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="recover-new-pin">Nueva Contraseña Deseada</label>
+          <input class="form-input" type="number" id="recover-new-pin" required placeholder="Ej. 1234" min="1000" max="9999" />
+        </div>
+        <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg);">
+          <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('forgot-pin-modal').classList.add('hidden')">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-block" style="background: #25D366; border-color: #25D366; color: white;">Pedir Cambio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
@@ -124,9 +163,12 @@
       e.preventDefault();
       const form = e.target;
       if (!validateForm(form, { phone: { required: true, phone: true } })) return;
+      
+      const pin = form.pin ? form.pin.value.trim() : null;
+
       const btn = document.getElementById('login-submit');
       btn.disabled = true; btn.textContent = 'Verificando...';
-      const result = await store.loginUser(form.phone.value.trim(), 'client');
+      const result = await store.loginUser(form.phone.value.trim(), 'client', pin);
       btn.disabled = false; btn.textContent = 'Iniciar Sesión';
       if (result.success) {
         showToast('¡Bienvenido de vuelta! 🎉', 'success');
@@ -154,6 +196,20 @@
       } else {
         showToast(result.error, 'error');
       }
+    }
+
+    function sendPinRecoverWhatsApp(e) {
+      e.preventDefault();
+      const phone = document.getElementById('recover-phone').value.trim();
+      const newPin = document.getElementById('recover-new-pin').value.trim();
+      if (!phone || !newPin) return;
+      
+      const adminPhone = "2331072438"; // MotoClick General Contact
+      const text = `Hola, olvidé la contraseña de mi cuenta de cliente en MotoClick.%0A%0A*📱 Mi celular registrado:* ${phone}%0A*🔐 Nueva contraseña deseada:* ${newPin}%0A%0A¿Podrían actualizarla por favor?`;
+      const url = `https://wa.me/${adminPhone}?text=${text}`;
+      
+      window.open(url, '_blank');
+      document.getElementById('forgot-pin-modal').classList.add('hidden');
     }
   </script>
 </body>
