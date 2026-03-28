@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.motoclick.twa",
+        "sha256_cert_fingerprints": ["39:97:27:52:EA:8E:EF:5A:9B:C9:AB:43:DE:AB:B6:56:0B:D0:62:47:2B:0F:25:3A:04:F6:D0:04:60:D9:3D:01"]
+      }
+    }]
