@@ -277,6 +277,16 @@ function openProfileModal() {
   const user = window.store.getCurrentUser();
   if (!user) return;
 
+  window._tempFavoriteAddresses = Array.isArray(user.favorite_addresses) ? [...user.favorite_addresses] : [];
+  if (window._tempFavoriteAddresses.length === 0 && user.address) {
+    window._tempFavoriteAddresses.push({
+      id: 'addr_migrated',
+      name: 'Domicilio Particular',
+      address: user.address,
+      coords: null
+    });
+  }
+
   let modal = document.getElementById('profile-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -285,9 +295,12 @@ function openProfileModal() {
     
     // Different fields based on role
     const extraField = user.role === 'client' 
-      ? `<div class="form-group">
-           <label class="form-label">Dirección (Opcional)</label>
-           <input type="text" id="profile-address" class="form-input" value="${user.address || ''}" placeholder="Ej. Av. Siempre Viva 123">
+      ? `<div class="form-group mb-0">
+           <label class="form-label">Mis Direcciones Favoritas</label>
+           <div id="favorite-addresses-container" style="display: flex; flex-direction: column; gap: var(--space-sm); margin-bottom: var(--space-md); max-height: 200px; overflow-y: auto; padding-right: 5px;"></div>
+           <button type="button" class="btn btn-sm btn-outline btn-block" style="border-style: dashed; border-color: var(--primary-500); color: var(--primary-500);" onclick="openAddressMapPicker()">
+              <i class="fas fa-map-marker-alt"></i> Agregar nueva dirección con mapa
+           </button>
          </div>`
       : `<div class="form-group" style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
            <label class="form-label" style="text-align: left;">Foto de perfil</label>
@@ -334,7 +347,195 @@ function openProfileModal() {
     document.body.appendChild(modal);
     window._tempProfilePhoto = null;
   }
+  
+  // Render favorites if it's client
+  if (user.role === 'client') {
+    window.renderFavoriteAddresses();
+  }
 }
+
+// ── Profile Addresses & Map Picker ──
+window.renderFavoriteAddresses = function() {
+  const container = document.getElementById('favorite-addresses-container');
+  if (!container) return;
+  
+  if (!window._tempFavoriteAddresses || window._tempFavoriteAddresses.length === 0) {
+    container.innerHTML = '<p class="text-secondary fs-xs text-center" style="margin: 10px 0;">No tienes direcciones guardadas.</p>';
+    return;
+  }
+  
+  container.innerHTML = window._tempFavoriteAddresses.map((addr, index) => `
+    <div class="favorite-address-card" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-tertiary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+      <div style="flex: 1; overflow: hidden;">
+        <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 2px;"><i class="fas fa-home text-accent"></i> ${addr.name}</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 95%;">${addr.address}</div>
+      </div>
+      <button type="button" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; padding: 8px 12px; border-radius: 8px; margin-left: 10px;" onclick="removeFavoriteAddress(${index})" title="Eliminar dirección">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  `).join('');
+};
+
+window.removeFavoriteAddress = function(index) {
+  window._tempFavoriteAddresses.splice(index, 1);
+  window.renderFavoriteAddresses();
+};
+
+let currentProfileCoords = null;
+let currentProfileAddressStr = '';
+
+window.openAddressMapPicker = function() {
+  if (typeof google === 'undefined') {
+    showToast('Error cargando Google Maps. Revisa tu conexión de red.', 'error');
+    return;
+  }
+  
+  let mapModal = document.getElementById('profile-map-modal');
+  if (!mapModal) {
+    mapModal = document.createElement('div');
+    mapModal.id = 'profile-map-modal';
+    mapModal.className = 'modal-overlay animate-fade-in';
+    mapModal.style.zIndex = '1001'; // Above profile modal
+    mapModal.style.alignItems = 'flex-start';
+    mapModal.style.paddingTop = '10vh';
+    
+    mapModal.innerHTML = `
+      <div class="modal-content card-glass" style="max-width: 500px; width: 90%; padding: 0; overflow: hidden;">
+        <div class="modal-header" style="padding: var(--space-md);">
+          <h3 style="margin: 0; font-size: 1.2rem;">📍 Ubicar Dirección</h3>
+          <button class="modal-close" type="button" onclick="document.getElementById('profile-map-modal').style.display='none'">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="padding: 0 var(--space-md);">
+             <label class="form-label" style="font-size: 0.8rem;">Nombre (Ej. Casa, Trabajo, Novia)</label>
+             <input type="text" id="profile-addr-name" class="form-input" placeholder="Nombre para recordar la dirección">
+             <label class="form-label mt-sm" style="font-size: 0.8rem;">Buscar dirección o mover en el mapa</label>
+             <input type="text" id="profile-addr-search" class="form-input" placeholder="Buscar calles o colonias...">
+          </div>
+          <div id="profile-picker-map" style="width: 100%; height: 250px; background: #0a0f1a; margin-top: var(--space-md);"></div>
+          <div style="padding: var(--space-md);">
+             <div id="profile-map-status" class="text-secondary" style="font-size: 0.8rem; margin-bottom: var(--space-sm); min-height: 38px;">Mueve el mapa para seleccionar la ubicación exacta.</div>
+             <button type="button" class="btn btn-primary btn-block" onclick="confirmProfileAddress()">
+                ✔ Guardar Dirección
+             </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(mapModal);
+  }
+  
+  mapModal.style.display = 'flex';
+  document.getElementById('profile-addr-name').value = '';
+  document.getElementById('profile-addr-search').value = '';
+  document.getElementById('profile-map-status').innerHTML = 'Mueve el mapa para seleccionar la ubicación exacta.';
+  currentProfileCoords = null; currentProfileAddressStr = '';
+
+  const initialPos = { lat: 19.8166, lng: -97.3596 }; // Teziutlan
+
+  if (!window._profileMap) {
+    window._profileGeocoder = new google.maps.Geocoder();
+    window._profileMap = new google.maps.Map(document.getElementById('profile-picker-map'), {
+      center: initialPos, zoom: 16,
+      mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
+      styles: [
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+      ]
+    });
+
+    window._profileMarker = new google.maps.Marker({
+      position: initialPos, map: window._profileMap, draggable: true,
+      animation: google.maps.Animation.DROP,
+    });
+
+    window._profileMap.addListener('click', (e) => {
+      window._profileMarker.setPosition(e.latLng);
+      _updateProfileAddressFromMap(e.latLng);
+    });
+
+    window._profileMarker.addListener('dragend', () => {
+      _updateProfileAddressFromMap(window._profileMarker.getPosition());
+    });
+
+    const autocomplete = new google.maps.places.Autocomplete(document.getElementById('profile-addr-search'), {
+      componentRestrictions: { country: "mx" },
+      fields: ["formatted_address", "geometry", "name"]
+    });
+
+    autocomplete.addListener('place_changed', () => {
+      const p = autocomplete.getPlace();
+      if (p.geometry && p.geometry.location) {
+         window._profileMap.setCenter(p.geometry.location);
+         window._profileMap.setZoom(17);
+         window._profileMarker.setPosition(p.geometry.location);
+         currentProfileCoords = [p.geometry.location.lat(), p.geometry.location.lng()];
+         currentProfileAddressStr = p.formatted_address || p.name;
+         document.getElementById('profile-addr-search').value = currentProfileAddressStr;
+         document.getElementById('profile-map-status').innerHTML = `<strong class="text-accent">Dirección:</strong> ${currentProfileAddressStr}`;
+      }
+    });
+  }
+
+  // Request location
+  if (navigator.geolocation && !currentProfileCoords) {
+     navigator.geolocation.getCurrentPosition(
+       pos => {
+         const p = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+         window._profileMap.setCenter(p);
+         window._profileMarker.setPosition(p);
+         _updateProfileAddressFromMap(new google.maps.LatLng(p.lat, p.lng));
+       },
+       () => {}
+     );
+  }
+
+  setTimeout(() => { if (window._profileMap) google.maps.event.trigger(window._profileMap, 'resize'); }, 150);
+};
+
+window._updateProfileAddressFromMap = function(latLngObj) {
+  currentProfileCoords = [latLngObj.lat(), latLngObj.lng()];
+  const textEl = document.getElementById('profile-map-status');
+  textEl.innerHTML = '<span class="text-muted">Obteniendo dirección exacta...</span>';
+  
+  if (window._profileGeocoder) {
+    window._profileGeocoder.geocode({ location: latLngObj }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        currentProfileAddressStr = results[0].formatted_address;
+        textEl.innerHTML = `<strong class="text-accent">Dirección:</strong> ${currentProfileAddressStr}`;
+      } else {
+        currentProfileAddressStr = 'Ubicación seleccionada en el mapa';
+        textEl.innerHTML = `<strong class="text-accent">Dirección:</strong> ${currentProfileAddressStr}`;
+      }
+    });
+  }
+};
+
+window.confirmProfileAddress = function() {
+  const name = document.getElementById('profile-addr-name').value.trim();
+  const addr = (document.getElementById('profile-addr-search').value.trim() !== '') ? document.getElementById('profile-addr-search').value.trim() : currentProfileAddressStr;
+  
+  if (!name || (!addr && addr !== 'Ubicación seleccionada en el mapa' && currentProfileAddressStr === '')) {
+    showToast('Ingresa un nombre para tu dirección (ej. Casa) y ubica el lugar en el mapa.', 'warning');
+    return;
+  }
+  
+  window._tempFavoriteAddresses.push({
+    id: 'addr_' + Date.now(),
+    name: name,
+    address: addr || currentProfileAddressStr,
+    coords: currentProfileCoords
+  });
+  
+  window.renderFavoriteAddresses();
+  document.getElementById('profile-map-modal').style.display = 'none';
+  showToast('Dirección añadida exitosamente', 'success');
+};
 
 window.handlePhotoUpload = function(event) {
   const file = event.target.files[0];
@@ -383,7 +584,7 @@ function compressImage(src, maxWidth, maxHeight, quality, callback) {
   img.onerror = () => callback(src);
 }
 
-window.saveProfileChanges = function() {
+window.saveProfileChanges = async function() {
   const user = window.store.getCurrentUser();
   if (!user) return;
 
@@ -399,13 +600,32 @@ window.saveProfileChanges = function() {
   }
   
   if (user.role === 'client') {
-    updates.address = document.getElementById('profile-address').value.trim();
+    updates.favorite_addresses = window._tempFavoriteAddresses;
+    // Keep backward compat with single string address
+    if (window._tempFavoriteAddresses.length > 0) {
+      updates.address = window._tempFavoriteAddresses[0].address;
+    } else {
+      updates.address = '';
+    }
   } else {
     updates.vehicle = document.getElementById('profile-vehicle').value;
   }
 
-  const result = window.store.updateUser(user.id, updates);
-  if (result.success) {
+  // Deshabilitar botón mientras guarda
+  const saveBtn = document.querySelector('#profile-modal .btn-primary');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando...';
+  }
+
+  const result = await window.store.updateUser(user.id, updates);
+  
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Guardar Cambios';
+  }
+
+  if (result && result.success) {
     showToast('Perfil actualizado correctamente', 'success');
     document.getElementById('profile-modal').remove();
     
@@ -415,6 +635,6 @@ window.saveProfileChanges = function() {
       userNameEl.textContent = result.user.name;
     }
   } else {
-    showToast('Error al actualizar el perfil', 'error');
+    showToast(result?.error || 'Error al actualizar el perfil', 'error');
   }
 }
