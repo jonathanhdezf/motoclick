@@ -161,6 +161,45 @@
       .menu-toggle { display: block; }
     }
 
+    /* ── Play Store Banner ── */
+    .playstore-banner {
+      background: linear-gradient(135deg, rgba(10, 15, 26, 0.4), rgba(249, 115, 22, 0.05));
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 2rem;
+      padding: var(--space-2xl);
+      text-align: center;
+      margin-bottom: var(--space-4xl);
+    }
+    .playstore-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: var(--space-sm);
+      color: var(--text-primary);
+    }
+    .playstore-desc {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      max-width: 500px;
+      margin: 0 auto var(--space-lg);
+    }
+    .playstore-badge-placeholder {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 24px;
+      background: #000;
+      color: #fff;
+      border-radius: 12px;
+      border: 1px solid #333;
+      text-decoration: none;
+      text-align: left;
+      transition: transform 0.2s ease;
+    }
+    .playstore-badge-placeholder:hover { transform: scale(1.05); }
+    .playstore-badge-placeholder i { font-size: 1.6rem; color: #3DDC84; }
+    .playstore-badge-text span { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
+    .playstore-badge-text b { display: block; font-size: 1rem; line-height: 1.1; }
+
 
     .role-card {
       cursor: pointer;
@@ -711,6 +750,23 @@
           <a href="#" class="btn btn-primary whatsapp-btn">
             👉 Pedir Cotización por WhatsApp
           </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Play Store Coming Soon -->
+    <section class="container animate-fade-in-up stagger-4">
+      <div class="playstore-banner">
+        <h2 class="playstore-title">¡Próximamente en Android!</h2>
+        <p class="playstore-desc">
+          Estamos trabajando para llevar la experiencia de MotoClick directamente a tu celular a través de la Google Play Store.
+        </p>
+        <div class="playstore-badge-placeholder">
+          <i class="fab fa-google-play"></i>
+          <div class="playstore-badge-text">
+            <span>DISPONIBLE PRÓXIMAMENTE EN</span>
+            <b>Google Play</b>
+          </div>
         </div>
       </div>
     </section>
