@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Adquiere la tecnología detrás de MotoClick. Soluciones de software para logística y mensajería express.">
+  <title>Adquirir Software — MotoClick</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" type="image/png" href="assets/logo-moto.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .solution-hero {
+      padding: var(--space-4xl) 0 var(--space-3xl);
+      text-align: center;
+      background: radial-gradient(circle at top center, rgba(249,115,22,0.08) 0%, transparent 70%);
+    }
+    .solution-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 999px;
+      padding: 8px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-xl);
+    }
+    .solution-title {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: var(--space-lg);
+      letter-spacing: -0.02em;
+    }
+    .solution-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto var(--space-2xl);
+      line-height: 1.6;
+    }
+
+    /* Modules Grid */
+    .modules-section { padding: var(--space-3xl) 0; }
+    .module-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      padding: var(--space-2xl);
+      border-radius: 2rem;
+      transition: all 0.3s ease;
+      height: 100%;
+    }
+    .module-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--color-primary);
+      transform: translateY(-5px);
+    }
+    .module-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-lg);
+      display: inline-block;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .module-title { font-size: 1.5rem; margin-bottom: var(--space-md); font-weight: 800; }
+    .module-desc { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; }
+    .module-tag-delivery { color: var(--color-primary); margin-bottom: 10px; }
+    .module-tag-control { color: #22c55e; margin-bottom: 10px; }
+
+    /* Pricing section */
+    .pricing-grid { margin-top: var(--space-3xl); }
+    .price-card {
+      background: var(--gradient-card);
+      border: 1px solid var(--border-color);
+      padding: var(--space-3xl);
+      border-radius: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+    .price-card.featured {
+      border-color: var(--color-primary);
+      box-shadow: 0 20px 40px rgba(249, 115, 22, 0.1);
+    }
+    .price-featured-badge { position: absolute; top: 20px; right: 20px; }
+    .price-tag { font-size: 2.5rem; font-weight: 900; color: var(--text-primary); }
+    .price-duration { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
+    
+    .feature-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+    .feature-item { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: var(--text-secondary); }
+    .feature-item i { color: #22c55e; font-size: 0.9rem; }
+
+    .cta-container {
+      margin-top: var(--space-4xl);
+      padding: var(--space-3xl);
+      background: var(--gradient-primary);
+      border-radius: 3rem;
+      text-align: center;
+      color: white;
+    }
+    .cta-container h2 { font-size: 2.5rem; font-weight: 900; margin-bottom: var(--space-md); }
+    .cta-container p { font-size: 1.1rem; opacity: 0.9; margin-bottom: var(--space-2xl); }
+    .cta-btn-white {
+      background: white;
+      color: var(--color-primary);
+      padding: 18px 40px;
+      border-radius: 999px;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s ease;
+    }
+    .cta-btn-white:hover { transform: scale(1.05); }
+
+    .solution-footer-spacer { margin-top: var(--space-4xl); }
+    .hero-subtitle-p { max-width: 700px; margin: 0 auto var(--space-2xl); }
+
+    @media (max-width: 768px) {
+        .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <a href="index.html">
+          <img src="./assets/logo.png" alt="MotoClick Logo" class="brand-logo">
+        </a>
+      </div>
+      <div class="navbar-actions">
+        <a href="index.html" class="nav-login-btn">
+          <i class="fas fa-arrow-left"></i>
+          <span class="btn-text">Volver</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="solution-hero">
+      <div class="container">
+        <div class="solution-badge">✨ Software Enterprise</div>
+        <h1 class="solution-title">Tu Propia App de <span class="text-gradient">Logística Express</span></h1>
+        <p class="solution-subtitle hero-subtitle-p">
+          Adquiere la tecnología que impulsa a MotoClick. Una plataforma integral, escalable y lista para dominar el mercado de envíos en tu ciudad.
+        </p>
+        <div class="flex-center">
+            <a href="#contacto" class="btn btn-primary btn-xl">Solicitar Demo Gratis</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content -->
+    <div class="container">
+      
+      <!-- Modules -->
+      <section class="modules-section">
+        <div class="text-center mb-3xl">
+            <h2 class="section-title">Ecosistema Completo</h2>
+            <p class="text-secondary">Tres aplicaciones trabajando en sincronía total para tu éxito.</p>
+        </div>
+        <div class="grid-3">
+          <div class="module-card animate-fade-in-up">
+            <i class="fas fa-mobile-alt module-icon"></i>
+            <h3 class="module-title">App Clientes</h3>
+            <p class="module-desc">Registro, solicitud de mandados, pasarela de pagos y rastreo GPS en tiempo real con notificaciones push.</p>
+          </div>
+          <div class="module-card animate-fade-in-up tech-card-2">
+            <i class="fas fa-motorcycle module-icon"></i>
+            <h3 class="module-title">App Repartidores</h3>
+            <h6 class="module-tag-delivery">Gestión de Órdenes</h6>
+            <p class="module-desc">Recepción de pedidos por cercanía, navegación con mapas y control de ganancias diarias.</p>
+          </div>
+          <div class="module-card animate-fade-in-up tech-card-3">
+            <i class="fas fa-shield-alt module-icon"></i>
+            <h3 class="module-title">Panel Admin</h3>
+            <h6 class="module-tag-control">Control Total</h6>
+            <p class="module-desc">Gestión de usuarios, monitoreo de flota en vivo, configuración de tarifas y reportes financieros avanzados.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing -->
+      <section class="modules-section">
+        <div class="text-center mb-3xl">
+            <h2 class="section-title">Modelos de Inversión</h2>
+            <p class="text-secondary">Elige el plan que mejor se adapte a tu etapa de crecimiento.</p>
+        </div>
+        <div class="grid-2 pricing-grid">
+          <!-- Model 1 -->
+          <div class="price-card animate-fade-in-up">
+            <h3 class="module-title">Despliegue + Renta</h3>
+            <div class="price-tag">$4,500 <span class="price-duration">MXN / mes</span></div>
+            <p class="text-muted">Ideal para iniciar sin grandes inversiones iniciales.</p>
+            <ul class="feature-list">
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Dominio y Hosting incluido</li>
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Soporte técnico 24/7</li>
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Actualizaciones automáticas</li>
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Configuración inicial gratuita</li>
+            </ul>
+          </div>
+
+          <!-- Model 2 -->
+          <div class="price-card featured animate-fade-in-up tech-card-2">
+            <div class="solution-badge price-featured-badge">Recomendado</div>
+            <h3 class="module-title">Licencia Vitalicia</h3>
+            <div class="price-tag">$18,000 <span class="price-duration">MXN (Pago único)</span></div>
+            <p class="text-muted">La propiedad total del software para tu empresa.</p>
+            <ul class="feature-list">
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Propiedad del código fuente</li>
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Personalización total de marca</li>
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Sin mensualidades obligatorias</li>
+              <li class="feature-item"><i class="fas fa-check-circle"></i> Instalación en tus propios servidores</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section id="contacto" class="cta-container animate-fade-in-up">
+        <h2>¿Listo para transformar tu negocio?</h2>
+        <p>Hablemos sobre cómo MotoClick puede ayudarte a escalar tus operaciones.</p>
+        <a href="#" class="cta-btn-white whatsapp-btn">
+          <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+        </a>
+      </section>
+
+    </div>
+
+    <!-- Footer Space -->
+    <div class="solution-footer-spacer"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p class="footer-copy">&copy; 2026 MotoClick &mdash; Todos los derechos reservados. Teziutlán, Puebla.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /* WhatsApp buttons logic */
+    document.querySelectorAll('.whatsapp-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const phone = "522331072438";
+        const text = `Hola! 👋\nMe interesa el software de MotoClick.\n\nQuiero recibir más información sobre los planes de licencia y despliegue.`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+      });
+    });
+  </script>
+</body>
+</html>
