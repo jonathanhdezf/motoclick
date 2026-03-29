@@ -464,9 +464,24 @@ window.openAddressMapPicker = function() {
     });
 
     const autocomplete = new google.maps.places.Autocomplete(document.getElementById('profile-addr-search'), {
+      bounds: {
+        north: 19.8500,
+        south: 19.7800,
+        east: -97.3200,
+        west: -97.4000,
+      },
+      strictBounds: false,
       componentRestrictions: { country: "mx" },
       fields: ["formatted_address", "geometry", "name"]
     });
+
+    // Autocomplete dropdown is hidden behind modal due to z-index. Fix:
+    if (!document.getElementById('pac-container-fix')) {
+      const style = document.createElement('style');
+      style.id = 'pac-container-fix';
+      style.innerHTML = '.pac-container { z-index: 99999 !important; }';
+      document.head.appendChild(style);
+    }
 
     autocomplete.addListener('place_changed', () => {
       const p = autocomplete.getPlace();
