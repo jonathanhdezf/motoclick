@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tecnologías y APIs que impulsan MotoClick — Conoce cómo construimos nuestra plataforma.">
+  <title>Tecnologías y APIs — MotoClick</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" type="image/png" href="assets/logo-moto.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .legal-hero {
+      padding: var(--space-3xl) 0 var(--space-2xl);
+      text-align: center;
+    }
+    .legal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(249,115,22,0.12);
+      color: var(--color-primary, #f97316);
+      border: 1px solid rgba(249,115,22,0.25);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-lg);
+    }
+    .legal-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: var(--space-lg);
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s ease;
+      margin-bottom: var(--space-2xl);
+    }
+    .back-link:hover { color: var(--color-primary, #f97316); }
+    .back-link svg { transition: transform 0.2s ease; }
+    .back-link:hover svg { transform: translateX(-3px); }
+
+    .tech-body {
+        max-width: 900px;
+        margin: 0 auto;
+        padding-bottom: var(--space-3xl);
+    }
+    .footer {
+      padding: var(--space-xl) 0;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+    }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    @media (max-width: 640px) {
+      .tech-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 0 1rem;
+      }
+    }
+    .tech-header-p {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .tech-card-2 {
+      animation-delay: 0.1s;
+    }
+    .tech-card-3 {
+      animation-delay: 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <a href="index.html">
+          <img src="./assets/logo.png" alt="MotoClick Logo" class="brand-logo">
+        </a>
+      </div>
+      <div class="navbar-actions">
+        <a href="./cliente/" class="nav-login-btn">
+          <i class="fas fa-user-circle"></i>
+          <span class="btn-text">Soy Cliente</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="legal-hero">
+        <a href="index.html" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Volver al inicio
+        </a>
+        <div class="legal-badge">🛠️ Innovación</div>
+        <h1 class="legal-title">Nuestras <span class="text-gradient">Tecnologías y APIs</span></h1>
+        <p class="text-secondary tech-header-p">Plataforma robusta diseñada con herramientas líderes en la industria para garantizar funcionalidad y escalabilidad.</p>
+      </div>
+
+      <div class="tech-body">
+         <section class="tech-section">
+            <div class="grid-3 tech-grid">
+              <div class="card tech-card animate-fade-in-up">
+                <div class="tech-icon-wrapper google"><span class="tech-emoji">🗺️</span></div>
+                <h3 class="tech-title">Google Maps Platform</h3>
+                <p class="tech-desc">Integrado con <strong>Maps JavaScript API</strong>, <strong>Places API</strong> y <strong>Directions API</strong>.</p>
+              </div>
+              <div class="card tech-card animate-fade-in-up tech-card-2">
+                <div class="tech-icon-wrapper html5"><span class="tech-emoji">🌐</span></div>
+                <h3 class="tech-title">Pila Web Moderna</h3>
+                <p class="tech-desc">Construido con <strong class="color-html5">HTML5</strong>, <strong class="color-css3">CSS3</strong> y <strong class="color-js">JavaScript Vanilla</strong> (ES6+).</p>
+              </div>
+              <div class="card tech-card animate-fade-in-up tech-card-3">
+                <div class="tech-icon-wrapper geolocation"><span class="tech-emoji">📡</span></div>
+                <h3 class="tech-title">Geolocalización Nativa</h3>
+                <p class="tech-desc">Consumo directo de la <strong class="color-primary">Browser Geolocation API</strong> para alta eficiencia.</p>
+              </div>
+            </div>
+         </section>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p class="footer-copy">&copy; 2026 MotoClick &mdash; Todos los derechos reservados. Teziutlán, Puebla.</p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
