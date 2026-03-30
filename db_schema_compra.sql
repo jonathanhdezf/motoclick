@@ -19,7 +19,8 @@ CREATE TABLE public.catalogo_maestro (
 ALTER TABLE public.orders 
 ADD COLUMN IF NOT EXISTS subtotal_compra NUMERIC(10, 2) DEFAULT 0.00,
 ADD COLUMN IF NOT EXISTS nombre_comercio_local VARCHAR(255),
-ADD COLUMN IF NOT EXISTS lat_lng_compra POINT,
+ADD COLUMN IF NOT EXISTS lat_compra NUMERIC(10, 6),
+ADD COLUMN IF NOT EXISTS lng_compra NUMERIC(10, 6),
 ADD COLUMN IF NOT EXISTS estado_ticket VARCHAR(50) DEFAULT 'pendiente'; -- pendiente, armando, consolidado
 
 -- 3. Tabla: ticket_detalle
