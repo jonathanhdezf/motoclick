@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MotoClick — Módulo de Compra Activa para Repartidores.">
+  <title>MotoClick — Compra Activa</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      /* High contrast variables specifically for this module */
+      --module-bg: #0f172a;
+      --module-surface: #1e293b;
+      --module-accent: #f97316;
+      --module-text: #ffffff;
+    }
+    body {
+      background-color: var(--module-bg);
+      color: var(--module-text);
+      overscroll-behavior-y: none;
+    }
+    
+    /* Layout */
+    .compra-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .compra-header {
+      padding: 15px 20px;
+      background: var(--module-surface);
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .back-btn {
+      color: var(--module-text);
+      font-size: 1.5rem;
+      text-decoration: none;
+      padding: 10px;
+      margin: -10px; /* Expand touch area */
+    }
+
+    /* Scanner Area */
+    .scanner-section {
+      position: relative;
+      flex-shrink: 0;
+      background: #000;
+      height: 250px;
+      overflow: hidden;
+    }
+    #reader {
+      width: 100%;
+      height: 100%;
+    }
+    #reader video {
+      object-fit: cover !important;
+    }
+    
+    /* Manual Add Button */
+    .btn-manual-add {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      background: var(--module-accent);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 24px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Target Scanner Overlay */
+    .scan-target {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 100px;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      pointer-events: none;
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.5);
+      z-index: 5;
+    }
+    .scan-line {
+      width: 100%;
+      height: 2px;
+      background: #3b82f6;
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: scan 2s linear infinite;
+    }
+    @keyframes scan {
+      0% { top: 0; }
+      50% { top: 100%; }
+      100% { top: 0; }
+    }
+
+    /* Ticket Area */
+    .ticket-section {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: var(--module-bg);
+    }
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #3b82f6;
+    }
+
+    .ticket-item {
+      background: var(--module-surface);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .ticket-item-details h4 {
+      margin: 0 0 5px 0;
+      font-size: 1.1rem;
+    }
+    .ticket-item-code {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .ticket-item-price {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #22c55e;
+    }
+
+    /* Bottom Summary */
+    .summary-section {
+      padding: 20px;
+      background: var(--module-surface);
+      border-top: 2px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 15px;
+    }
+    .total-label {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .total-amount {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #22c55e;
+    }
+    
+    .btn-finish {
+      width: 100%;
+      padding: 18px;
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    /* Modal Styles */
+    .high-contrast-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .high-contrast-modal.active {
+      display: flex;
+    }
+    .modal-card {
+      background: var(--module-surface);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      width: 100%;
+      padding: 25px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+    
+    .input-huge {
+      width: 100%;
+      background: #000;
+      border: 2px solid var(--border-color);
+      color: #fff;
+      padding: 18px;
+      font-size: 1.3rem;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    .input-huge:focus {
+      border-color: var(--module-accent);
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 15px;
+    }
+    .modal-actions .btn {
+      flex: 1;
+      padding: 18px;
+      font-size: 1.2rem;
+    }
+    
+    .header-text { flex: 1; }
+    .header-title { margin:0; font-size: 1.2rem; }
+    .header-subtitle { color: var(--text-muted); font-size: 0.85rem; }
+    .header-icon { font-size: 1.5rem; color: #3b82f6; }
+    
+    .modal-title-comercio { font-size: 1.5rem; margin-bottom: 10px; }
+    .modal-subtitle-comercio { color: var(--text-muted); margin-bottom: 20px; }
+    .btn-comercio { padding: 18px; font-size: 1.2rem; }
+    
+    .modal-title-item { font-size: 1.5rem; margin-bottom: 20px; }
+    .label-price { font-weight: 700; color: #22c55e; font-size: 1.1rem; display: block; margin-bottom: 8px; }
+    .input-price { border-color: #22c55e; font-weight: 800; }
+    .btn-cancel { border-color: #64748b; color: #94a3b8; }
+    
+    /* Toast override for visibility */
+    .toast-container { z-index: 99999 !important; }
+  </style>
+</head>
+<body>
+  
+  <div class="compra-layout">
+    
+    <!-- Top Bar -->
+    <header class="compra-header">
+      <a href="javascript:history.back()" class="back-btn" aria-label="Volver"><i class="fas fa-arrow-left"></i></a>
+      <div class="header-text">
+        <h2 class="header-title">Armando Pedido</h2>
+        <span class="header-subtitle" id="order-id-display">Orden: ...</span>
+      </div>
+      <div>
+        <i class="fas fa-receipt header-icon"></i>
+      </div>
+    </header>
+
+    <!-- Scanner Area -->
+    <section class="scanner-section">
+      <div id="reader"></div>
+      <div class="scan-target">
+        <div class="scan-line"></div>
+      </div>
+      <button class="btn-manual-add" onclick="openManualModal()">
+        <i class="fas fa-plus"></i> Manual
+      </button>
+    </section>
+
+    <!-- Ticket Details -->
+    <section class="ticket-section">
+      <div class="ticket-header">
+        <span>Ticket Virtual</span>
+        <span id="items-count">0 arts</span>
+      </div>
+      
+      <div id="ticket-list">
+        <!-- Ticket items injected here -->
+      </div>
+    </section>
+
+    <!-- Total Summary -->
+    <section class="summary-section">
+      <div class="total-row">
+        <span class="total-label">Subtotal:</span>
+        <span class="total-amount" id="total-amount">$0.00</span>
+      </div>
+      <button class="btn btn-primary btn-finish" onclick="finishPurchase()">
+        Finalizar Compra
+      </button>
+    </section>
+
+  </div>
+
+  <!-- Modal: Initial BI (Commerce Name) -->
+  <div class="high-contrast-modal" id="modal-comercio">
+    <div class="modal-card">
+      <h2 class="modal-title-comercio">Comercio / Tienda</h2>
+      <p class="modal-subtitle-comercio">¿En dónde estás comprando?</p>
+      
+      <input type="text" id="comercio-input" class="input-huge" placeholder="Ej. Abarrotes Lupita, Taquería Chava..." autocomplete="off">
+      
+      <button class="btn btn-primary btn-block btn-comercio" onclick="startPurchaseSession()">
+        <i class="fas fa-play"></i> Comenzar a Escanear
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Manual Entry & Scanned Price Entry -->
+  <div class="high-contrast-modal" id="modal-item">
+    <div class="modal-card">
+      <h2 class="modal-title-item" id="item-modal-title">Agregar Producto</h2>
+      
+      <!-- Auto-filled by scanner or manual -->
+      <input type="text" id="item-name" class="input-huge" placeholder="Descripción del producto (obligatorio)" autocomplete="off">
+      
+      <!-- Critical: Autofocus numerical input for price -->
+      <label class="label-price">Precio de compra ($)</label>
+      <input type="number" id="item-price" class="input-huge input-price" placeholder="0.00" step="0.50" min="0" inputmode="decimal">
+      
+      <input type="hidden" id="item-code">
+      
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-cancel" onclick="closeItemModal()">Cancelar</button>
+        <button class="btn btn-success" onclick="saveItemToTicket()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
+  
+  <script>
+    // --- Configuration & State ---
+    const user = requireAuth('driver');
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('id');
+    
+    let commerceName = '';
+    let locationCaptured = null;
+    let html5QrcodeScanner = null;
+    let ticketItems = [];
+    
+    // Limits based on rules
+    const MAX_OUT_OF_POCKET = 500.00; 
+
+    // --- Initialization ---
+    async function init() {
+      if (!orderId) {
+        showToast('ID de orden no proporcionado', 'error');
+        setTimeout(() => window.history.back(), 1500);
+        return;
+      }
+      
+      document.getElementById('order-id-display').textContent = `Orden: ${orderId.split('-')[0].toUpperCase()}`;
+      
+      // Load current ticket if exists
+      await loadTicketData();
+      
+      // If no commerce name registered yet for this session, ask for it
+      if (ticketItems.length === 0) {
+        document.getElementById('modal-comercio').classList.add('active');
+        document.getElementById('comercio-input').focus();
+      } else {
+        initScanner();
+      }
+      
+      // Subscribe to real-time changes if another device modifies the ticket (optional redundancy)
+      // supabase.channel('ticket-updates').on('postgres_changes', ... ).subscribe();
+    }
+
+    // --- BI & Geolocation ---
+    function startPurchaseSession() {
+      const input = document.getElementById('comercio-input');
+      commerceName = input.value.trim();
+      
+      if (!commerceName) {
+        // Haptic feedback & shake
+        if (navigator.vibrate) navigator.vibrate(200);
+        input.style.borderColor = '#ef4444';
+        return;
+      }
+      
+      document.getElementById('modal-comercio').classList.remove('active');
+      initScanner();
+      captureLocationQuietly();
+    }
+    
+    function captureLocationQuietly() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          locationCaptured = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+        }, (error) => {
+          console.warn('No se pudo obtener ubicación BI:', error);
+        }, { enableHighAccuracy: true, timeout: 5000 });
+      }
+    }
+
+    // --- Scanner Implementation ---
+    function initScanner() {
+      // Configuration tailored for fast mobile scanning
+      const config = { 
+        fps: 10, 
+        qrbox: { width: 250, height: 150 },
+        aspectRatio: 1.0,
+        disableFlip: false,
+        formatsToSupport: [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A ]
+      };
+      
+      html5QrcodeScanner = new Html5Qrcode("reader");
+      
+      // Attempt to use back camera specifically
+      html5QrcodeScanner.start(
+        { facingMode: "environment" }, 
+        config, 
+        onScanSuccess, 
+        onScanFailure
+      ).catch(err => {
+        console.error("Error al iniciar escáner", err);
+        showToast("No se pudo acceder a la cámara", "error");
+      });
+    }
+
+    async function onScanSuccess(decodedText, decodedResult) {
+      if (document.getElementById('modal-item').classList.contains('active')) return;
+      
+      // Successful scan haptic response
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      
+      // Pause scanner while price is entered
+      if (html5QrcodeScanner) html5QrcodeScanner.pause();
+      
+      // Database check (Mocking catalog query for now, replace with actual Supabase RPC/Select later)
+      const productoName = await queryCatalog(decodedText);
+      
+      openItemModal(decodedText, productoName);
+    }
+    
+    function onScanFailure(error) {
+       // Silently fail continuous scanning until item found
+    }
+
+    // --- UI Modals ---
+    async function queryCatalog(codigo) {
+      try {
+        const { data, error } = await supabase
+          .from('catalogo_maestro')
+          .select('nombre, marca')
+          .eq('codigo_barras', codigo)
+          .single();
+          
+        if (data) {
+          return `${data.nombre} ${data.marca ? '- ' + data.marca : ''}`;
+        }
+      } catch (e) { console.warn(e); }
+      return ''; // No name found, let driver input it
+    }
+
+    function openManualModal() {
+      // Pause scanner when modal is open
+      if (html5QrcodeScanner && html5QrcodeScanner.getState() === 2) {
+        html5QrcodeScanner.pause();
+      }
+      
+      // Generate standard PLU for manual items
+      const plu = '20' + Date.now().toString().slice(-10);
+      openItemModal(plu, '');
+    }
+
+    function openItemModal(code, nameStr) {
+      document.getElementById('modal-item').classList.add('active');
+      document.getElementById('item-code').value = code;
+      
+      const nameInput = document.getElementById('item-name');
+      const priceInput = document.getElementById('item-price');
+      
+      nameInput.value = nameStr || '';
+      priceInput.value = '';
+      
+      // UX Critical: Determine which field needs focus
+      setTimeout(() => {
+        if (!nameStr) {
+          nameInput.focus();
+        } else {
+          // If name is found in catalog, directly numeric keypad for price focus
+          priceInput.focus();
+        }
+      }, 100);
+    }
+
+    function closeItemModal() {
+      document.getElementById('modal-item').classList.remove('active');
+      if (html5QrcodeScanner && html5QrcodeScanner.getState() === 3) { // 3 = paused
+        html5QrcodeScanner.resume();
+      }
+    }
+
+    // --- Ticket Logic & Supabase real-time ---
+    async function saveItemToTicket() {
+      const name = document.getElementById('item-name').value.trim();
+      const code = document.getElementById('item-code').value;
+      const price = parseFloat(document.getElementById('item-price').value);
+      
+      if (!name || isNaN(price) || price <= 0) {
+        if (navigator.vibrate) navigator.vibrate(300);
+        showToast('Ingresa descripción y precio válido', 'error');
+        return;
+      }
+      
+      // Calculate current total + new item
+      const currentTotal = ticketItems.reduce((acc, current) => acc + current.precio_unitario, 0);
+      if (currentTotal + price > MAX_OUT_OF_POCKET) {
+         if (navigator.vibrate) navigator.vibrate([150, 50, 150, 50, 150]);
+         showToast(`¡ALERTA! El total superaría el límite máximo de $${MAX_OUT_OF_POCKET} autorizado de tu bolsillo.`, 'error');
+         return;
+      }
+
+      // Add to UI optimistically
+      const item = {
+         id_orden: orderId,
+         codigo_producto: code,
+         descripcion: name,
+         precio_unitario: price,
+         cantidad: 1
+      };
+      
+      closeItemModal();
+      
+      try {
+        // Insert into Supabase
+        const { data, error } = await supabase
+          .from('ticket_detalle')
+          .insert([item])
+          .select()
+          .single();
+          
+        if (error) throw error;
+        
+        ticketItems.push(data);
+        renderTicket();
+        showToast('Agregado', 'success');
+        
+        // Save BI info on first item added if commerce known
+        if (ticketItems.length === 1 && commerceName) {
+           saveCommerceProspect();
+        }
+        
+      } catch (err) {
+        console.error(err);
+        showToast('Error al guardar, reintenta', 'error');
+      }
+    }
+
+    async function loadTicketData() {
+       try {
+          const { data, error } = await supabase
+            .from('ticket_detalle')
+            .select('*')
+            .eq('id_orden', orderId)
+            .order('creado_en', { ascending: true });
+            
+          if (data) {
+             ticketItems = data;
+             renderTicket();
+          }
+       } catch (err) {
+          console.error("Error loading ticket", err);
+       }
+    }
+
+    function renderTicket() {
+       const list = document.getElementById('ticket-list');
+       const count = document.getElementById('items-count');
+       const totalEl = document.getElementById('total-amount');
+       
+       let html = '';
+       let total = 0;
+       
+       ticketItems.forEach(item => {
+          total += item.precio_unitario * item.cantidad;
+          html += `
+             <div class="ticket-item">
+               <div class="ticket-item-details">
+                 <h4>${item.descripcion}</h4>
+                 <div class="ticket-item-code">Cód: ${item.codigo_producto}</div>
+               </div>
+               <div class="ticket-item-price">
+                 $${item.precio_unitario.toFixed(2)}
+               </div>
+             </div>
+          `;
+       });
+       
+       list.innerHTML = html;
+       count.textContent = `${ticketItems.length} arts`;
+       totalEl.textContent = `$${total.toFixed(2)}`;
+    }
+
+    // --- BI Gathering ---
+    async function saveCommerceProspect() {
+       if (!commerceName) return;
+       
+       const subtotal = ticketItems.reduce((acc, curr) => acc + curr.precio_unitario, 0);
+       
+       try {
+          await supabase.from('comercios_prospectos').insert([{
+             id_orden: orderId,
+             nombre_comercio: commerceName,
+             lat: locationCaptured ? locationCaptured.lat : 0,
+             lng: locationCaptured ? locationCaptured.lng : 0,
+             ticket_promedio: subtotal,
+             id_repartidor: user ? user.id : null
+          }]);
+          
+          // Also update main order 
+          await supabase.from('orders').update({
+             nombre_comercio_local: commerceName,
+             estado_ticket: 'armando'
+          }).eq('id', orderId);
+          
+       } catch (e) { console.warn("Error BI saving", e); }
+    }
+
+    // --- Finalization ---
+    async function finishPurchase() {
+       if (ticketItems.length === 0) {
+          showToast('No hay artículos en el ticket', 'warning');
+          return;
+       }
+       
+       // Update final BI and order status
+       const finalTotal = ticketItems.reduce((acc, curr) => acc + curr.precio_unitario, 0);
+       
+       try {
+          // Trigger handled the subtotal real-time update in DB, we just update status here if needed
+          await supabase.from('orders').update({
+             estado_ticket: 'consolidado'
+          }).eq('id', orderId);
+          
+          showToast('Compra registrada exitosamente', 'success');
+          
+          // Cleanup scanner
+          if (html5QrcodeScanner) {
+             html5QrcodeScanner.clear().catch(e => console.error(e));
+          }
+          
+          setTimeout(() => {
+             window.location.href = `entrega.html?id=${orderId}`;
+          }, 1500);
+          
+       } catch (error) {
+          showToast('Hubo un problema al finalizar', 'error');
+       }
+    }
+
+    // Run
+    init();
+  </script>
+</body>
+</html>
