@@ -208,31 +208,36 @@ class MotoClickStore {
   // ══════════════════════════════════════════════════════════════
   async getOrders() {
     if (this._useFallback) return this._fb_getOrders();
-    const { data } = await this._sb.from('orders').select('*').order('created_at', { ascending: false });
+    const { data, error } = await this._sb.from('orders').select('*').order('created_at', { ascending: false });
+    if (error) console.error('[Store] getOrders Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
 
   async getOrderById(id) {
     if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
-    const { data } = await this._sb.from('orders').select('*').eq('id', id).maybeSingle();
+    const { data, error } = await this._sb.from('orders').select('*').eq('id', id).maybeSingle();
+    if (error) console.error('[Store] getOrderById Error:', error);
     return this._fromDB(data);
   }
 
   async getOrdersByClient(clientId) {
     if (this._useFallback) return this._fb_getOrders().filter(o => o.clientId === clientId);
-    const { data } = await this._sb.from('orders').select('*').eq('client_id', clientId).order('created_at', { ascending: false });
+    const { data, error } = await this._sb.from('orders').select('*').eq('client_id', clientId).order('created_at', { ascending: false });
+    if (error) console.error('[Store] getOrdersByClient Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
 
   async getOrdersByDriver(driverId) {
     if (this._useFallback) return this._fb_getOrders().filter(o => o.driverId === driverId);
-    const { data } = await this._sb.from('orders').select('*').eq('driver_id', driverId).order('created_at', { ascending: false });
+    const { data, error } = await this._sb.from('orders').select('*').eq('driver_id', driverId).order('created_at', { ascending: false });
+    if (error) console.error('[Store] getOrdersByDriver Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
 
   async getPendingOrders() {
     if (this._useFallback) return this._fb_getOrders().filter(o => o.status === 'pending');
-    const { data } = await this._sb.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: true });
+    const { data, error } = await this._sb.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: true });
+    if (error) console.error('[Store] getPendingOrders Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
 
@@ -240,10 +245,11 @@ class MotoClickStore {
     if (this._useFallback) {
       return this._fb_getOrders().find(o => o.driverId === driverId && o.status !== 'entregado' && o.status !== 'pending') || null;
     }
-    const { data } = await this._sb.from('orders').select('*')
+    const { data, error } = await this._sb.from('orders').select('*')
       .eq('driver_id', driverId)
       .not('status', 'in', '("pending","entregado")')
       .maybeSingle();
+    if (error) console.error('[Store] getActiveOrder Error:', error);
     return this._fromDB(data);
   }
 
