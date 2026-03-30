@@ -320,17 +320,22 @@
       `;
     }
 
-    function renderMap(order) {
-      if (!order.pickupCoords || !order.deliveryCoords) return;
+    const DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 }; // Teziutlán
 
+    function renderMap(order) {
+      // Always initialize the map, even without coords
       if (!map) {
+        const center = (order.pickupCoords)
+          ? { lat: order.pickupCoords[0], lng: order.pickupCoords[1] }
+          : DEFAULT_CENTER;
+
         map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 14,
+          center: center,
+          zoom: order.pickupCoords ? 14 : 13,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
           styles: [
-            // Dark mode
             { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
             { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
             { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
@@ -342,18 +347,20 @@
             { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
           ]
         });
-        
+      }
+
+      // Only draw markers and route when both coordinates are real
+      if (order.pickupCoords && order.deliveryCoords && !pickupMarker) {
         const pickupLatLng = { lat: order.pickupCoords[0], lng: order.pickupCoords[1] };
         const deliveryLatLng = { lat: order.deliveryCoords[0], lng: order.deliveryCoords[1] };
 
-        // Create custom markers using info windows or labels if needed, simple marker for now
         pickupMarker = new google.maps.Marker({
           position: pickupLatLng,
           map: map,
           title: 'Recolección: ' + order.pickupAddress,
           label: '📍'
         });
-        
+
         deliveryMarker = new google.maps.Marker({
           position: deliveryLatLng,
           map: map,
@@ -361,7 +368,6 @@
           label: '🏠'
         });
 
-        // Draw basic polyline (since tracking is simulated right now)
         routeLine = new google.maps.Polyline({
           path: [pickupLatLng, deliveryLatLng],
           geodesic: true,
@@ -371,13 +377,10 @@
           map: map
         });
 
-        // Fit bounds
         const bounds = new google.maps.LatLngBounds();
         bounds.extend(pickupLatLng);
         bounds.extend(deliveryLatLng);
         map.fitBounds(bounds);
-        // Optional padding
-        // map.panToBounds(bounds, { top: 50, bottom: 50, left: 50, right: 50 });
       }
 
       if (order.driverLocation) {

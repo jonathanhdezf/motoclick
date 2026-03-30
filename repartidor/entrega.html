@@ -480,17 +480,21 @@
       `;
     }
 
-    function renderMap(order) {
-      if (!order.pickupCoords || !order.deliveryCoords) return;
+    const DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 }; // Teziutlán
 
+    function renderMap(order) {
       if (!map) {
+        const center = order.pickupCoords
+          ? { lat: order.pickupCoords[0], lng: order.pickupCoords[1] }
+          : DEFAULT_CENTER;
+
         map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 14,
+          center: center,
+          zoom: order.pickupCoords ? 14 : 13,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
           styles: [
-            // Dark mode
             { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
             { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
             { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
@@ -502,7 +506,10 @@
             { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
           ]
         });
+      }
 
+      // Only draw markers when real coordinates exist
+      if (order.pickupCoords && order.deliveryCoords && !pickupMarker) {
         const pickupLatLng = { lat: order.pickupCoords[0], lng: order.pickupCoords[1] };
         const deliveryLatLng = { lat: order.deliveryCoords[0], lng: order.deliveryCoords[1] };
 
@@ -512,7 +519,7 @@
           title: 'Recolección: ' + order.pickupAddress,
           label: '📍'
         });
-        
+
         deliveryMarker = new google.maps.Marker({
           position: deliveryLatLng,
           map: map,
@@ -529,12 +536,11 @@
           map: map
         });
 
-        // Start driver near pickup
         const driverStart = {
           lat: order.pickupCoords[0] + (Math.random() - 0.5) * 0.008,
           lng: order.pickupCoords[1] + (Math.random() - 0.5) * 0.008
         };
-        
+
         driverMarker = new google.maps.Marker({
           position: driverStart,
           map: map,

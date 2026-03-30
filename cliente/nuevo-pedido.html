@@ -660,6 +660,19 @@
       });
       if (!valid) return;
 
+      // Validar que ambas ubicaciones fueron seleccionadas en el mapa
+      if (!currentCoords.pickup) {
+        showToast('📍 Debes marcar la dirección de RECOLECCIÓN en el mapa antes de continuar.', 'error');
+        // Highlight the pickup map picker link
+        document.querySelector('[onclick="openMapPicker(\'pickup\')"]').style.color = '#ef4444';
+        return;
+      }
+      if (!currentCoords.delivery) {
+        showToast('📍 Debes marcar la dirección de ENTREGA en el mapa antes de continuar.', 'error');
+        document.querySelector('[onclick="openMapPicker(\'delivery\')"]').style.color = '#ef4444';
+        return;
+      }
+
       const submitBtn = form.querySelector('[type="submit"]');
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Enviando...'; }
 
