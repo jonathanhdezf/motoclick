@@ -62,8 +62,14 @@ ALTER TABLE public.ticket_detalle ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comercios_prospectos ENABLE ROW LEVEL SECURITY;
 
 -- Políticas permisivas (ajustar en producción según autenticación)
+DROP POLICY IF EXISTS "Lectura pública catalogo_maestro" ON public.catalogo_maestro;
 CREATE POLICY "Lectura pública catalogo_maestro" ON public.catalogo_maestro FOR SELECT USING (true);
+
+
+DROP POLICY IF EXISTS "Repartidores pueden leer/escribir ticket_detalle" ON public.ticket_detalle;
 CREATE POLICY "Repartidores pueden leer/escribir ticket_detalle" ON public.ticket_detalle FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "Repartidores pueden insertar prospectos" ON public.comercios_prospectos;
 CREATE POLICY "Repartidores pueden insertar prospectos" ON public.comercios_prospectos FOR INSERT WITH CHECK (true);
 
 -- ==============================================================================
