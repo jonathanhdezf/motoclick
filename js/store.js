@@ -248,9 +248,10 @@ class MotoClickStore {
     const { data, error } = await this._sb.from('orders').select('*')
       .eq('driver_id', driverId)
       .not('status', 'in', '("pending","entregado")')
-      .maybeSingle();
+      .order('created_at', { ascending: false })
+      .limit(1);
     if (error) console.error('[Store] getActiveOrder Error:', error);
-    return this._fromDB(data);
+    return data && data.length > 0 ? this._fromDB(data[0]) : null;
   }
 
   async createOrder(orderData) {
