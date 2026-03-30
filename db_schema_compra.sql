@@ -4,7 +4,7 @@
 
 -- 1. Tabla: catalogo_maestro
 -- Propósito: Base de datos global de productos por código de barras (EAN-13, UPC).
-CREATE TABLE public.catalogo_maestro (
+CREATE TABLE IF NOT EXISTS public.catalogo_maestro (
     codigo_barras VARCHAR(50) PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
     marca VARCHAR(100),
@@ -25,7 +25,7 @@ ADD COLUMN IF NOT EXISTS estado_ticket VARCHAR(50) DEFAULT 'pendiente'; -- pendi
 
 -- 3. Tabla: ticket_detalle
 -- Propósito: Líneas del ticket de la compra que está realizando el repartidor.
-CREATE TABLE public.ticket_detalle (
+CREATE TABLE IF NOT EXISTS public.ticket_detalle (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     id_orden TEXT REFERENCES public.orders(id) ON DELETE CASCADE,
     codigo_producto VARCHAR(50), -- Puede ser código de barras EAN o el prefijo '20' para manuales
@@ -40,7 +40,7 @@ CREATE INDEX IF NOT EXISTS idx_ticket_detalle_orden ON public.ticket_detalle(id_
 
 -- 4. Tabla: comercios_prospectos (Business Intelligence)
 -- Propósito: Recolectar inteligencia de los comercios donde compran los repartidores (no afiliados aún).
-CREATE TABLE public.comercios_prospectos (
+CREATE TABLE IF NOT EXISTS public.comercios_prospectos (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     id_orden TEXT REFERENCES public.orders(id) ON DELETE SET NULL,
     nombre_comercio VARCHAR(255) NOT NULL,
