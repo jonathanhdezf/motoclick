@@ -5,123 +5,246 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard — MotoClick</title>
   <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    body { background: var(--bg-primary); padding: 2rem; max-width: 1000px; margin: auto; }
-    .card { background: var(--bg-secondary); padding: 2rem; border-radius: var(--radius-lg); margin-top: 1rem; }
-    .user-table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 1rem; }
-    .user-table th, .user-table td { padding: 12px; border-bottom: 1px solid var(--border-color); }
-    .badge-role { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-    .badge-client { background: #3b82f6; color: white; }
-    .badge-driver { background: #eab308; color: black; }
-    .action-btn { padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
-    .btn-edit { background: #10b981; color: white; }
-    .btn-warn { background: #ef4444; color: white; }
+    :root {
+      --sidebar-width: 260px;
+      --header-height: 70px;
+    }
     
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-overlay.hidden { display: none; }
-    .modal-content { background: var(--bg-secondary); padding: 2rem; border-radius: 8px; width: 90%; max-width: 400px; }
-    .header-wrapper { display: flex; justify-content: space-between; align-items: center; }
-    .card-subtitle { margin-bottom: 1rem; }
+    body { 
+      background: #0a0f1a; 
+      color: #e2e8f0;
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: #111827;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0;
+    }
+    .sidebar-brand {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar-brand img { height: 32px; }
+    .sidebar-nav {
+      padding: 1.5rem;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 1rem;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(249, 115, 22, 0.1);
+      color: var(--color-primary);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .top-header {
+      height: var(--header-height);
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0; z-index: 10;
+    }
+
+    .card { 
+      background: #1e293b; 
+      padding: 2rem; 
+      border-radius: var(--radius-lg); 
+      margin-bottom: 2rem; 
+      border: 1px solid rgba(255,255,255,0.05); 
+    }
+    .card-subtitle { margin-bottom: 1.5rem; color: #94a3b8; }
+    
+    .user-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .user-table th, .user-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .user-table th { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .badge-role { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+    .badge-client { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .badge-driver { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+    
+    .action-btn { padding: 8px 16px; font-size: 0.85rem; border-radius: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); font-weight: 600; background: rgba(255,255,255,0.05); color: white; transition: all 0.2s; }
+    .action-btn:hover { background: var(--color-primary); border-color: var(--color-primary); }
+    .btn-warn { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+    .btn-warn:hover { background: #ef4444; color: white; border-color: #ef4444; }
+    
+    .modal-overlay { 
+      position: fixed; inset: 0; 
+      background: rgba(0,0,0,0.8); 
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center; z-index: 1000; 
+    }
+    .modal-content { 
+      background: #1e293b; 
+      padding: 2.5rem; 
+      border-radius: 24px; 
+      width: 90%; max-width: 440px; 
+      border: 1px solid rgba(255,255,255,0.1); 
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    
     .table-responsive { overflow-x: auto; }
     .text-center { text-align: center; }
     .mt-0 { margin-top: 0; }
-    .sql-alert { background: rgba(239,68,68,0.1); border: 1px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; }
+    
+    .sql-alert { background: rgba(239,68,68,0.1); border: 1px solid #ef4444; padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.85rem; }
     .sql-alert strong { color: #ef4444; }
-    .sql-code { display: block; background: #111; padding: 8px; margin-top: 8px; color: #22c55e; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
-    .code-badge { background: rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; }
+    .sql-code { display: block; background: #111; padding: 12px; margin-top: 10px; color: #22c55e; border-radius: 8px; font-family: monospace; }
+    
+    .modal-actions { display: flex; gap: 12px; margin-top: 2rem; }
+    .code-badge { background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; color: var(--color-primary); font-family: monospace; }
   </style>
 </head>
 <body>
   
-  <div class="header-wrapper">
-    <h1>Modo Administrador 🛡️</h1>
-    <button class="action-btn btn-warn" onclick="logoutAdmin()">Cerrar Sesión</button>
-  </div>
-
-  <div class="card">
-    <h2>Gestión de Usuarios Activos</h2>
-    <p class="text-secondary card-subtitle">Aquí puedes cambiar contraseñas y administrar clientes o repartidores.</p>
-    
-    <div class="table-responsive">
-      <table class="user-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Teléfono</th>
-            <th>Rol</th>
-            <th>Contraseña (PIN)</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="users-tbody">
-          <tr><td colspan="5" class="text-center">Cargando usuarios...</td></tr>
-        </tbody>
-      </table>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo.png" alt="Logo">
+      <span>MotoClick</span>
     </div>
-  </div>
+    <nav class="sidebar-nav">
+      <a href="panel.html" class="nav-item active">
+        <i class="fas fa-users"></i> Usuarios
+      </a>
+      <a href="logistica.html" class="nav-item">
+        <i class="fas fa-truck"></i> Logística
+      </a>
+      <a href="../" class="nav-item">
+        <i class="fas fa-arrow-left"></i> Salir al Sitio
+      </a>
+    </nav>
+  </aside>
 
-  <!-- Modal para cambiar PIN -->
-  <div id="pin-modal" class="modal-overlay hidden">
-    <div class="modal-content animate-fade-in-up">
-      <h3 class="mt-0">Cambiar Contraseña</h3>
-      <p id="pin-modal-subtitle" class="text-secondary">Actualizando PIN de usuario</p>
+  <main class="main-content">
+    <header class="top-header">
+      <h2>🛡️ Centro de Control</h2>
+      <div class="header-actions">
+        <button class="action-btn btn-warn" onclick="logoutAdmin()">Finalizar Sesión</button>
+      </div>
+    </header>
+
+    <div style="padding: 2rem;">
+      <div class="card animate-fade-in">
+        <h2>Usuarios del Sistema</h2>
+        <p class="card-subtitle">Gestiona perfiles, roles y recupera accesos de clientes y repartidores.</p>
+        
+        <div class="table-responsive">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Rol</th>
+                <th>Contraseña (PIN)</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="5" class="text-center">Sincronizando con Supabase...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="pin-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 class="mt-0">Actualizar Credenciales</h3>
+      <p id="pin-modal-subtitle" class="card-subtitle">Asignando nuevo PIN de acceso</p>
       
       <div id="sql-alert" class="sql-alert hidden">
-        <strong>¡Paso importante!</strong> Para guardar nuevas contraseñas, debes habilitar la base de datos.<br><br>
-        1. Entra a tu proyecto en <b>Supabase</b>.<br>
-        2. Ve al <b>SQL Editor</b>.<br>
-        3. Copia y ejecuta este código exactamente así:<br>
-        <code class="sql-code">ALTER TABLE users ADD COLUMN IF NOT EXISTS pin TEXT;</code><br>
-        4. Luego, cierra esta ventana e inténtalo de nuevo.
+        <strong>Error de Esquema</strong><br>
+        La tabla 'users' no tiene la columna 'pin'. Ejecuta esto en Supabase:<br>
+        <code class="sql-code">ALTER TABLE users ADD COLUMN IF NOT EXISTS pin TEXT;</code>
       </div>
 
       <form onsubmit="handleSavePin(event)">
         <input type="hidden" id="edit-user-id">
         <div class="form-group">
-          <label class="form-label" for="new-pin-input">Nuevo PIN</label>
-          <input type="number" id="new-pin-input" class="form-input" placeholder="Ej. 1234" required>
+          <label class="form-label">Nuevo PIN Seguro</label>
+          <input type="number" id="new-pin-input" class="form-input" placeholder="4 dígitos sugeridos" required>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary btn-block" onclick="closeModal()">Cancelar</button>
-          <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+          <button type="submit" class="btn btn-primary btn-block">Guardar PIN</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/store.js"></script>
 
   <script>
-    if (localStorage.getItem('mc_admin_session') !== 'true') {
-      window.location.replace('/admin/');
-    }
-
-    let allUsers = [];
+    if (localStorage.getItem('mc_admin_session') !== 'true') window.location.replace('/admin/');
 
     async function loadUsers() {
       const tbody = document.getElementById('users-tbody');
-      allUsers = await store.getAllUsers();
+      const allUsers = await store.getAllUsers();
+      
       if (allUsers.length === 0) {
-         tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados.</td></tr>';
+         tbody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron usuarios activos.</td></tr>';
          return;
       }
 
       tbody.innerHTML = allUsers.map(u => {
-        const badge = u.role === 'driver' ? '<span class="badge-role badge-driver">Repartidor</span>' : '<span class="badge-role badge-client">Cliente</span>';
-        const currentPin = u.pin ? `****${u.pin}` : `(Defecto) ****${(u.phone||'').slice(-4)}`;
+        const badgeClass = u.role === 'driver' ? 'badge-driver' : 'badge-client';
+        const roleName = u.role === 'driver' ? 'REPARTIDOR' : 'CLIENTE';
+        const currentPin = u.pin ? `****${u.pin}` : `(SMS) ****`;
+        
         return `
           <tr>
-            <td>${u.name || 'Sin nombre'}</td>
-            <td>${u.phone || 'S/N'}</td>
-            <td>${badge}</td>
+            <td style="font-weight: 600;">${u.name || 'Usuario sin nombre'}</td>
+            <td style="color: #94a3b8;">${u.phone || 'N/A'}</td>
+            <td><span class="badge-role ${badgeClass}">${roleName}</span></td>
             <td><code class="code-badge">${currentPin}</code></td>
             <td>
-              <button class="action-btn btn-edit" onclick="openPinModal('${u.id}', '${escapeHTML(u.name)}')">Cambiar PIN</button>
+              <button class="action-btn" onclick="openPinModal('${u.id}', '${escapeHTML(u.name)}')">
+                <i class="fas fa-key"></i> Editar PIN
+              </button>
             </td>
           </tr>
         `;
@@ -130,14 +253,14 @@
 
     function openPinModal(id, name) {
       document.getElementById('edit-user-id').value = id;
-      document.getElementById('pin-modal-subtitle').innerHTML = `Actualizando contraseña de <b>${name}</b>`;
+      document.getElementById('pin-modal-subtitle').innerHTML = `Nuevo acceso para <b>${name}</b>`;
       document.getElementById('new-pin-input').value = '';
       document.getElementById('sql-alert').classList.add('hidden');
-      document.getElementById('pin-modal').classList.remove('hidden');
+      document.getElementById('pin-modal').style.display = 'flex';
     }
 
     function closeModal() {
-      document.getElementById('pin-modal').classList.add('hidden');
+      document.getElementById('pin-modal').style.display = 'none';
     }
 
     async function handleSavePin(e) {
@@ -146,17 +269,16 @@
       const newPin = document.getElementById('new-pin-input').value;
       const btn = e.target.querySelector('[type="submit"]');
 
-      btn.disabled = true; btn.textContent = 'Guardando...';
+      btn.disabled = true; btn.textContent = 'Procesando...';
       const result = await store.updateUser(id, { pin: newPin });
-      btn.disabled = false; btn.textContent = 'Guardar';
+      btn.disabled = false; btn.textContent = 'Guardar PIN';
 
       if (result.success) {
-        showToast('PIN actualizado correctamente.', 'success');
+        showToast('Credencial actualizada con éxito');
         closeModal();
         loadUsers();
       } else {
-        // Detect if Supabase threw column error
-        if (result.error && (result.error.includes('schema cache') || result.error.includes('Could not find') || result.error.includes('PGRST105'))) {
+        if (result.error && (result.error.includes('schema') || result.error.includes('PGRST105'))) {
           document.getElementById('sql-alert').classList.remove('hidden');
         } else {
           showToast(result.error, 'error');
@@ -175,7 +297,6 @@
       }[tag] || tag));
     }
 
-    // Inicializar
     document.addEventListener('DOMContentLoaded', loadUsers);
   </script>
 </body>

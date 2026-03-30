@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logística Dashboard — MotoClick</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --sidebar-width: 260px;
+      --header-height: 70px;
+    }
+    
+    body { 
+      background: #0a0f1a; 
+      color: #e2e8f0;
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: #111827;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0;
+    }
+    .sidebar-brand {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar-brand img { height: 32px; }
+    .sidebar-nav {
+      padding: 1.5rem;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 1rem;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(249, 115, 22, 0.1);
+      color: var(--color-primary);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .top-header {
+      height: var(--header-height);
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0; z-index: 10;
+    }
+
+    /* Dashboard Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+    .stat-card {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%);
+      transform: translate(30%, -30%);
+    }
+    .stat-value { font-size: 2rem; font-weight: 800; margin-top: 8px; }
+    .stat-label { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Orders Section */
+    .orders-section {
+      padding: 0 2rem 2rem;
+      flex: 1;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .order-row {
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: 80px 2fr 1.5fr 1.2fr 1fr;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s;
+    }
+    .order-row:hover {
+      border-color: rgba(249, 115, 22, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+    }
+    .order-id { font-family: monospace; font-size: 0.8rem; color: #94a3b8; }
+    .order-info { display: flex; flex-direction: column; }
+    .order-desc { font-weight: 600; margin-bottom: 4px; }
+    .order-client { font-size: 0.85rem; color: #94a3b8; }
+    .order-route { font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+    .order-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* Badges */
+    .badge {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .badge-pending { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .badge-active { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+    .badge-entregado { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+
+    /* Action Buttons */
+    .icon-btn {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #e2e8f0;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    .icon-btn.delete:hover { background: #ef4444; border-color: #ef4444; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    .modal {
+      background: #1e293b;
+      width: 100%; max-width: 500px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 1024px) {
+      .order-row { grid-template-columns: 80px 1.5fr 1fr; }
+      .order-route, .order-status { display: none; }
+    }
+  </style>
+</head>
+<body>
+  
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/logo.png" alt="Logo">
+      <span>MotoClick</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="panel.html" class="nav-item">
+        <i class="fas fa-users"></i> Usuarios
+      </a>
+      <a href="#" class="nav-item active">
+        <i class="fas fa-truck"></i> Logística
+      </a>
+      <a href="../" class="nav-item">
+        <i class="fas fa-arrow-left"></i> Salir al Sitio
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-header">
+      <h2>🚛 Monitoreo Total</h2>
+      <div class="header-actions">
+        <button class="btn btn-primary btn-sm" onclick="openOrderModal()">
+          <i class="fas fa-plus"></i> Nuevo Pedido
+        </button>
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Pendientes</div>
+        <div class="stat-value" id="stats-pending">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">En Curso</div>
+        <div class="stat-value" id="stats-active" style="color: #eab308;">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Entregados</div>
+        <div class="stat-value" id="stats-completed" style="color: #22c55e;">--</div>
+      </div>
+    </div>
+
+    <section class="orders-section">
+      <div class="section-header">
+        <h3>📝 Listado de Pedidos</h3>
+        <div class="filters">
+          <!-- TODO: Agregar filtros por status -->
+        </div>
+      </div>
+      
+      <div class="card-list" id="orders-list">
+        <!-- Render dinámico aquí -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Pedido -->
+  <div class="modal-overlay" id="order-modal">
+    <div class="modal">
+      <h3 id="modal-title">Gestión de Pedido</h3>
+      <form id="order-form" onsubmit="handleSaveOrder(event)">
+        <input type="hidden" id="order-id">
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea id="f-desc" class="form-input" rows="3" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Cliente</label>
+            <input type="text" id="f-client" class="form-input" required>
+          </div>
+          <div class="form-group" style="width: 120px;">
+            <label class="form-label">Estado</label>
+            <select id="f-status" class="form-input">
+              <option value="pending">Pendiente</option>
+              <option value="accepted">Aceptado</option>
+              <option value="en_camino">En Camino</option>
+              <option value="entregado">Entregado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dirección Recolección</label>
+          <input type="text" id="f-pickup" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dirección Entrega</label>
+          <input type="text" id="f-delivery" class="form-input" required>
+        </div>
+        <div class="modal-actions d-flex gap-md mt-lg">
+          <button type="button" class="btn btn-secondary btn-block" onclick="closeOrderModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-block">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
+  
+  <script>
+    if (localStorage.getItem('mc_admin_session') !== 'true') window.location.replace('/admin/');
+
+    async function refreshDashboard() {
+      const orders = await store.getOrders();
+      renderStats(orders);
+      renderOrders(orders);
+    }
+
+    function renderStats(orders) {
+      document.getElementById('stats-pending').textContent = orders.filter(o => o.status === 'pending').length;
+      document.getElementById('stats-active').textContent = orders.filter(o => !['pending','entregado'].includes(o.status)).length;
+      document.getElementById('stats-completed').textContent = orders.filter(o => o.status === 'entregado').length;
+    }
+
+    function renderOrders(orders) {
+      const list = document.getElementById('orders-list');
+      if (orders.length === 0) {
+        list.innerHTML = '<div class="text-center p-xl">No hay pedidos registrados</div>';
+        return;
+      }
+      
+      list.innerHTML = orders.map(o => `
+        <div class="order-row">
+          <div class="order-id">#${o.id.slice(-6)}</div>
+          <div class="order-info">
+            <div class="order-desc">${o.description || 'Sin descripción'}</div>
+            <div class="order-client">👤 ${o.clientName || 'Anónimo'}</div>
+          </div>
+          <div class="order-route">
+            <span class="text-muted">De:</span> ${o.pickupAddress.substring(0,25)}...
+            <i class="fas fa-arrow-right fs-xs"></i>
+            ${o.deliveryAddress.substring(0,25)}...
+          </div>
+          <div class="order-status">
+            <span class="badge badge-${o.status}">${getStatusLabel(o.status)}</span>
+          </div>
+          <div class="order-actions">
+            <button class="icon-btn" onclick='editOrder(${JSON.stringify(o).replace(/'/g, "&apos;")})'>
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="icon-btn delete" onclick="deleteOrder('${o.id}')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Modal Logic
+    function openOrderModal(data = null) {
+      const modal = document.getElementById('order-modal');
+      const form = document.getElementById('order-form');
+      modal.style.display = 'flex';
+      
+      if (data) {
+        document.getElementById('modal-title').textContent = 'Editar Pedido #' + data.id.slice(-6);
+        document.getElementById('order-id').value = data.id;
+        document.getElementById('f-desc').value = data.description;
+        document.getElementById('f-client').value = data.clientName;
+        document.getElementById('f-status').value = data.status;
+        document.getElementById('f-pickup').value = data.pickupAddress;
+        document.getElementById('f-delivery').value = data.deliveryAddress;
+      } else {
+        document.getElementById('modal-title').textContent = 'Crear Nuevo Pedido';
+        form.reset();
+        document.getElementById('order-id').value = '';
+      }
+    }
+
+    function closeOrderModal() {
+      document.getElementById('order-modal').style.display = 'none';
+    }
+
+    async function handleSaveOrder(e) {
+      e.preventDefault();
+      const id = document.getElementById('order-id').value;
+      const updates = {
+        description: document.getElementById('f-desc').value,
+        clientName: document.getElementById('f-client').value,
+        status: document.getElementById('f-status').value,
+        pickupAddress: document.getElementById('f-pickup').value,
+        deliveryAddress: document.getElementById('f-delivery').value
+      };
+
+      try {
+        if (id) {
+          await store.updateOrder(id, updates);
+          showToast('Pedido actualizado');
+        } else {
+          // Si es nuevo, usamos el método de store (ajustado para admin)
+          await store.createOrder({ ...updates, clientId: 'admin-created', clientPhone: '0000000000' });
+          showToast('Pedido creado');
+        }
+        closeOrderModal();
+        refreshDashboard();
+      } catch (err) {
+        showToast('Error al guardar', 'error');
+      }
+    }
+
+    async function deleteOrder(id) {
+      if (!confirm('¿Estás seguro de eliminar este pedido permanentemente?')) return;
+      const success = await store.deleteOrder(id);
+      if (success) {
+        showToast('Pedido eliminado');
+        refreshDashboard();
+      } else {
+        showToast('Fallo al eliminar', 'error');
+      }
+    }
+
+    function editOrder(data) {
+      openOrderModal(data);
+    }
+
+    // Init
+    refreshDashboard();
+    // Refresh Realtime simulado o polling
+    setInterval(refreshDashboard, 15000);
+  </script>
+</body>
+</html>
