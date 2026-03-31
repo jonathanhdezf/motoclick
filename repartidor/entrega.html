@@ -368,6 +368,10 @@
       }
       renderStatus(order.status);
       renderDetails(order);
+      // Ensure coordinates are numbers for Google Maps
+      if (order.pickupCoords) order.pickupCoords = order.pickupCoords.map(Number);
+      if (order.deliveryCoords) order.deliveryCoords = order.deliveryCoords.map(Number);
+      
       renderMap(order);
       renderActions(order);
       if (order.status === 'entregado') {
@@ -403,8 +407,8 @@
       document.getElementById('client-info').innerHTML = `
         <div class="client-avatar">👤</div>
         <div style="flex: 1;">
-          <div style="font-weight: 600;">${order.clientName}</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted);">📞 ${order.clientPhone}</div>
+          <div style="font-weight: 600;">${order.clientName || 'Cliente'}</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">📞 ${order.clientPhone || 'No disponible'}</div>
         </div>
       `;
 
@@ -597,7 +601,11 @@
     }
 
     async function changeStatus(newStatus) {
-      const order = await store.updateOrderStatus(orderId, newStatus);
+      const updates = { status: newStatus };
+      if (newStatus === 'accepted') updates.acceptedAt = new Date().toISOString();
+      if (newStatus === 'entregado') updates.deliveredAt = new Date().toISOString();
+
+      const order = await store.updateOrder(orderId, updates);
       if (!order) return;
 
       showToast(`Estado actualizado: ${getStatusLabel(newStatus)}`, 'success');
@@ -641,11 +649,15 @@
       input.style.borderColor = '';
       const stops = Array.isArray(order.stops) ? order.stops : [];
       stops.push({ desc, time: new Date().toISOString() });
+      
+      const priceMin = Number(order.estimatedPriceMin) || 0;
+      const priceMax = Number(order.estimatedPriceMax) || 0;
+
       const result = await store.updateOrder(orderId, {
         stops,
-        description: order.description + `\n📍 [PARADA EXTRA: ${desc}]`,
-        estimatedPriceMin: (Number(order.estimatedPriceMin) || 0) + 15,
-        estimatedPriceMax: (Number(order.estimatedPriceMax) || 0) + 15,
+        description: (order.description || '') + `\n📍 [PARADA EXTRA: ${desc}]`,
+        estimatedPriceMin: priceMin + 15,
+        estimatedPriceMax: priceMax + 15,
       });
       if (result) {
         showToast('Parada agregada con éxito ($15 extra).', 'success');
