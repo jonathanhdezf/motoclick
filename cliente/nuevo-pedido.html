@@ -395,6 +395,35 @@
       height: 54px;
     }
     body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
+    
+    /* Autocomplete dropdown style fix */
+    .pac-container {
+      background-color: #1e293b;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0 0 12px 12px;
+      color: #fff;
+      font-family: inherit;
+      z-index: 99999 !important; /* Ensure it's above all containers */
+      margin-top: 2px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4);
+    }
+    .pac-item {
+      padding: 10px 14px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      color: #94a3b8;
+    }
+    .pac-item:hover {
+      background-color: rgba(255,255,255,0.05);
+    }
+    .pac-item-query {
+      color: #fff;
+      font-size: 0.95rem;
+    }
+    .pac-matched {
+      color: var(--color-primary);
+    }
+    .pac-icon { display: none; }
   </style>
 </head>
 <body id="app-body">
@@ -1082,17 +1111,24 @@
       const pickupInput = document.getElementById('pickup-address');
       const deliveryInput = document.getElementById('delivery-address');
 
-      pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
-      deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, options);
+      // Ensure inputs exist before binding
+      if (pickupInput && !pickupAutocomplete) {
+        pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
+      }
+      if (deliveryInput && !deliveryAutocomplete) {
+        deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, options);
+      }
 
-      pickupAutocomplete.addListener('place_changed', () => {
-        const place = pickupAutocomplete.getPlace();
-        if (place.geometry && place.geometry.location) {
-          currentCoords.pickup = [place.geometry.location.lat(), place.geometry.location.lng()];
-          pickupInput.value = place.formatted_address || place.name;
-          calculateRouteDistance();
-        }
-      });
+      if (pickupAutocomplete) {
+        pickupAutocomplete.addListener('place_changed', () => {
+          const place = pickupAutocomplete.getPlace();
+          if (place.geometry && place.geometry.location) {
+            currentCoords.pickup = [place.geometry.location.lat(), place.geometry.location.lng()];
+            pickupInput.value = place.formatted_address || place.name;
+            calculateRouteDistance();
+          }
+        });
+      }
 
       deliveryAutocomplete.addListener('place_changed', () => {
         const place = deliveryAutocomplete.getPlace();
@@ -1128,6 +1164,8 @@
       desc.focus();
     }
 
+    // Run init on both events to ensure it catches the API load
+    window.addEventListener('load', init);
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
