@@ -43,7 +43,9 @@ self.addEventListener('fetch', event => {
       // Si se pierde internet, buscar versión más reciente en caché
       const cachedResponse = await caches.match(event.request);
       if (cachedResponse) return cachedResponse;
-      // Puedes retornar un offline.html aquí si tuvieras uno
+      
+      // Si no hay red ni caché, devolvemos null para que el navegador maneje el error estándar
+      return null;
     })
   );
 });

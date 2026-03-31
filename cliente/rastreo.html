@@ -149,7 +149,7 @@
     </div>
   </div>
 
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
@@ -320,14 +320,14 @@
       `;
     }
 
-    const DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 }; // Teziutlán
+    const GOOGLE_DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 }; // Teziutlán
 
     function renderMap(order) {
       // Always initialize the map, even without coords
       if (!map) {
         const center = (order.pickupCoords)
           ? { lat: order.pickupCoords[0], lng: order.pickupCoords[1] }
-          : DEFAULT_CENTER;
+          : GOOGLE_DEFAULT_CENTER;
 
         map = new google.maps.Map(document.getElementById('map'), {
           center: center,
@@ -351,8 +351,8 @@
 
       // Only draw markers and route when both coordinates are real
       if (order.pickupCoords && order.deliveryCoords && !pickupMarker) {
-        const pickupLatLng = { lat: order.pickupCoords[0], lng: order.pickupCoords[1] };
-        const deliveryLatLng = { lat: order.deliveryCoords[0], lng: order.deliveryCoords[1] };
+        const pickupLatLng = { lat: Number(order.pickupCoords[0]), lng: Number(order.pickupCoords[1]) };
+        const deliveryLatLng = { lat: Number(order.deliveryCoords[0]), lng: Number(order.deliveryCoords[1]) };
 
         pickupMarker = new google.maps.Marker({
           position: pickupLatLng,
