@@ -74,6 +74,7 @@
     .top-header {
       height: var(--header-height);
       background: rgba(17, 24, 39, 0.8);
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255,255,255,0.05);
       display: flex;
@@ -180,6 +181,7 @@
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.8);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
       display: none; align-items: center; justify-content: center;
       z-index: 100;
@@ -198,6 +200,15 @@
       .order-row { grid-template-columns: 80px 1.5fr 1fr; }
       .order-route, .order-status { display: none; }
     }
+
+    /* Inline style replacements */
+    #stats-active { color: #eab308; }
+    #stats-completed { color: #22c55e; }
+    #f-client-group { flex: 1; }
+    #f-status-group { width: 120px; }
+    .order-route .fa-arrow-right { font-size: 0.75rem; }
+    .text-center { text-align: center; }
+    .p-xl { padding: 3rem; }
   </style>
 </head>
 <body>
@@ -237,11 +248,11 @@
       </div>
       <div class="stat-card">
         <div class="stat-label">En Curso</div>
-        <div class="stat-value" id="stats-active" style="color: #eab308;">--</div>
+        <div class="stat-value" id="stats-active">--</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Entregados</div>
-        <div class="stat-value" id="stats-completed" style="color: #22c55e;">--</div>
+        <div class="stat-value" id="stats-completed">--</div>
       </div>
     </div>
 
@@ -270,11 +281,11 @@
           <textarea id="f-desc" class="form-input" rows="3" required></textarea>
         </div>
         <div class="form-row">
-          <div class="form-group" style="flex: 1;">
+          <div class="form-group" id="f-client-group">
             <label class="form-label">Cliente</label>
             <input type="text" id="f-client" class="form-input" required>
           </div>
-          <div class="form-group" style="width: 120px;">
+          <div class="form-group" id="f-status-group">
             <label class="form-label">Estado</label>
             <select id="f-status" class="form-input">
               <option value="pending">Pendiente</option>

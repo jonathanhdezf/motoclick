@@ -74,8 +74,8 @@
     .top-header {
       height: var(--header-height);
       background: rgba(17, 24, 39, 0.8);
-      backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255,255,255,0.05);
       display: flex;
       align-items: center;
@@ -110,8 +110,8 @@
     .modal-overlay { 
       position: fixed; inset: 0; 
       background: rgba(0,0,0,0.8); 
-      backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
       display: none; align-items: center; justify-content: center; z-index: 1000; 
     }
     .modal-content { 
@@ -163,7 +163,7 @@
       </div>
     </header>
 
-    <div style="padding: 2rem;">
+    <div class="dashboard-container">
       <div class="card animate-fade-in">
         <h2>Usuarios del Sistema</h2>
         <p class="card-subtitle">Gestiona perfiles, roles y recupera accesos de clientes y repartidores.</p>
