@@ -1733,6 +1733,13 @@
       border-radius: 40px;
       box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
       animation: navFadeIn 1s ease-out;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .floating-nav.nav-hidden {
+      opacity: 0;
+      transform: translateY(-50%) translateX(25px);
+      pointer-events: none;
     }
     
     @keyframes navFadeIn {
@@ -1816,18 +1823,31 @@
   </aside>
 
   <script>
-    // Logic for Floating Side Navigation Active State
+    // Logic for Floating Side Navigation Active State & Visibility
     (() => {
       const sections = ['hero', 'why-choose', 'services', 'trust', 'features', 'coverage', 'business', 'partners'];
       const bubbles = document.querySelectorAll('.nav-bubble');
+      const navContainer = document.querySelector('.floating-nav');
+      let hideTimeout = null;
       
+      const showNav = () => {
+        if (!navContainer) return;
+        navContainer.classList.remove('nav-hidden');
+        
+        // Hide after 2 seconds of inactivity
+        if (hideTimeout) clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+          navContainer.classList.add('nav-hidden');
+        }, 2000);
+      };
+
       const updateNav = () => {
+        showNav(); // Show it because we are scrolling
         let current = '';
         sections.forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             const rect = el.getBoundingClientRect();
-            // Trigger bubble activation when section is near the top half of viewport
             if (rect.top <= window.innerHeight / 2.5) {
               current = id;
             }
@@ -1842,7 +1862,6 @@
           }
         });
         
-        // Default to first bubble if at the very top
         if (window.scrollY < 200) {
           bubbles.forEach(b => b.classList.remove('active'));
           bubbles[0].classList.add('active');
@@ -1851,6 +1870,11 @@
 
       window.addEventListener('scroll', updateNav, { passive: true });
       window.addEventListener('load', updateNav);
+      
+      // Initialize hidden after load
+      setTimeout(() => {
+        if (navContainer) navContainer.classList.add('nav-hidden');
+      }, 3000);
     })();
   </script>
 </body>
