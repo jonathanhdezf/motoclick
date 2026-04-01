@@ -9,13 +9,13 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/assets/logo.png",
+      "src": "/assets/logo_motoclick_app.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/assets/logo.png",
+      "src": "/assets/logo_motoclick_app.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
@@ -27,7 +27,7 @@
       "url": "/cliente/nuevo-pedido.html",
       "icons": [
         {
-          "src": "/assets/logo.png",
+          "src": "/assets/logo_motoclick_app.png",
           "sizes": "192x192"
         }
       ]
@@ -37,7 +37,7 @@
       "url": "/repartidor/panel.html",
       "icons": [
         {
-          "src": "/assets/logo.png",
+          "src": "/assets/logo_motoclick_app.png",
           "sizes": "192x192"
         }
       ]
