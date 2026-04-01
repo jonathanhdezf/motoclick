@@ -80,20 +80,30 @@ function showSystemNotification(title, body) {
     icon: '/assets/logo_motoclick_app.png',
     badge: '/assets/logo_motoclick_app.png',
     vibrate: [200, 100, 200],
-    tag: 'motoclick-notification'
+    tag: 'motoclick-notification',
+    requireInteraction: true, // Persist until user clicks
+    silent: false
   };
 
   try {
-    // Try via Service Worker first (better for background)
-    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    // Better background support: try to use Service Worker API
+    if (navigator.serviceWorker) {
       navigator.serviceWorker.ready.then(registration => {
         registration.showNotification(title, options);
+        // Backup: Send message to SW
+        if (registration.active) {
+            registration.active.postMessage({
+                type: 'SHOW_NOTIFICATION',
+                title: title,
+                options: options
+            });
+        }
       });
     } else {
       new Notification(title, options);
     }
   } catch (e) {
-    new Notification(title, options);
+    try { new Notification(title, options); } catch(err) {}
   }
 }
 

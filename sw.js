@@ -49,3 +49,28 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
+// Evento para recibir mensajes (por ej. desde el main JS)
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, options } = event.data;
+    self.registration.showNotification(title, options);
+  }
+});
+
+// Al hacer clic en la notificación, traer la app al frente
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      if (clientList.length > 0) {
+        let client = clientList[0];
+        for (let c of clientList) {
+          if (c.focused) return; 
+        }
+        return client.focus();
+      }
+      return clients.openWindow('/');
+    })
+  );
+});
