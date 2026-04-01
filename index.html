@@ -662,6 +662,56 @@
       background-clip: text;
       font-weight: 800;
     }
+
+    /* ── Service Tiles Grid ── */
+    .services-tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+    }
+    @media (min-width: 768px) {
+      .services-tiles-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .service-tile {
+      background: rgba(22, 32, 50, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl) var(--space-md);
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .service-tile:hover {
+      background: rgba(22, 32, 50, 0.65);
+      border-color: var(--border-active);
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: var(--shadow-glow);
+    }
+    .service-tile-icon {
+      font-size: 2.2rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+      filter: drop-shadow(0 0 8px rgba(0, 230, 91, 0.2));
+    }
+    .service-tile-text {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .service-tile-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      max-width: 140px;
+    }
     .why-intro {
       margin: 0;
     }
@@ -1023,13 +1073,37 @@
         <p class="text-secondary mt-sm">Soluciones rápidas para tus necesidades diarias en Teziutlán.</p>
       </div>
       
-      <div class="services-list-container">
-        <div class="service-item"><span class="service-check">✔</span><span class="service-text">Envía y recibe paquetes, comida, documentos</span></div>
-        <div class="service-item"><span class="service-check">✔</span><span class="service-text">Mandados del súper</span></div>
-        <div class="service-item"><span class="service-check">✔</span><span class="service-text">Farmacia</span></div>
-        <div class="service-item"><span class="service-check">✔</span><span class="service-text">Pago de servicios</span></div>
-        <div class="service-item"><span class="service-check">✔</span><span class="service-text">Entregas</span></div>
-        <div class="service-item"><span class="service-check">✔</span><span class="service-text">Recoger pedidos</span></div>
+      <div class="services-tiles-grid">
+        <div class="service-tile sa-stagger sa-d1">
+          <i class="fas fa-box-open service-tile-icon"></i>
+          <span class="service-tile-text">Paquetes y Comida</span>
+          <p class="service-tile-desc">Entregas seguras de lo que necesites.</p>
+        </div>
+        <div class="service-tile sa-stagger sa-d2">
+          <i class="fas fa-shopping-cart service-tile-icon"></i>
+          <span class="service-tile-text">Mandados del Súper</span>
+          <p class="service-tile-desc">Nosotros hacemos las filas por ti.</p>
+        </div>
+        <div class="service-tile sa-stagger sa-d3">
+          <i class="fas fa-pills service-tile-icon"></i>
+          <span class="service-tile-text">Farmacia</span>
+          <p class="service-tile-desc">Salud a tu puerta en minutos.</p>
+        </div>
+        <div class="service-tile sa-stagger sa-d4">
+          <i class="fas fa-file-invoice-dollar service-tile-icon"></i>
+          <span class="service-tile-text">Pago de Servicios</span>
+          <p class="service-tile-desc">Evita recargos, nosotros pagamos.</p>
+        </div>
+        <div class="service-tile sa-stagger sa-d5">
+          <i class="fas fa-bolt service-tile-icon"></i>
+          <span class="service-tile-text">Entregas Flash</span>
+          <p class="service-tile-desc">La mayor rapidez en Teziutlán.</p>
+        </div>
+        <div class="service-tile sa-stagger sa-d6">
+          <i class="fas fa-hand-holding-heart service-tile-icon"></i>
+          <span class="service-tile-text">Recoger Pedidos</span>
+          <p class="service-tile-desc">¿Hiciste un pedido? Nosotros vamos por él.</p>
+        </div>
       </div>
     </section>
 
