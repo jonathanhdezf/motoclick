@@ -201,39 +201,6 @@
     .playstore-badge-text b { display: block; font-size: 1rem; line-height: 1.1; }
 
 
-    .role-card {
-      cursor: pointer;
-      text-align: center;
-      padding: var(--space-2xl) var(--space-xl);
-      position: relative;
-      overflow: hidden;
-    }
-    .role-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--gradient-card);
-      opacity: 0;
-      transition: opacity var(--duration-normal) ease;
-    }
-    .role-card:hover::before { opacity: 1; }
-    .role-card .role-icon {
-      font-size: 4rem;
-      margin-bottom: var(--space-lg);
-      display: block;
-      transition: transform var(--duration-normal) var(--ease-bounce);
-    }
-    .role-card:hover .role-icon { transform: scale(1.15); }
-    .role-card .role-title {
-      font-size: 1.3rem;
-      margin-bottom: var(--space-sm);
-      position: relative;
-    }
-    .role-card .role-desc {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      position: relative;
-    }
 
     .footer {
       padding: var(--space-2xl) 0 var(--space-lg);
@@ -1090,22 +1057,6 @@
       </div>
     </section>
 
-    <!-- Role Selection -->
-    <section class="container role-selection-section">
-      <h2 class="section-title text-center mb-xl sa-fade">¿Cómo quieres usar MotoClick App?</h2>
-      <div class="grid-2 role-selection-grid">
-        <div class="card role-card" id="btn-client" onclick="window.location.href='cliente/'">
-          <span class="role-icon">📦</span>
-          <h3 class="role-title">Soy Cliente</h3>
-          <p class="role-desc">Solicita un mandado y rastrea tu envío en tiempo real</p>
-        </div>
-        <div class="card role-card" id="btn-driver" onclick="window.location.href='repartidor/'">
-          <span class="role-icon">🏍️</span>
-          <h3 class="role-title">Soy Repartidor</h3>
-          <p class="role-desc">Acepta mandados disponibles y gana dinero</p>
-        </div>
-      </div>
-    </section>
 
     <!-- Features -->
     <section class="container features-section">
@@ -1620,12 +1571,6 @@
           observer.observe(el);
         });
 
-      // Role cards
-      document.querySelectorAll('.role-selection-grid .role-card')
-        .forEach((el, i) => {
-          el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 3)}`);
-          observer.observe(el);
-        });
 
       // Headings
       document.querySelectorAll('.sa-fade, .alliances-section').forEach(el => observer.observe(el));
