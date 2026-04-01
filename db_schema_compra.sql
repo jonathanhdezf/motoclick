@@ -21,7 +21,9 @@ ADD COLUMN IF NOT EXISTS subtotal_compra NUMERIC(10, 2) DEFAULT 0.00,
 ADD COLUMN IF NOT EXISTS nombre_comercio_local VARCHAR(255),
 ADD COLUMN IF NOT EXISTS lat_compra NUMERIC(10, 6),
 ADD COLUMN IF NOT EXISTS lng_compra NUMERIC(10, 6),
-ADD COLUMN IF NOT EXISTS estado_ticket VARCHAR(50) DEFAULT 'pendiente'; -- pendiente, armando, consolidado
+ADD COLUMN IF NOT EXISTS estado_ticket VARCHAR(50) DEFAULT 'pendiente', -- pendiente, armando, consolidado
+ADD COLUMN IF NOT EXISTS cancel_reason TEXT,
+ADD COLUMN IF NOT EXISTS cancelled_by TEXT;
 
 -- 3. Tabla: ticket_detalle
 -- Propósito: Líneas del ticket de la compra que está realizando el repartidor.
@@ -51,6 +53,9 @@ CREATE TABLE IF NOT EXISTS public.comercios_prospectos (
     timestamp_recoleccion TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     estado_afiliacion VARCHAR(50) DEFAULT 'no_contactado' -- no_contactado, en_proceso, afiliado
 );
+
+-- 5. Tabla: users (Asegurar columna PIN para seguridad PWA)
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pin TEXT;
 
 -- ==============================================================================
 -- Funciones Supabase RPC o Reglas de Políticas RLS (Row Level Security)
