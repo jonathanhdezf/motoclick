@@ -320,15 +320,18 @@
       datePicker.max = todayString;
       datePicker.value = todayString;
 
+      requestNotificationPermission();
+
       Promise.all([loadOrders(), renderHistory()]).then(() => {
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
       });
 
       // Listen for new orders
-      store.on('new_order', () => {
+      store.on('new_order', (order) => {
         playNotificationSound();
         showToast('🆕 ¡Nuevo mandado disponible!', 'warning');
+        showSystemNotification('📦 Nuevo Mandado MotoClick', `${order.clientName}: ${order.description.substring(0, 40)}...`);
         loadOrders(true);
       });
 

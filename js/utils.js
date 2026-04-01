@@ -60,6 +60,43 @@ function showToast(message, type = 'info', duration = 3500) {
   }, duration);
 }
 
+// ── System Notifications (PWA) ──
+function requestNotificationPermission() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        showToast("¡Notificaciones activadas! 🔔", "success");
+      }
+    });
+  }
+}
+
+function showSystemNotification(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  
+  const options = {
+    body: body,
+    icon: '/assets/logo_motoclick_app.png',
+    badge: '/assets/logo_motoclick_app.png',
+    vibrate: [200, 100, 200],
+    tag: 'motoclick-notification'
+  };
+
+  try {
+    // Try via Service Worker first (better for background)
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification(title, options);
+      });
+    } else {
+      new Notification(title, options);
+    }
+  } catch (e) {
+    new Notification(title, options);
+  }
+}
+
 // ── Form Validation ──
 function validateField(input, rules) {
   const value = input.value.trim();

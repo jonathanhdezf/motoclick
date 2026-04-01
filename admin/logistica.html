@@ -432,6 +432,16 @@
       openOrderModal(data);
     }
 
+    // --- NOTIFICATIONS ---
+    requestNotificationPermission();
+
+    store.on('new_order', (order) => {
+      playNotificationSound();
+      showToast('📦 Nuevo pedido recibido en admin', 'info');
+      showSystemNotification('MotoClick ADMIN: Mandado Nuevo', `${order.clientName}: ${order.description || 'Sin descripción'}`);
+      refreshDashboard();
+    });
+
     // Init
     refreshDashboard();
     // Refresh Realtime simulado o polling
