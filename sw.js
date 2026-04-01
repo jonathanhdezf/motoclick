@@ -58,19 +58,17 @@ self.addEventListener('message', event => {
   }
 });
 
-// Al hacer clic en la notificación, traer la app al frente
+// Al hacer clic en la notificación, traer la app al frente y refrescar datos
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       if (clientList.length > 0) {
         let client = clientList[0];
-        for (let c of clientList) {
-          if (c.focused) return; 
-        }
+        client.postMessage({ type: 'REFRESH_DATA' });
         return client.focus();
       }
-      return clients.openWindow('/');
+      return clients.openWindow('/repartidor/panel.html');
     })
   );
 });

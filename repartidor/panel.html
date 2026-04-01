@@ -321,26 +321,56 @@
       datePicker.value = todayString;
 
       requestNotificationPermission();
+      initWakeLock();
 
       Promise.all([loadOrders(), renderHistory()]).then(() => {
         document.body.style.visibility = 'visible';
         document.body.style.opacity = '1';
       });
 
+      // Background wake/refresh listener
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', (e) => {
+          if (e.data.type === 'REFRESH_DATA') {
+            console.log("Forcing refresh via notification click...");
+            loadOrders(true);
+          }
+        });
+      }
+
       // Listen for new orders
       store.on('new_order', (order) => {
         playNotificationSound();
-        showToast('🆕 ¡Nuevo mandado disponible!', 'warning');
+        showToast(`🆕 Mandado de ${order.clientName}`, 'warning');
         showSystemNotification('📦 Nuevo Mandado MotoClick', `${order.clientName}: ${order.description.substring(0, 40)}...`);
+        // Optimistic refresh
         loadOrders(true);
       });
 
-      // Poll as fallback
+      // Poll as fallback (reduced to 10s to not overload)
       setInterval(() => {
-        loadOrders();
-        renderHistory();
-      }, 5000);
+        if (document.visibilityState === 'visible') {
+           loadOrders();
+           renderHistory();
+        }
+      }, 10000);
     }
+    
+    let wakeLock = null;
+    async function initWakeLock() {
+      if ('wakeLock' in navigator) {
+         try {
+           wakeLock = await navigator.wakeLock.request('screen');
+           console.log("MotoClick: Wake Lock Active (Screen on)");
+           wakeLock.addEventListener('release', () => { console.log('Wake Lock released'); });
+         } catch (err) { console.error(`${err.name}, ${err.message}`); }
+      }
+    }
+    document.addEventListener('visibilitychange', async () => {
+       if (wakeLock !== null && document.visibilityState === 'visible') {
+         wakeLock = await navigator.wakeLock.request('screen');
+       }
+    });
 
     async function loadOrders(isNew = false) {
       const [pending, activeOrder] = await Promise.all([
