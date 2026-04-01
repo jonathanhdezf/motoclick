@@ -247,11 +247,11 @@ class MotoClickStore {
 
   async getActiveOrderForDriver(driverId) {
     if (this._useFallback) {
-      return this._fb_getOrders().find(o => o.driverId === driverId && o.status !== 'entregado' && o.status !== 'pending') || null;
+      return this._fb_getOrders().find(o => o.driverId === driverId && !['pending','entregado','cancelado'].includes(o.status)) || null;
     }
     const { data, error } = await this._sb.from('orders').select('*')
       .eq('driver_id', driverId)
-      .not('status', 'in', '("pending","entregado")')
+      .not('status', 'in', '("pending","entregado","cancelado")')
       .order('created_at', { ascending: false })
       .limit(1);
     if (error) console.error('[Store] getActiveOrder Error:', error);
