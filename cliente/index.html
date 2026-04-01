@@ -52,6 +52,7 @@
     .modal-p { font-size: 0.9rem; }
     .modal-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
     .btn-whatsapp { background: #25D366; border-color: #25D366; color: white; }
+    .auth-logo { height: 60px; width: auto; margin-bottom: var(--space-lg); filter: drop-shadow(0 0 10px rgba(0,230,91,0.15)); }
     body { opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
   </style>
   <script>document.addEventListener("DOMContentLoaded", () => { setTimeout(() => { document.body.style.visibility='visible'; document.body.style.opacity='1'; }, 100); });</script>
@@ -61,7 +62,7 @@
     <!-- Navbar -->
     <nav class="navbar">
       <a href="../" class="navbar-brand">
-        <img src="../assets/logo.png" alt="MotoClick Logo" class="brand-logo">
+        <img src="../assets/logo_motoclick_blanco.png" alt="MotoClick Logo" class="brand-logo">
       </a>
       <div class="navbar-actions">
         <span class="badge badge-active">Cliente</span>
@@ -76,8 +77,8 @@
             <i class="fas fa-arrow-left"></i> Regresar al inicio
           </a>
         </div>
-        <div class="auth-header">
-          <span class="auth-icon">📦</span>
+        <div class="auth-header text-center">
+          <img src="../assets/logo_motoclick_blanco.png" alt="MotoClick" class="auth-logo">
           <h2>Bienvenido a MotoClick</h2>
           <p class="text-secondary mt-sm">Envía y recibe mandados de forma rápida</p>
         </div>
