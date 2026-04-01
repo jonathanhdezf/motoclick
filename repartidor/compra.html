@@ -296,6 +296,9 @@
       <button class="btn btn-primary btn-finish" onclick="finishPurchase()">
         Finalizar Compra
       </button>
+      <button class="btn btn-block btn-outline btn-cancel mt-sm" style="border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="openCancelModal()">
+        Cerrar/Cancelar este pedido
+      </button>
     </section>
 
   </div>
@@ -668,8 +671,54 @@
        }
     }
 
-    // Run
+    // --- CANCELLATION LOGIC ---
+    function openCancelModal() {
+        document.getElementById('cancel-order-modal').classList.add('active');
+        document.getElementById('cancel-reason-text').focus();
+    }
+    function closeCancelModal() {
+        document.getElementById('cancel-order-modal').classList.remove('active');
+    }
+    async function confirmCancellation() {
+        const input = document.getElementById('cancel-reason-text');
+        const reason = input.value.trim();
+        if (!reason) {
+          input.style.borderColor = '#ef4444';
+          showToast('Debes ingresar un motivo.', 'warning');
+          return;
+        }
+        const btn = document.querySelector('#cancel-order-modal .btn-primary');
+        btn.disabled = true;
+        btn.textContent = 'Cancelando...';
+        try {
+          const res = await store.cancelOrder(orderId, reason, user.name);
+          if (res) {
+            showToast('Mandado cancelado.', 'success');
+            closeCancelModal();
+            setTimeout(() => window.location.href = 'panel.html', 1000);
+          } else {
+            showToast('Error al cancelar.', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Confirmar';
+          }
+        } catch (e) {
+          showToast('Fallo técnico.', 'error');
+          btn.disabled = false;
+        }
+    }
     // init() is called by Google Maps callback
   </script>
+  <!-- Cancellation Modal -->
+  <div class="high-contrast-modal" id="cancel-order-modal">
+    <div class="modal-card">
+      <h3 class="modal-title-item" style="color: #ef4444;">🚫 Cancelar este pedido</h3>
+      <p class="modal-subtitle-comercio">Indica el motivo para que el administrador esté enterado:</p>
+      <textarea id="cancel-reason-text" class="input-huge" placeholder="Ej. El local está cerrado, producto agotado..."></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeCancelModal()">Volver</button>
+        <button class="btn btn-primary" style="background: #ef4444; border-color: #ef4444;" onclick="confirmCancellation()">Confirmar</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

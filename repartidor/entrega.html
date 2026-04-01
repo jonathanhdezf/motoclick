@@ -284,6 +284,11 @@
             <div class="card-glass">
               <h3 class="section-title-md">⚡ Actualizar Estado</h3>
               <div class="status-btn-group" id="status-actions"></div>
+              <div class="mt-lg" style="border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
+                <button class="btn btn-outline btn-block text-danger" style="border-color: rgba(239, 68, 68, 0.3);" onclick="openCancelModal()">
+                  🚫 Cancelar Mandado
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -299,6 +304,26 @@
       <button class="btn btn-primary btn-lg" onclick="navigateTo('panel.html')">
         Volver al Panel
       </button>
+    </div>
+
+    <!-- Cancellation Modal -->
+    <div class="modal-overlay hidden" id="cancel-modal">
+      <div class="modal-content animate-fade-in-up card-glass" style="max-width: 400px; padding: var(--space-xl);">
+        <div class="stop-modal-header">
+          <div class="stop-modal-icon" style="background: linear-gradient(135deg, #ef4444, #b91c1c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🚫</div>
+          <div class="stop-modal-title">¿Cancelar este mandado?</div>
+          <p class="stop-modal-subtitle">Por favor, indica el motivo de la cancelación para que el administrador esté enterado.</p>
+        </div>
+        
+        <div class="stop-modal-input-group">
+          <textarea id="cancel-reason-input" class="stop-modal-textarea" placeholder="Ej. El cliente no salió, dirección incorrecta, falla mecánica..."></textarea>
+        </div>
+
+        <div class="stop-modal-actions">
+          <button class="btn btn-primary btn-bg-danger stop-modal-submit" onclick="confirmCancellation()">Confirmar Cancelación</button>
+          <button class="stop-modal-cancel" onclick="closeCancelModal()">Volver atrás</button>
+        </div>
+      </div>
     </div>
 
     <!-- Stop Modal Overlay -->
@@ -711,6 +736,49 @@
         loadOrder();
       }
     });
+
+    // --- CANCELLATION LOGIC ---
+    function openCancelModal() {
+      document.getElementById('cancel-modal').classList.remove('hidden');
+      document.getElementById('cancel-reason-input').focus();
+    }
+    
+    function closeCancelModal() {
+      document.getElementById('cancel-modal').classList.add('hidden');
+    }
+    
+    async function confirmCancellation() {
+      const input = document.getElementById('cancel-reason-input');
+      const reason = input.value.trim();
+      if (!reason) {
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 400);
+        showToast('Debes ingresar un motivo.', 'warning');
+        return;
+      }
+      
+      const submitBtn = document.querySelector('#cancel-modal .stop-modal-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Cancelando...';
+      
+      try {
+        const res = await store.cancelOrder(orderId, reason, user.name);
+        if (res) {
+          showToast('Mandado cancelado exitosamente.', 'success');
+          closeCancelModal();
+          setTimeout(() => navigateTo('panel.html'), 1000);
+        } else {
+          showToast('Error al procesar cancelación.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirmar Cancelación';
+        }
+      } catch (e) {
+        console.error(e);
+        showToast('Fallo técnico al cancelar.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirmar Cancelación';
+      }
+    }
 
     // init() is called by Google Maps callback
   </script>

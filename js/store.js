@@ -98,6 +98,8 @@ class MotoClickStore {
       deliveredAt:       row.delivered_at,
       createdAt:         row.created_at,
       updatedAt:         row.updated_at,
+      cancelReason:      row.cancel_reason,
+      cancelledBy:       row.cancelled_by,
     };
   }
 
@@ -126,6 +128,8 @@ class MotoClickStore {
     if (obj.stopDescription !== undefined)  r.stop_description    = obj.stopDescription;
     if (obj.acceptedAt !== undefined)       r.accepted_at         = obj.acceptedAt;
     if (obj.deliveredAt !== undefined)      r.delivered_at        = obj.deliveredAt;
+    if (obj.cancelReason !== undefined)     r.cancel_reason       = obj.cancelReason;
+    if (obj.cancelledBy !== undefined)      r.cancelled_by        = obj.cancelledBy;
     return r;
   }
 
@@ -310,6 +314,29 @@ class MotoClickStore {
     const row = this._toDB({ id, ...orderData, status: 'entregado' });
     const { data, error } = await this._sb.from('orders').insert([row]).select().single();
     if (error) { console.error('[Store] createCompletedOrder:', error); return null; }
+    return this._fromDB(data);
+  }
+
+  async cancelOrder(orderId, reason, by) {
+    if (this._useFallback) {
+       const orders = this._fb_getOrders();
+       const idx = orders.findIndex(o => o.id === orderId);
+       if (idx !== -1) {
+          orders[idx].status = 'cancelado';
+          orders[idx].cancelReason = reason;
+          orders[idx].cancelledBy = by;
+          this._fb_save(orders);
+          this._emit('status_change', orders[idx]);
+          return orders[idx];
+       }
+       return null;
+    }
+    const { data, error } = await this._sb.from('orders').update({
+       status: 'cancelado',
+       cancel_reason: reason,
+       cancelled_by: by
+    }).eq('id', orderId).select().single();
+    if (error) { console.error('[Store] cancelOrder:', error); return null; }
     return this._fromDB(data);
   }
 
