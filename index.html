@@ -505,6 +505,112 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    /* ====================================================
+       SCROLL ANIMATIONS — MotoClick Landing
+       Strategy: CSS keyframes + Intersection Observer.
+       will-change and transform only — GPU-friendly.
+    ==================================================== */
+
+    /* ── 1. Header sticky shrink + blur ── */
+    .navbar {
+      transition: padding 0.35s cubic-bezier(0.16,1,0.3,1),
+                  background 0.35s ease,
+                  backdrop-filter 0.35s ease,
+                  -webkit-backdrop-filter 0.35s ease,
+                  box-shadow 0.35s ease;
+      will-change: padding, background;
+    }
+    .navbar.nav-scrolled {
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
+      background: rgba(10, 15, 26, 0.72) !important;
+      -webkit-backdrop-filter: blur(18px) saturate(1.4) !important;
+      backdrop-filter: blur(18px) saturate(1.4) !important;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.45) !important;
+      border-bottom-color: rgba(255,255,255,0.08) !important;
+    }
+    .navbar.nav-scrolled .brand-logo {
+      height: 30px;
+      transition: height 0.3s ease;
+    }
+
+    /* ── 2. Stagger fade-in + scale-up (Servicios / Features / Role cards) ── */
+    .sa-stagger {
+      opacity: 0;
+      transform: scale(0.95) translateY(18px);
+      transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.45s cubic-bezier(0.16,1,0.3,1);
+      will-change: opacity, transform;
+    }
+    .sa-stagger.sa-visible {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* ── 3. Lateral slide for trust cards (alternate directions) ── */
+    .sa-slide-left {
+      opacity: 0;
+      transform: translateX(-32px);
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.5s cubic-bezier(0.16,1,0.3,1);
+      will-change: opacity, transform;
+    }
+    .sa-slide-right {
+      opacity: 0;
+      transform: translateX(32px);
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.5s cubic-bezier(0.16,1,0.3,1);
+      will-change: opacity, transform;
+    }
+    .sa-slide-left.sa-visible,
+    .sa-slide-right.sa-visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ── 4. Settle effect for CTA / footer blocks ── */
+    .sa-settle {
+      opacity: 0;
+      transform: scale(1.05);
+      transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.55s cubic-bezier(0.16,1,0.3,1);
+      will-change: opacity, transform;
+    }
+    .sa-settle.sa-visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* ── 5. Simple fade-in for section headings ── */
+    .sa-fade {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease,
+                  transform 0.5s ease;
+      will-change: opacity, transform;
+    }
+    .sa-fade.sa-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Stagger delay helpers */
+    .sa-d1  { transition-delay: 0.05s; }
+    .sa-d2  { transition-delay: 0.12s; }
+    .sa-d3  { transition-delay: 0.19s; }
+    .sa-d4  { transition-delay: 0.26s; }
+    .sa-d5  { transition-delay: 0.33s; }
+    .sa-d6  { transition-delay: 0.40s; }
+
+    /* Respect reduced-motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .sa-stagger, .sa-slide-left, .sa-slide-right, .sa-settle, .sa-fade {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1088,6 +1194,102 @@
         });
       }
     });
+
+    /* ================================================================
+       SCROLL ANIMATIONS ENGINE — Pure JS, zero deps
+       Uses IntersectionObserver for GPU-efficient animations.
+    ================================================================ */
+    (function initScrollAnimations() {
+
+      /* 1. ── Navbar sticky shrink + backdrop blur ── */
+      const navbar = document.querySelector('.navbar');
+      if (navbar) {
+        const onScroll = () => {
+          if (window.scrollY > 40) {
+            navbar.classList.add('nav-scrolled');
+          } else {
+            navbar.classList.remove('nav-scrolled');
+          }
+        };
+        // Passive listener = no jank on mobile
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll(); // Run on init
+      }
+
+      /* 2. ── Intersection Observer factory ── */
+      function makeObserver(threshold = 0.15) {
+        return new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('sa-visible');
+              obs.unobserve(entry.target); // Fire once only
+            }
+          });
+        }, { threshold, rootMargin: '0px 0px -40px 0px' });
+      }
+
+      const observer = makeObserver(0.12);
+
+      /* 3. ── Stagger: Services list items ── */
+      // services-list-container items
+      document.querySelectorAll('.services-list-container .service-item')
+        .forEach((el, i) => {
+          el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 6)}`);
+          observer.observe(el);
+        });
+
+      /* Stagger: Feature cards ("Qué hace MotoClick App") */
+      document.querySelectorAll('.features .feature-card')
+        .forEach((el, i) => {
+          el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 6)}`);
+          observer.observe(el);
+        });
+
+      /* Stagger: Role cards */
+      document.querySelectorAll('.role-selection-grid .role-card')
+        .forEach((el, i) => {
+          el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 3)}`);
+          observer.observe(el);
+        });
+
+      /* Stagger: Section headings + service img wrapper */
+      document.querySelectorAll(
+        '.services-grid-section .text-center, .services-grid-section .section-title'
+      ).forEach(el => {
+        el.classList.add('sa-fade');
+        observer.observe(el);
+      });
+
+      document.querySelectorAll('.section-title').forEach(el => {
+        if (!el.classList.contains('sa-fade')) {
+          el.classList.add('sa-fade');
+          observer.observe(el);
+        }
+      });
+
+      /* 4. ── Lateral slide: Trust cards alternated ── */
+      document.querySelectorAll('#trustCarousel .trust-card')
+        .forEach((el, i) => {
+          const dir = (i % 2 === 0) ? 'sa-slide-left' : 'sa-slide-right';
+          el.classList.add(dir, `sa-d${Math.min(i + 1, 5)}`);
+          observer.observe(el);
+        });
+
+      /* 5. ── Settle effect: pricing, coverage, play-store, stats, footer ── */
+      [
+        '.pricing-card',
+        '.coverage-card',
+        '.playstore-banner',
+        '.stats-bar',
+        '.footer'
+      ].forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+          el.classList.add('sa-settle');
+          observer.observe(el);
+        });
+      });
+
+    })();
   </script>
 </body>
 </html>
