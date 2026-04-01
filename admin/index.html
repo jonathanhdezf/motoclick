@@ -8,7 +8,7 @@
   <style>
     body { background: var(--bg-primary); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
     .admin-card { background: var(--bg-secondary); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-    .admin-card img { width: 150px; margin-bottom: 1.5rem; }
+    .admin-card img { width: 220px; display: block; margin: 0 auto 1.5rem; filter: drop-shadow(0 0 10px rgba(0,230,91,0.2)); }
     .admin-card h2 { margin-top: 0; color: #ef4444; margin-bottom: 2rem; }
     .form-group-left { text-align: left; }
     .btn-admin { background: #ef4444; border-color: #ef4444; color: white; }
@@ -17,7 +17,7 @@
   </style>
 </head>
 <body>
-  <div class="admin-card animate-fade-in-up">
+  <div class="admin-card animate-fade-in-up text-center">
     <img src="../assets/logo_motoclick_blanco.png" alt="MotoClick Logo">
     <h2>Panel Administrativo</h2>
     <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
