@@ -336,7 +336,13 @@ class MotoClickStore {
        cancel_reason: reason,
        cancelled_by: by
     }).eq('id', orderId).select().single();
-    if (error) { console.error('[Store] cancelOrder:', error); return null; }
+
+    if (error) { 
+       console.error('[Store] cancelOrder CRITICAL ERROR:', error); 
+       // Mostramos el error exacto para diagnóstico
+       if (error.message) console.warn('Supabase dice:', error.message);
+       return null; 
+    }
     return this._fromDB(data);
   }
 
