@@ -986,7 +986,7 @@
       </div>
     </div>
     
-    <section class="hero animate-fade-in">
+    <section class="hero animate-fade-in" id="hero">
       <div class="hero-beams">
         <div class="beam"></div>
         <div class="beam"></div>
@@ -1040,7 +1040,7 @@
     </section>
 
     <!-- ¿Por qué MotoClick? Value Section -->
-    <section class="container why-section">
+    <section class="container why-section" id="why-choose">
       <div class="text-center">
         <p class="why-label">Por qué elegirnos</p>
         <h2 class="section-title why-heading">Tu valor en 4 segundos</h2>
@@ -1071,7 +1071,7 @@
     </section>
 
     <!-- Services -->
-    <section class="container services-grid-section">
+    <section class="container services-grid-section" id="services">
       <div class="text-center mb-xl sa-fade">
         <div class="services-img-wrapper">
           <img src="./assets/servicios-moto.png" alt="Servicios MotoClick" class="services-hero-img">
@@ -1115,7 +1115,7 @@
     </section>
 
     <!-- Confianza Section -->
-    <section class="container trust-section mt-3xl sa-fade">
+    <section class="container trust-section mt-3xl sa-fade" id="trust">
       <h2 class="section-title text-center mb-2xl">¿Por qué confiar en MotoClick?</h2>
       <div class="trust-carousel-wrapper">
         <div class="trust-grid" id="trustCarousel">
@@ -1147,7 +1147,7 @@
 
 
     <!-- Features -->
-    <section class="container features-section mt-3xl">
+    <section class="container features-section mt-3xl" id="features">
       <h2 class="section-title text-center mb-md sa-fade">Qué hace <span class="text-highlight">MotoClick App</span></h2>
       <div class="features">
         <div class="card feature-card">
@@ -1169,7 +1169,7 @@
     </section>
 
     <!-- Cobertura -->
-    <section class="container coverage-section sa-fade">
+    <section class="container coverage-section sa-fade" id="coverage">
       <div class="card coverage-card">
         <div class="coverage-content">
           <div class="coverage-icon-wrapper"><span class="coverage-emoji">📍</span></div>
@@ -1217,7 +1217,7 @@
     </section>
 
     <!-- B2B Negocios Section -->
-    <section class="container biz-section">
+    <section class="container biz-section" id="business">
       <div class="biz-card sa-settle">
         <span class="biz-badge">🏢 Para negocios</span>
         <h2 class="biz-title">
@@ -1241,7 +1241,7 @@
     </section>
 
     <!-- Alianzas Estratégicas -->
-    <section class="container alliances-section sa-fade">
+    <section class="container alliances-section sa-fade" id="partners">
       <div class="text-center">
         <p class="why-label">Red de Alianzas</p>
         <h2 class="section-title">Negocios que ya confían en nosotros</h2>
@@ -1711,6 +1711,137 @@
         }, { passive: true });
       }
 
+    })();
+  </script>
+
+  <!-- Floating Side Navigation (Premium Green Bubbles) -->
+  <style>
+    .floating-nav {
+      position: fixed;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px 10px;
+      background: rgba(10, 15, 26, 0.4);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 40px;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
+      animation: navFadeIn 1s ease-out;
+    }
+    
+    @keyframes navFadeIn {
+      from { opacity: 0; transform: translateY(-50%) translateX(20px); }
+      to { opacity: 1; transform: translateY(-50%) translateX(0); }
+    }
+    
+    .nav-bubble {
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .nav-bubble:hover {
+      background: #00e65b;
+      transform: scale(1.6);
+      box-shadow: 0 0 15px rgba(0, 230, 91, 0.7);
+    }
+    
+    .nav-bubble.active {
+      background: #00e65b;
+      height: 32px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0, 230, 91, 0.5);
+    }
+    
+    /* Tooltip Premium */
+    .nav-bubble::after {
+      content: attr(data-title);
+      position: absolute;
+      right: 35px;
+      top: 50%;
+      transform: translateY(-50%) translateX(15px);
+      background: rgba(10, 15, 26, 0.95);
+      border: 1px solid rgba(0, 230, 91, 0.4);
+      padding: 7px 14px;
+      border-radius: 12px;
+      color: #00e65b;
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.02em;
+    }
+    
+    .nav-bubble:hover::after {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+    
+    @media (max-width: 1024px) {
+      .floating-nav { display: none; }
+    }
+  </style>
+
+  <aside class="floating-nav">
+    <div class="nav-bubble" data-title="Hero / Inicio" onclick="document.getElementById('hero').scrollIntoView({behavior: 'smooth'})"></div>
+    <div class="nav-bubble" data-title="Por qué elegirnos" onclick="document.getElementById('why-choose').scrollIntoView({behavior: 'smooth'})"></div>
+    <div class="nav-bubble" data-title="¿Qué puedo hacer por ti?" onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})"></div>
+    <div class="nav-bubble" data-title="Por qué confiar" onclick="document.getElementById('trust').scrollIntoView({behavior: 'smooth'})"></div>
+    <div class="nav-bubble" data-title="Qué hace Motoclick" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})"></div>
+    <div class="nav-bubble" data-title="Cobertura" onclick="document.getElementById('coverage').scrollIntoView({behavior: 'smooth'})"></div>
+    <div class="nav-bubble" data-title="Para negocios" onclick="document.getElementById('business').scrollIntoView({behavior: 'smooth'})"></div>
+    <div class="nav-bubble" data-title="Red de alianzas" onclick="document.getElementById('partners').scrollIntoView({behavior: 'smooth'})"></div>
+  </aside>
+
+  <script>
+    // Logic for Floating Side Navigation Active State
+    (() => {
+      const sections = ['hero', 'why-choose', 'services', 'trust', 'features', 'coverage', 'business', 'partners'];
+      const bubbles = document.querySelectorAll('.nav-bubble');
+      
+      const updateNav = () => {
+        let current = '';
+        sections.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            // Trigger bubble activation when section is near the top half of viewport
+            if (rect.top <= window.innerHeight / 2.5) {
+              current = id;
+            }
+          }
+        });
+
+        bubbles.forEach((b, i) => {
+          b.classList.remove('active');
+          const targetOnClick = b.getAttribute('onclick');
+          if (targetOnClick && targetOnClick.includes(current)) {
+            b.classList.add('active');
+          }
+        });
+        
+        // Default to first bubble if at the very top
+        if (window.scrollY < 200) {
+          bubbles.forEach(b => b.classList.remove('active'));
+          bubbles[0].classList.add('active');
+        }
+      };
+
+      window.addEventListener('scroll', updateNav, { passive: true });
+      window.addEventListener('load', updateNav);
     })();
   </script>
 </body>
