@@ -329,7 +329,7 @@
     </div>
   </div>
 
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&callback=init"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
@@ -353,13 +353,16 @@
     let directionsService, directionsRenderer;
     let movementTimer = null;
 
-    function init() {
-      if (typeof google === 'undefined') {
-        showToast('Error cargando Google Maps API.', 'error');
-        return;
-      }
-      loadOrder();
+    function initMap() {
+       console.log("Map Ready for Delivery");
+       if (typeof google !== 'undefined') loadOrder();
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadOrder();
+      // Listen for updates
+      setInterval(loadOrder, 4000);
+    });
 
     async function loadOrder() {
       const order = await store.getOrderById(orderId);
@@ -488,6 +491,7 @@
     const GOOGLE_DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 }; // Teziutlán
 
     function renderMap(order) {
+      if (typeof google === 'undefined') return;
       if (!map) {
         const center = order.pickupCoords
           ? { lat: order.pickupCoords[0], lng: order.pickupCoords[1] }
@@ -710,5 +714,6 @@
 
     // init() is called by Google Maps callback
   </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&callback=initMap"></script>
 </body>
 </html>
