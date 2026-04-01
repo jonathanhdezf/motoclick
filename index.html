@@ -507,6 +507,192 @@
     }
 
     /* ====================================================
+       NUEVAS SECCIONES — Valor & B2B
+    ==================================================== */
+
+    /* Hero benefit chips */
+    .hero-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .hero-chip .chip-icon { font-size: 1rem; }
+
+    /* ── Why MotoClick? Value grid ── */
+    .why-section {
+      padding: var(--space-3xl) 0 var(--space-2xl);
+    }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+    }
+    @media (min-width: 768px) {
+      .why-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .why-card {
+      background: rgba(22, 32, 50, 0.6);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg) var(--space-md);
+      text-align: center;
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+    .why-card:hover {
+      border-color: rgba(0, 230, 91, 0.3);
+      transform: translateY(-3px);
+    }
+    .why-card-icon {
+      font-size: 2rem;
+      margin-bottom: var(--space-sm);
+      display: block;
+    }
+    .why-card-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 4px;
+      line-height: 1.3;
+    }
+    .why-card-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* ── B2B Business Section ── */
+    .biz-section {
+      padding: var(--space-3xl) 0;
+    }
+    .biz-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, rgba(0,179,71,0.08) 0%, rgba(0,230,91,0.04) 50%, rgba(10,15,26,0.6) 100%);
+      border: 1px solid rgba(0,230,91,0.2);
+      padding: var(--space-3xl) var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--space-lg);
+    }
+    .biz-card::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(0,230,91,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .biz-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: rgba(0,230,91,0.12);
+      border: 1px solid rgba(0,230,91,0.3);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .biz-title {
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 900;
+      color: var(--text-primary);
+      line-height: 1.2;
+      margin: 0;
+    }
+    .biz-title span { color: var(--text-accent); }
+    .biz-subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin: 0;
+      line-height: 1.6;
+    }
+    .biz-perks {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+    .biz-perk {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .biz-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      background: var(--gradient-primary);
+      color: #0A0F1A;
+      font-weight: 800;
+      font-size: 1rem;
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 24px rgba(0,230,91,0.3);
+      border: none;
+      cursor: pointer;
+    }
+    .biz-cta-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 32px rgba(0,230,91,0.45);
+    }
+    .biz-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Why section label */
+    .why-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0 0 8px;
+      color: var(--text-accent);
+    }
+    .why-heading {
+      margin: 0 0 4px;
+    }
+    .why-intro {
+      margin: 0;
+    }
+
+    /* ====================================================
        SCROLL ANIMATIONS — MotoClick Landing
        Strategy: CSS keyframes + Intersection Observer.
        will-change and transform only — GPU-friendly.
@@ -705,18 +891,26 @@
       <div class="container">
         <img src="./assets/moto-flotante.svg" alt="MotoClick" class="hero-icon">
         <h1 class="hero-title">
-          ¿No puedes salir? <span class="text-gradient">Yo hago tu mandado</span> en minutos 🛵
+          Pide cualquier cosa. <span class="text-gradient">Lo llevamos a tu puerta</span> en minutos 🛵
         </h1>
         <p class="hero-subtitle">
-          Servicio rápido y confiable en Teziutlán.
+          Como Uber Eats, pero para <strong>todo lo que necesitas</strong> en Teziutlán.
+          Comida, súper, farmacia, paquetes y más.
         </p>
         <div class="hero-ctas">
           <a href="#" class="btn btn-primary btn-xl animate-pulse-slow whatsapp-btn">
-            👉 Pedir por WhatsApp
+            👉 Pedir Ahora por WhatsApp
           </a>
           <a href="./cliente/" class="btn btn-secondary btn-xl">
-            <i class="fas fa-mobile-alt"></i> Pedir por MotoClick App
+            <i class="fas fa-mobile-alt"></i> Usar la App
           </a>
+        </div>
+        <!-- Benefit chips -->
+        <div class="hero-chips">
+          <span class="hero-chip"><span class="chip-icon">⚡</span> Entrega en ~15 min</span>
+          <span class="hero-chip"><span class="chip-icon">💰</span> Precio claro al instante</span>
+          <span class="hero-chip"><span class="chip-icon">📍</span> Rastreo en tiempo real</span>
+          <span class="hero-chip"><span class="chip-icon">🛵</span> Sin salir de casa</span>
         </div>
       </div>
     </section>
@@ -735,6 +929,37 @@
         <div class="stat-item">
           <div class="stat-value">4.9 ⭐</div>
           <div class="stat-label">Calificación</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ¿Por qué MotoClick? Value Section -->
+    <section class="container why-section">
+      <div class="text-center">
+        <p class="why-label">Por qué elegirnos</p>
+        <h2 class="section-title why-heading">Tu valor en 4 segundos</h2>
+        <p class="text-secondary why-intro">Todo lo que necesitas saber antes de pedir.</p>
+      </div>
+      <div class="why-grid">
+        <div class="why-card sa-stagger sa-d1">
+          <span class="why-card-icon">🚀</span>
+          <p class="why-card-title">Más rápido que llamar</p>
+          <p class="why-card-desc">Pide en 30 segundos, sin esperas ni llamadas eternas.</p>
+        </div>
+        <div class="why-card sa-stagger sa-d2">
+          <span class="why-card-icon">💸</span>
+          <p class="why-card-title">Precio claro</p>
+          <p class="why-card-desc">Te cotizamos antes de salir. Sin sorpresas al recibir.</p>
+        </div>
+        <div class="why-card sa-stagger sa-d3">
+          <span class="why-card-icon">📍</span>
+          <p class="why-card-title">Sigue tu pedido</p>
+          <p class="why-card-desc">Rastreo en vivo desde que aceptamos hasta la entrega.</p>
+        </div>
+        <div class="why-card sa-stagger sa-d4">
+          <span class="why-card-icon">🏪</span>
+          <p class="why-card-title">Para todo negocio</p>
+          <p class="why-card-desc">Restaurante, farmacia, tienda... nosotros hacemos la entrega.</p>
         </div>
       </div>
     </section>
@@ -874,6 +1099,30 @@
             <b>Google Play</b>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- B2B Negocios Section -->
+    <section class="container biz-section">
+      <div class="biz-card sa-settle">
+        <span class="biz-badge">🏢 Para negocios</span>
+        <h2 class="biz-title">
+          Somos la <span>infraestructura digital</span><br>de los negocios locales
+        </h2>
+        <p class="biz-subtitle">
+          ¿Tienes un restaurante, tienda o farmacia? MotoClick lleva tus pedidos
+          mientras tú te enfocas en vender. Sin contratar repartidores, sin apps complicadas.
+        </p>
+        <div class="biz-perks">
+          <span class="biz-perk">📦 Entregas a domicilio</span>
+          <span class="biz-perk">📱 App con rastreo</span>
+          <span class="biz-perk">💬 Gestión por WhatsApp</span>
+          <span class="biz-perk">⚡ Sin costos fijos</span>
+        </div>
+        <a href="https://wa.me/522331072438?text=Hola%20MotoClick!%20Quiero%20usar%20su%20servicio%20para%20mi%20negocio%20%F0%9F%9A%80" target="_blank" rel="noopener noreferrer" class="biz-cta-btn">
+          🏪 Quiero vender con MotoClick
+        </a>
+        <p class="biz-note">📞 Respuesta en menos de 1 hora &bull; Sin contratos &bull; Teziutlán, Puebla</p>
       </div>
     </section>
 
