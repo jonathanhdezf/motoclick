@@ -721,13 +721,11 @@
       transition: height 0.3s ease;
     }
 
-    /* ── 2. Stagger fade-in + scale-up (Servicios / Features / Role cards) ── */
     .sa-stagger {
       opacity: 0;
       transform: scale(0.95) translateY(18px);
       transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1),
                   transform 0.45s cubic-bezier(0.16,1,0.3,1);
-      will-change: opacity, transform;
     }
     .sa-stagger.sa-visible {
       opacity: 1;
@@ -740,14 +738,12 @@
       transform: translateX(-32px);
       transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1),
                   transform 0.5s cubic-bezier(0.16,1,0.3,1);
-      will-change: opacity, transform;
     }
     .sa-slide-right {
       opacity: 0;
       transform: translateX(32px);
       transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1),
                   transform 0.5s cubic-bezier(0.16,1,0.3,1);
-      will-change: opacity, transform;
     }
     .sa-slide-left.sa-visible,
     .sa-slide-right.sa-visible {
@@ -761,7 +757,6 @@
       transform: scale(1.05);
       transition: opacity 0.55s cubic-bezier(0.16,1,0.3,1),
                   transform 0.55s cubic-bezier(0.16,1,0.3,1);
-      will-change: opacity, transform;
     }
     .sa-settle.sa-visible {
       opacity: 1;
@@ -774,7 +769,6 @@
       transform: translateY(12px);
       transition: opacity 0.5s ease,
                   transform 0.5s ease;
-      will-change: opacity, transform;
     }
     .sa-fade.sa-visible {
       opacity: 1;
@@ -917,7 +911,7 @@
 
     <!-- Stats -->
     <section class="container">
-      <div class="stats-bar animate-fade-in-up stagger-1">
+      <div class="stats-bar sa-settle">
         <div class="stat-item">
           <div class="stat-value">+50</div>
           <div class="stat-label">Mandados</div>
@@ -966,7 +960,7 @@
 
     <!-- Services -->
     <section class="container services-grid-section">
-      <div class="text-center mb-xl animate-fade-in-up stagger-2">
+      <div class="text-center mb-xl sa-fade">
         <div class="services-img-wrapper">
           <img src="./assets/servicios-moto.png" alt="Servicios MotoClick" class="services-hero-img">
         </div>
@@ -974,7 +968,7 @@
         <p class="text-secondary mt-sm">Soluciones rápidas para tus necesidades diarias en Teziutlán.</p>
       </div>
       
-      <div class="services-list-container animate-fade-in-up stagger-3">
+      <div class="services-list-container">
         <div class="service-item"><span class="service-check">✔</span><span class="service-text">Envía y recibe paquetes, comida, documentos</span></div>
         <div class="service-item"><span class="service-check">✔</span><span class="service-text">Mandados del súper</span></div>
         <div class="service-item"><span class="service-check">✔</span><span class="service-text">Farmacia</span></div>
@@ -985,7 +979,7 @@
     </section>
 
     <!-- Confianza Section -->
-    <section class="container trust-section mt-3xl animate-fade-in-up stagger-2">
+    <section class="container trust-section mt-3xl sa-fade">
       <h2 class="section-title text-center mb-2xl">¿Por qué confiar en MotoClick?</h2>
       <div class="trust-carousel-wrapper">
         <div class="trust-grid" id="trustCarousel">
@@ -1017,14 +1011,14 @@
 
     <!-- Role Selection -->
     <section class="container role-selection-section">
-      <h2 class="section-title text-center mb-xl animate-fade-in-up stagger-1">¿Cómo quieres usar MotoClick App?</h2>
+      <h2 class="section-title text-center mb-xl sa-fade">¿Cómo quieres usar MotoClick App?</h2>
       <div class="grid-2 role-selection-grid">
-        <div class="card role-card animate-fade-in-up stagger-3" id="btn-client" onclick="window.location.href='cliente/'">
+        <div class="card role-card" id="btn-client" onclick="window.location.href='cliente/'">
           <span class="role-icon">📦</span>
           <h3 class="role-title">Soy Cliente</h3>
           <p class="role-desc">Solicita un mandado y rastrea tu envío en tiempo real</p>
         </div>
-        <div class="card role-card animate-fade-in-up stagger-4" id="btn-driver" onclick="window.location.href='repartidor/'">
+        <div class="card role-card" id="btn-driver" onclick="window.location.href='repartidor/'">
           <span class="role-icon">🏍️</span>
           <h3 class="role-title">Soy Repartidor</h3>
           <p class="role-desc">Acepta mandados disponibles y gana dinero</p>
@@ -1034,19 +1028,19 @@
 
     <!-- Features -->
     <section class="container features-section">
-      <h2 class="section-title text-center mb-xl animate-fade-in-up stagger-2">Qué hace MotoClick App</h2>
+      <h2 class="section-title text-center mb-xl sa-fade">Qué hace MotoClick App</h2>
       <div class="features">
-        <div class="card feature-card animate-fade-in-up stagger-3">
+        <div class="card feature-card">
           <span class="feature-icon">📍</span>
           <h3 class="feature-title">Rastreo en Vivo</h3>
           <p class="feature-text">Sigue a tu repartidor en el mapa en tiempo real desde que acepta tu mandado hasta la entrega.</p>
         </div>
-        <div class="card feature-card animate-fade-in-up stagger-4">
+        <div class="card feature-card">
           <span class="feature-icon">⚡</span>
           <h3 class="feature-title">Rápido y Seguro</h3>
           <p class="feature-text">Nuestros repartidores verificados recogen y entregan tus mandados con la máxima rapidez.</p>
         </div>
-        <div class="card feature-card animate-fade-in-up stagger-5">
+        <div class="card feature-card">
           <span class="feature-icon">💳</span>
           <h3 class="feature-title">Múltiples Pagos</h3>
           <p class="feature-text">Paga como prefieras: efectivo, tarjeta de crédito/débito o transferencia bancaria.</p>
@@ -1055,7 +1049,7 @@
     </section>
 
     <!-- Cobertura -->
-    <section class="container coverage-section animate-fade-in-up stagger-2">
+    <section class="container coverage-section sa-fade">
       <div class="card coverage-card">
         <div class="coverage-content">
           <div class="coverage-icon-wrapper"><span class="coverage-emoji">📍</span></div>
@@ -1070,7 +1064,7 @@
     </section>
 
     <!-- Precios -->
-    <section class="container pricing-section animate-fade-in-up stagger-3">
+    <section class="container pricing-section sa-fade">
       <div class="card pricing-card text-center">
         <h2 class="section-title">Precios accesibles</h2>
         <p class="pricing-text mt-sm">
@@ -1086,7 +1080,7 @@
     </section>
 
     <!-- Play Store Coming Soon -->
-    <section class="container animate-fade-in-up stagger-4">
+    <section class="container sa-fade">
       <div class="playstore-banner">
         <h2 class="playstore-title">¡Próximamente en Android!</h2>
         <p class="playstore-desc">
@@ -1422,14 +1416,13 @@
       const closePromo = document.getElementById('closePromo');
       
       if (promoPopup && closePromo) {
-        // Show after 2 seconds
+        // Show after 2.5 seconds to let user scroll first
         setTimeout(() => {
-          // Check if already closed this session
           if (!sessionStorage.getItem('promoClosed')) {
             promoPopup.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            // document.body.style.overflow = 'hidden'; // REMOVED: let user scroll through if they want
           }
-        }, 2000);
+        }, 2500);
 
         const hidePromo = () => {
           promoPopup.classList.remove('active');
@@ -1466,7 +1459,7 @@
       }
 
       /* 2. ── Intersection Observer factory ── */
-      function makeObserver(threshold = 0.15) {
+      function makeObserver(threshold = 0.05) {
         return new IntersectionObserver((entries, obs) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -1474,47 +1467,36 @@
               obs.unobserve(entry.target); // Fire once only
             }
           });
-        }, { threshold, rootMargin: '0px 0px -40px 0px' });
+        }, { threshold, rootMargin: '0px' });
       }
 
-      const observer = makeObserver(0.12);
+      const observer = makeObserver(0.05);
 
-      /* 3. ── Stagger: Services list items ── */
-      // services-list-container items
+      /* 3. ── Stagger Setup ── */
+      
+      // Services
       document.querySelectorAll('.services-list-container .service-item')
         .forEach((el, i) => {
           el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 6)}`);
           observer.observe(el);
         });
 
-      /* Stagger: Feature cards ("Qué hace MotoClick App") */
+      // Features
       document.querySelectorAll('.features .feature-card')
         .forEach((el, i) => {
-          el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 6)}`);
+          el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 5)}`);
           observer.observe(el);
         });
 
-      /* Stagger: Role cards */
+      // Role cards
       document.querySelectorAll('.role-selection-grid .role-card')
         .forEach((el, i) => {
           el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 3)}`);
           observer.observe(el);
         });
 
-      /* Stagger: Section headings + service img wrapper */
-      document.querySelectorAll(
-        '.services-grid-section .text-center, .services-grid-section .section-title'
-      ).forEach(el => {
-        el.classList.add('sa-fade');
-        observer.observe(el);
-      });
-
-      document.querySelectorAll('.section-title').forEach(el => {
-        if (!el.classList.contains('sa-fade')) {
-          el.classList.add('sa-fade');
-          observer.observe(el);
-        }
-      });
+      // Headings
+      document.querySelectorAll('.sa-fade').forEach(el => observer.observe(el));
 
       /* 4. ── Lateral slide: Trust cards alternated ── */
       document.querySelectorAll('#trustCarousel .trust-card')
@@ -1524,19 +1506,27 @@
           observer.observe(el);
         });
 
-      /* 5. ── Settle effect: pricing, coverage, play-store, stats, footer ── */
+      /* 5. ── Settle effect: pricing, coverage, play-store, stats, footer, biz ── */
       [
         '.pricing-card',
         '.coverage-card',
         '.playstore-banner',
         '.stats-bar',
-        '.footer'
+        '.footer',
+        '.biz-card'
       ].forEach(sel => {
         document.querySelectorAll(sel).forEach(el => {
           el.classList.add('sa-settle');
           observer.observe(el);
         });
       });
+
+      // Safety safety net: check visibility after 1.5s
+      setTimeout(() => {
+        document.querySelectorAll('.sa-stagger, .sa-fade, .sa-slide-left, .sa-slide-right, .sa-settle').forEach(el => {
+          el.classList.add('sa-visible');
+        });
+      }, 1500);
 
     })();
   </script>
