@@ -350,6 +350,7 @@
     }
 
     let map, pickupMarker, deliveryMarker, driverMarker, routeLine;
+    let directionsService, directionsRenderer;
     let movementTimer = null;
 
     function init() {
@@ -515,6 +516,17 @@
         google.maps.event.addListenerOnce(map, 'idle', () => {
            loadOrderDetailsMap(order);
         });
+
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+          map: map,
+          suppressMarkers: true,
+          polylineOptions: {
+            strokeColor: '#00E65B',
+            strokeOpacity: 0.8,
+            strokeWeight: 6
+          }
+        });
       } else {
         loadOrderDetailsMap(order);
       }
@@ -541,19 +553,27 @@
           label: '🏠'
         });
 
-        routeLine = new google.maps.Polyline({
-          path: [pickupLatLng, deliveryLatLng],
-          geodesic: true,
-          strokeColor: '#00E65B',
-          strokeOpacity: 0.8,
-          strokeWeight: 4,
-          map: map
+        // Request real road-following route from Google
+        directionsService.route({
+          origin: pickupLatLng,
+          destination: deliveryLatLng,
+          travelMode: google.maps.TravelMode.DRIVING
+        }, (response, status) => {
+          if (status === 'OK') {
+            directionsRenderer.setDirections(response);
+          } else {
+            console.error('Directions request failed due to ' + status);
+            // Fallback to straight line
+            routeLine = new google.maps.Polyline({
+              path: [pickupLatLng, deliveryLatLng],
+              geodesic: true,
+              strokeColor: '#00E65B',
+              strokeOpacity: 0.8,
+              strokeWeight: 4,
+              map: map
+            });
+          }
         });
-
-        const bounds = new google.maps.LatLngBounds();
-        bounds.extend(pickupLatLng);
-        bounds.extend(deliveryLatLng);
-        map.fitBounds(bounds);
       }
     }
 
