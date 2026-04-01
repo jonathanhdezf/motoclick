@@ -666,7 +666,7 @@
         </div>
     </div>
 
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places&callback=init"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
@@ -677,6 +677,11 @@
       document.getElementById('user-greeting').innerHTML =
         `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
       renderHistory();
+    }
+
+    function init() {
+       // Google Maps ready
+       console.log("Google Maps API loaded in Nuevo Pedido");
     }
 
     async function handleSubmitOrder(e) {
