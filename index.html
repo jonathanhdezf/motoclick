@@ -692,6 +692,58 @@
       margin: 0;
     }
 
+    /* ── Alliances Section ── */
+    .alliances-section {
+      padding: var(--space-3xl) 0 var(--space-4xl);
+      text-align: center;
+    }
+    .alliances-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-2xl);
+    }
+    @media (min-width: 768px) {
+      .alliances-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .alliance-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      padding: var(--space-xl) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+      transition: all 0.3s ease;
+      filter: grayscale(1) opacity(0.5);
+      cursor: pointer;
+    }
+    .alliance-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-active);
+      filter: grayscale(0) opacity(1);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-glow);
+    }
+    .alliance-icon {
+      font-size: 1.8rem;
+      color: var(--text-accent);
+      margin-bottom: 4px;
+    }
+    .alliance-name {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .alliance-type {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
     /* ── Scroll Progress Sidebar ── */
     .scroll-progress-container {
       position: fixed;
@@ -1149,6 +1201,57 @@
       </div>
     </section>
 
+    <!-- Alianzas Estratégicas -->
+    <section class="container alliances-section sa-fade">
+      <div class="text-center">
+        <p class="why-label">Red de Alianzas</p>
+        <h2 class="section-title">Negocios que ya confían en nosotros</h2>
+        <p class="text-secondary mt-sm">Impulsando la economía local de Teziutlán con logística inteligente.</p>
+      </div>
+      <div class="alliances-grid">
+        <div class="alliance-item sa-stagger sa-d1">
+          <i class="fas fa-utensils alliance-icon"></i>
+          <span class="alliance-name">El Buen Sazón</span>
+          <span class="alliance-type">Restaurante Gourmet</span>
+        </div>
+        <div class="alliance-item sa-stagger sa-d2">
+          <i class="fas fa-pills alliance-icon"></i>
+          <span class="alliance-name">Farmacia Juquilita</span>
+          <span class="alliance-type">Salud y Medicinas</span>
+        </div>
+        <div class="alliance-item sa-stagger sa-d3">
+          <i class="fas fa-store alliance-icon"></i>
+          <span class="alliance-name">Abarrotes Tezi</span>
+          <span class="alliance-type">Tienda de Autoservicio</span>
+        </div>
+        <div class="alliance-item sa-stagger sa-d4">
+          <i class="fas fa-birthday-cake alliance-icon"></i>
+          <span class="alliance-name">Dulzura Local</span>
+          <span class="alliance-type">Repostería y Pasteles</span>
+        </div>
+        <div class="alliance-item sa-stagger sa-d5">
+          <i class="fas fa-cut alliance-icon"></i>
+          <span class="alliance-name">Barbería Central</span>
+          <span class="alliance-type">Belleza y Cuidado Personal</span>
+        </div>
+        <div class="alliance-item sa-stagger sa-d6">
+          <i class="fas fa-laptop-code alliance-icon"></i>
+          <span class="alliance-name">Cyber Tech</span>
+          <span class="alliance-type">Servicios Tecnológicos</span>
+        </div>
+        <div class="alliance-item sa-stagger sa-d1">
+          <i class="fas fa-shoe-prints alliance-icon"></i>
+          <span class="alliance-name">Boutique Glam</span>
+          <span class="alliance-type">Moda y Calzado</span>
+        </div>
+        <div class="alliance-item sa-stagger sa-d2">
+          <i class="fas fa-hamburger alliance-icon"></i>
+          <span class="alliance-name">Burger Station</span>
+          <span class="alliance-type">Fast Food Premium</span>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
@@ -1525,7 +1628,14 @@
         });
 
       // Headings
-      document.querySelectorAll('.sa-fade').forEach(el => observer.observe(el));
+      document.querySelectorAll('.sa-fade, .alliances-section').forEach(el => observer.observe(el));
+      
+      // Alliances
+      document.querySelectorAll('.alliances-grid .alliance-item')
+        .forEach((el, i) => {
+          el.classList.add('sa-stagger', `sa-d${Math.min(i + 1, 6)}`);
+          observer.observe(el);
+        });
 
       /* 4. ── Lateral slide: Trust cards alternated ── */
       document.querySelectorAll('#trustCarousel .trust-card')
