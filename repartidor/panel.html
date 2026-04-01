@@ -453,8 +453,9 @@
         let targetDate = document.getElementById('history-date-filter').value;
         if (!targetDate) targetDate = new Date().toISOString().split('T')[0];
 
-        const dateFiltered = allMyOrders.filter(o => o.status === 'entregado').filter(o => {
+        const dateFiltered = allMyOrders.filter(o => o.status === 'entregado' || o.status === 'cancelado').filter(o => {
            let d = o.deliveredAt || o.createdAt;
+           if (o.status === 'cancelado') d = o.updatedAt || o.createdAt; // Use update date for cancelled
            if (!d) return false;
            // Local timezone adjustment approximation
            const objDate = new Date(d);
@@ -465,9 +466,11 @@
         let sumEarnings = 0;
         let tripsCount = 0;
         dateFiltered.forEach(o => { 
-           const p = Number(o.estimatedPriceMin) || 0;
-           sumEarnings += p; 
-           if (p >= 0) tripsCount++;
+           if (o.status === 'entregado') {
+             const p = Number(o.estimatedPriceMin) || 0;
+             sumEarnings += p; 
+             if (p >= 0) tripsCount++;
+           }
         });
         
         document.getElementById('total-trips').textContent = tripsCount;
@@ -483,21 +486,27 @@
 
         const cards = dateFiltered.slice(0, 50).map(order => {
           try {
-            const duration = (typeof tripDuration === 'function')
+            const isCancelled = order.status === 'cancelado';
+            const duration = (typeof tripDuration === 'function' && !isCancelled)
               ? tripDuration(order.acceptedAt, order.deliveredAt)
               : null;
-            const desc = (order.description || '').substring(0, 50);
+            let desc = (order.description || '').substring(0, 50);
             const suffix = (order.description || '').length > 50 ? '...' : '';
+            if (isCancelled) desc = `<span style="color:#ef4444; font-weight:bold;">[CANCELADO]</span> ${desc}`;
+            
             const addr = (order.deliveryAddress || 'Sin dirección').split(',')[0];
             const price = Number(order.estimatedPriceMin) || 0;
             const isExpense = price < 0;
-            const priceStr = isExpense ? `-$${Math.abs(price)}` : `$${price}`;
-            const priceColor = isExpense ? '#ef4444' : '#22c55e';
+            let priceStr = isExpense ? `-$${Math.abs(price)}` : `$${price}`;
+            if (isCancelled) priceStr = `<span style="text-decoration: line-through; opacity: 0.5; font-size: 0.8rem;">$${price}</span>`;
+            
+            const priceColor = isExpense ? '#ef4444' : (isCancelled ? '#94a3b8' : '#22c55e');
             
             return `
-              <div class="history-item">
+              <div class="history-item" style="${isCancelled ? 'opacity: 0.8; border-color: rgba(239, 68, 68, 0.2);' : ''}">
                 <div class="history-main" style="flex: 1;">
                   <div class="history-info" style="${isExpense ? 'color:#ef4444;' : ''}">${desc}${suffix}</div>
+                  ${isCancelled ? `<div style="font-size: 0.75rem; color:#ef4444; margin-top: 2px;"><strong>Motivo:</strong> ${order.cancelReason || 'N/A'}</div>` : ''}
                   <div class="history-meta">
                     <span>📅 ${timeAgo(order.createdAt)}</span>
                     <span>•</span>
