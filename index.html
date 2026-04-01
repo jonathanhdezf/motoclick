@@ -1791,7 +1791,16 @@
     }
     
     @media (max-width: 1024px) {
-      .floating-nav { display: none; }
+      .floating-nav { 
+        right: 10px; 
+        gap: 10px;
+        padding: 15px 6px;
+        background: rgba(10, 15, 26, 0.6);
+        border-color: rgba(0, 230, 91, 0.2);
+      }
+      .nav-bubble { width: 8px; height: 8px; }
+      .nav-bubble.active { height: 26px; }
+      .nav-bubble::after { display: none; } /* Hide tooltips on mobile to avoid overlap */
     }
   </style>
 
