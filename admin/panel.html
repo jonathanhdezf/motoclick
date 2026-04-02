@@ -3,149 +3,172 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — MotoClick</title>
+  <title>MotoClick — Central de Operaciones</title>
   <link rel="stylesheet" href="../styles/main.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root {
-      --sidebar-width: 260px;
-      --header-height: 70px;
-    }
-    
-    body { 
-      background: #0a0f1a; 
-      color: #e2e8f0;
-      margin: 0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      display: flex;
+      --sb-width: 280px;
+      --header-h: 70px;
+      --accent: #f97316;
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --glass: rgba(255, 255, 255, 0.03);
+      --border: rgba(255, 255, 255, 0.1);
     }
 
-    /* Sidebar */
+    body {
+      background: var(--bg-dark);
+      color: #f8fafc;
+      margin: 0;
+      font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Layout */
+    .app-container { display: flex; min-height: 100vh; }
+
+    /* Sidebar - Mobile Responsive */
     .sidebar {
-      width: var(--sidebar-width);
-      height: 100vh;
-      background: #111827;
-      border-right: 1px solid rgba(255,255,255,0.05);
+      width: var(--sb-width);
+      background: #020617;
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       position: fixed;
-      left: 0; top: 0;
+      left: 0; top: 0; bottom: 0;
+      z-index: 1000;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .sidebar-brand {
-      height: var(--header-height);
-      display: flex;
-      align-items: center;
-      padding: 0 1.5rem;
-      gap: 12px;
-      font-weight: 800;
-      font-size: 1.25rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+    
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0 !important; }
     }
-    .sidebar-brand img { height: 32px; }
-    .sidebar-nav {
-      padding: 1.5rem;
-      flex: 1;
+
+    .sidebar-header {
+      height: var(--header-h);
+      display: flex; align-items: center; padding: 0 1.5rem;
+      border-bottom: 1px solid var(--border);
     }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 1rem;
-      color: #94a3b8;
-      text-decoration: none;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      transition: all 0.2s;
+    .brand-logo { height: 32px; filter: drop-shadow(0 0 8px var(--accent)); }
+
+    .nav-menu { padding: 1.5rem; flex: 1; }
+    .nav-group { margin-bottom: 2rem; }
+    .nav-label { font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 1rem; padding-left: 0.5rem; }
+    
+    .nav-link {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 1rem; color: #94a3b8; text-decoration: none;
+      border-radius: 12px; margin-bottom: 4px; transition: all 0.2s;
     }
-    .nav-item:hover, .nav-item.active {
+    .nav-link:hover, .nav-link.active {
       background: rgba(249, 115, 22, 0.1);
-      color: var(--color-primary);
+      color: var(--accent);
     }
 
     /* Main Content */
     .main-content {
-      margin-left: var(--sidebar-width);
-      flex: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .top-header {
-      height: var(--header-height);
-      background: rgba(17, 24, 39, 0.8);
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      position: sticky;
-      top: 0; z-index: 10;
+      flex: 1; margin-left: var(--sb-width); min-width: 0;
+      transition: margin 0.3s;
     }
 
-    .card { 
-      background: #1e293b; 
-      padding: 2rem; 
-      border-radius: var(--radius-lg); 
-      margin-bottom: 2rem; 
-      border: 1px solid rgba(255,255,255,0.05); 
+    .top-bar {
+      height: var(--header-h);
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; position: sticky; top: 0; z-index: 900;
     }
-    .card-subtitle { margin-bottom: 1.5rem; color: #94a3b8; }
-    
-    .user-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .user-table th, .user-table td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .user-table th { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .badge-role { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
-    .badge-client { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-    .badge-driver { background: rgba(234, 179, 8, 0.15); color: #eab308; }
-    
-    .action-btn { padding: 8px 16px; font-size: 0.85rem; border-radius: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); font-weight: 600; background: rgba(255,255,255,0.05); color: white; transition: all 0.2s; }
-    .action-btn:hover { background: var(--color-primary); border-color: var(--color-primary); }
-    .btn-warn { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
-    .btn-warn:hover { background: #ef4444; color: white; border-color: #ef4444; }
-    
-    .modal-overlay { 
-      position: fixed; inset: 0; 
-      background: rgba(0,0,0,0.8); 
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
-      display: none; align-items: center; justify-content: center; z-index: 1000; 
+
+    .content-area { padding: 2rem; }
+
+    /* Dashboard Grid */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem; margin-bottom: 2.5rem;
     }
-    .modal-content { 
-      background: #1e293b; 
-      padding: 2.5rem; 
-      border-radius: 24px; 
-      width: 90%; max-width: 440px; 
-      border: 1px solid rgba(255,255,255,0.1); 
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      padding: 1.5rem; border-radius: 20px; position: relative; overflow: hidden;
     }
-    
-    .table-responsive { overflow-x: auto; }
-    .text-center { text-align: center; }
-    .mt-0 { margin-top: 0; }
-    
-    .sql-alert { background: rgba(239,68,68,0.1); border: 1px solid #ef4444; padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.85rem; }
-    .sql-alert strong { color: #ef4444; }
-    .sql-code { display: block; background: #111; padding: 12px; margin-top: 10px; color: #22c55e; border-radius: 8px; font-family: monospace; }
-    
-    .modal-actions { display: flex; gap: 12px; margin-top: 2rem; }
-    .code-badge { background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; color: var(--color-primary); font-family: monospace; }
+    .stat-card::after {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(249,115,22,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; margin-bottom: 1rem;
+    }
+
+    /* Interactive Columns */
+    .dashboard-cols {
+      display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;
+    }
+    @media (max-width: 1200px) { .dashboard-cols { grid-template-columns: 1fr; } }
+
+    .panel-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 24px; padding: 1.5rem; height: 100%;
+    }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+
+    /* Real-time Logs */
+    .logs-container { 
+      height: 400px; overflow-y: auto; 
+      display: flex; flex-direction: column; gap: 10px;
+      padding-right: 10px;
+    }
+    .log-entry {
+      background: var(--glass); border: 1px solid var(--border);
+      padding: 10px 14px; border-radius: 10px; font-size: 13px;
+      display: flex; gap: 12px; align-items: start;
+    }
+    .log-time { color: #64748b; font-family: monospace; }
+    .log-type-info { color: #3b82f6; }
+    .log-type-success { color: #22c55e; }
+    .log-type-warn { color: #f97316; }
+
+    /* Online Users */
+    .online-list { display: flex; flex-direction: column; gap: 12px; }
+    .online-user {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px; border-radius: 12px; transition: background 0.2s;
+    }
+    .online-user:hover { background: var(--glass); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; }
+
+    /* Tables */
+    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    .premium-table th { padding: 12px 1rem; color: #64748b; font-size: 11px; text-transform: uppercase; text-align: left; }
+    .premium-table tr td { background: var(--glass); padding: 16px 1rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .premium-table tr td:first-child { border-left: 1px solid var(--border); border-radius: 16px 0 0 16px; }
+    .premium-table tr td:last-child { border-right: 1px solid var(--border); border-radius: 0 16px 16px 0; }
+
+    /* Utils */
+    .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .hidden { display: none !important; }
+    .p-relative { position: relative; }
+    .menu-toggle { display: none; background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+    @media (max-width: 1024px) { .menu-toggle { display: block; } }
+
     /* Print Styles */
     @media print {
       body * { visibility: hidden; }
       #printable-certificate, #printable-certificate * { visibility: visible; }
-      #printable-certificate { position: absolute; left: 0; top: 0; width: 100%; }
-      .no-print { display: none !important; }
+      #printable-certificate { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
     }
 
     #printable-certificate {
       background: white; color: #0f172a; padding: 40px; font-family: 'Inter', sans-serif;
       border: 10px double #cbd5e1; display: none; line-height: 1.6;
     }
-    .cert-header { text-align: center; border-bottom: 2px solid var(--color-primary); margin-bottom: 30px; padding-bottom: 20px; }
+    .cert-header { text-align: center; border-bottom: 2px solid var(--accent); margin-bottom: 30px; padding-bottom: 20px; }
     .cert-logo { height: 60px; margin-bottom: 10px; }
     .cert-grid { display: flex; gap: 30px; margin-bottom: 30px; align-items: start; }
     .cert-photo-box { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; background: #f8fafc; }
@@ -158,178 +181,316 @@
   </style>
 </head>
 <body>
-  
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <img src="../assets/logo.png" alt="Logo">
-      <span>MotoClick</span>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="panel.html" class="nav-item active">
-        <i class="fas fa-users"></i> Usuarios
-      </a>
-      <a href="#" class="nav-item" onclick="switchTab('verifications', this)">
-        <i class="fas fa-id-card"></i> Verificaciones
-      </a>
-      <a href="#" class="nav-item" onclick="switchTab('security', this)">
-        <i class="fas fa-shield-alt"></i> Seguridad
-      </a>
-      <a href="logistica.html" class="nav-item">
-        <i class="fas fa-truck"></i> Logística
-      </a>
-      <a href="../" class="nav-item">
-        <i class="fas fa-arrow-left"></i> Salir al Sitio
-      </a>
-    </nav>
-  </aside>
 
-  <main class="main-content">
-    <header class="top-header">
-      <h2>🛡️ Centro de Control</h2>
-      <div class="header-actions">
-        <button class="action-btn btn-warn" onclick="logoutAdmin()">Finalizar Sesión</button>
+  <div class="app-container">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="../assets/logo.png" class="brand-logo" alt="Logo">
+        <span>Admin Pro</span>
       </div>
-    </header>
-
-    <div class="dashboard-container">
-      <!-- Users Tab -->
-      <div id="users-tab" class="dashboard-tab animate-fade-in">
-        <div class="card">
-          <h2>Usuarios del Sistema</h2>
-          <p class="card-subtitle">Gestiona perfiles, roles y recupera accesos de clientes y repartidores.</p>
-          
-          <div class="table-responsive">
-            <table class="user-table">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Teléfono</th>
-                  <th>Rol</th>
-                  <th>Contraseña (PIN)</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="users-tbody">
-                <tr><td colspan="5" class="text-center">Sincronizando con Supabase...</td></tr>
-              </tbody>
-            </table>
-          </div>
+      
+      <nav class="nav-menu">
+        <div class="nav-group">
+          <div class="nav-label">General</div>
+          <a href="#" class="nav-link active" onclick="switchTab('dashboard', this)">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </a>
+          <a href="#" class="nav-link" onclick="switchTab('users', this)">
+            <i class="fas fa-users"></i> Gestión Usuarios
+          </a>
         </div>
-      </div>
 
-      <!-- Verifications Tab -->
-      <div id="verifications-tab" class="dashboard-tab hidden animate-fade-in">
-        <div class="card">
-          <h2>Solicitudes de Verificación</h2>
-          <p class="card-subtitle">Revisa la documentación y otorga insignias de confianza a los clientes.</p>
-          
-          <div class="table-responsive">
-            <table class="user-table">
-              <thead>
-                <tr>
-                  <th>Usuario / Teléfono</th>
-                  <th>Nombre Real</th>
-                  <th>Doc + Selfie</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="verifications-tbody">
-                <tr><td colspan="4" class="text-center">Cargando solicitudes...</td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="nav-group">
+          <div class="nav-label">Seguridad</div>
+          <a href="#" class="nav-link" onclick="switchTab('verifications', this)">
+            <i class="fas fa-shield-alt"></i> Verificaciones
+          </a>
+          <a href="#" class="nav-link" onclick="switchTab('security', this)">
+            <i class="fas fa-key"></i> Códigos de Pago
+          </a>
         </div>
-      </div>
+      </nav>
 
-      <!-- Security Tab -->
-      <div id="security-tab" class="dashboard-tab hidden animate-fade-in">
-        <div class="card">
-          <div class="u-flex u-items-center u-justify-between m-b-lg">
-            <div>
-              <h2 class="m-0">Seguridad: Cobro en Efectivo</h2>
-              <p class="card-subtitle m-0">Genera códigos temporales para autorizar pagos contra entrega.</p>
+      <div style="padding: 1.5rem; border-top: 1px solid var(--border);">
+        <a href="#" class="nav-link" onclick="logoutAdmin()" style="color: #ef4444;">
+          <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+          <h2 id="page-title" style="margin:0; font-size: 1.25rem;">Panel General</h2>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+          <div style="text-align: right; line-height: 1.2;" class="no-mobile">
+            <div style="font-size: 14px; font-weight: 700;">Central Operativa</div>
+            <div style="font-size: 11px; color: #22c55e;"><i class="fas fa-circle" style="font-size: 6px;"></i> Sistema Online</div>
+          </div>
+          <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <!-- Dashboard Home -->
+        <section id="dashboard-tab" class="dashboard-tab animate-fade-in">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(59,130,246,0.15); color: #3b82f6;"><i class="fas fa-shopping-bag"></i></div>
+              <div style="font-size: 13px; color: #94a3b8;">Órdenes del Mes</div>
+              <div style="font-size: 28px; font-weight: 800;">128</div>
             </div>
-            <button class="action-btn" onclick="openCreateCodeModal()" style="background: var(--color-primary); border-color: var(--color-primary);">
-              <i class="fas fa-plus"></i> Nuevo Código
-            </button>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;"><i class="fas fa-users-viewfinder"></i></div>
+              <div style="font-size: 13px; color: #94a3b8;">Usuarios Totales</div>
+              <div id="stat-total-users" style="font-size: 28px; font-weight: 800;">--</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(234,179,8,0.15); color: #eab308;"><i class="fas fa-shield-check"></i></div>
+              <div style="font-size: 13px; color: #94a3b8;">Solicitudes Verif.</div>
+              <div id="stat-pending-verif" style="font-size: 28px; font-weight: 800;">--</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;"><i class="fas fa-bolt"></i></div>
+              <div style="font-size: 13px; color: #94a3b8;">Tiempo Respuesta</div>
+              <div style="font-size: 28px; font-weight: 800;">4.2m</div>
+            </div>
           </div>
 
-          <div class="table-responsive">
-            <table class="user-table">
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Generado Por</th>
-                  <th>Estado</th>
-                  <th>Creación</th>
-                  <th>Expira</th>
-                </tr>
-              </thead>
-              <tbody id="codes-tbody">
-                <tr><td colspan="5" class="text-center">Cargando códigos...</td></tr>
-              </tbody>
-            </table>
+          <div class="dashboard-cols">
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3 style="margin:0;">🚨 Actividad Realtime</h3>
+                <div class="badge" style="background: rgba(34,197,94,0.1); color: #22c55e;">Live Feed</div>
+              </div>
+              <div class="logs-container" id="realtime-logs">
+                <div class="log-entry">
+                  <span class="log-time">--:--</span>
+                  <div>Inicializando audit logs...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3 style="margin:0;">👤 Ahora Conectados</h3>
+                <span id="online-count" class="badge" style="background: #22c55e; color: white;">0</span>
+              </div>
+              <div class="online-list" id="online-users">
+                <div class="text-center text-muted" style="padding: 2rem;">No hay sesiones activas detected.</div>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <!-- Users Tab -->
+        <section id="users-tab" class="dashboard-tab hidden">
+           <div class="panel-card">
+             <div class="panel-header">
+                <h3>👥 Gestión de Usuarios</h3>
+                <button class="action-btn" onclick="loadUsers()"><i class="fas fa-sync"></i> Refrescar</button>
+             </div>
+             <div class="table-responsive">
+               <table class="premium-table">
+                 <thead>
+                   <tr>
+                     <th>Usuario</th>
+                     <th>Rol</th>
+                     <th>PIN Actual</th>
+                     <th>Acciones</th>
+                   </tr>
+                 </thead>
+                 <tbody id="users-tbody"></tbody>
+               </table>
+             </div>
+           </div>
+        </section>
+
+        <!-- Verifications Tab -->
+        <section id="verifications-tab" class="dashboard-tab hidden">
+           <div class="panel-card">
+             <div class="panel-header">
+                <h3>🛡️ Solicitudes de Identidad</h3>
+                <p style="color: #64748b; font-size: 13px;">Valida documentos y fotografías selfie de tus clientes.</p>
+             </div>
+             <div class="table-responsive">
+               <table class="premium-table">
+                 <thead>
+                   <tr>
+                     <th>Usuario / Teléfono</th>
+                     <th>Nombre Real</th>
+                     <th>Multimedia</th>
+                     <th>Acciones</th>
+                   </tr>
+                 </thead>
+                 <tbody id="verifications-tbody"></tbody>
+               </table>
+             </div>
+           </div>
+        </section>
+
+        <!-- Cash Codes Tab -->
+        <section id="security-tab" class="dashboard-tab hidden">
+           <div class="panel-card" style="max-width: 800px; margin: 0 auto;">
+             <div class="panel-header">
+                <h3>🏦 Códigos de Efectivo</h3>
+                <button class="action-btn" onclick="openCreateCodeModal()" style="background: var(--accent); border:none;">
+                  <i class="fas fa-plus"></i> Nuevo Código
+                </button>
+             </div>
+             <div class="table-responsive">
+               <table class="premium-table">
+                 <thead>
+                   <tr>
+                     <th>Código</th>
+                     <th>Creador</th>
+                     <th>Estado</th>
+                     <th>Fecha</th>
+                     <th>Expira</th>
+                   </tr>
+                 </thead>
+                 <tbody id="codes-tbody"></tbody>
+               </table>
+             </div>
+           </div>
+        </section>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
+  <!-- PIN Modal -->
   <div id="pin-modal" class="modal-overlay">
-    <div class="modal-content">
-      <h3 class="mt-0">Actualizar Credenciales</h3>
-      <p id="pin-modal-subtitle" class="card-subtitle">Asignando nuevo PIN de acceso</p>
+    <div class="modal-content card-glass">
+      <h3 style="margin-top:0;">🔑 Acceso Seguro</h3>
+      <p id="pin-modal-subtitle" style="font-size: 14px; color: #94a3b8; margin-bottom: 1.5rem;"></p>
       
       <div id="sql-alert" class="sql-alert hidden">
-        <strong>Error de Esquema</strong><br>
-        La tabla 'users' no tiene la columna 'pin'. Ejecuta esto en Supabase:<br>
+        <strong>⚠️ Atención:</strong> Debes ejecutar el SQL en Supabase para usar esta función:
         <code class="sql-code">ALTER TABLE users ADD COLUMN IF NOT EXISTS pin TEXT;</code>
       </div>
 
       <form onsubmit="handleSavePin(event)">
         <input type="hidden" id="edit-user-id">
         <div class="form-group">
-          <label class="form-label">Nuevo PIN Seguro</label>
-          <input type="number" id="new-pin-input" class="form-input" placeholder="4 dígitos sugeridos" required>
+          <label class="form-label" style="font-size: 12px; margin-bottom: 6px;">Nuevo PIN (4-6 dígitos)</label>
+          <input type="text" id="new-pin-input" class="form-input" placeholder="Ej. 2026" required pattern="[0-9]{4,6}">
         </div>
         <div class="modal-actions">
-          <button type="button" class="btn btn-secondary btn-block" onclick="closeModal()">Cancelar</button>
-          <button type="submit" class="btn btn-primary btn-block">Guardar PIN</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar PIN</button>
+          <button type="button" class="btn btn-warn" style="flex: 1;" onclick="closeModal()">Cancelar</button>
         </div>
       </form>
     </div>
   </div>
 
+  <div id="printable-certificate"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/supabase-config.js"></script>
-  <script src="../js/utils.js"></script>
-  <script src="../js/store.js"></script>
+  <script src="../js/supabase-config.js?v=1.1"></script>
+  <script src="../js/store.js?v=1.1"></script>
+  <script src="../js/utils.js?v=1.1"></script>
 
   <script>
-    if (localStorage.getItem('mc_admin_session') !== 'true') window.location.replace('/admin/');
+    // Security
+    const session = localStorage.getItem('mc_admin_session');
+    if (!session) window.location.replace('/admin/');
+
+    const store = new MotoClickStore();
+    let currentLogs = [];
+
+    // Navigation
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function switchTab(tabId, el) {
+      document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.add('hidden'));
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      
+      document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+      if (el) el.classList.add('active');
+      
+      const titles = { dashboard: 'Panel General', users: 'Gestión Usuarios', verifications: 'Verificaciones', security: 'Códigos de Pago' };
+      document.getElementById('page-title').textContent = titles[tabId];
+
+      if (tabId === 'dashboard') initDashboard();
+      if (tabId === 'users') loadUsers();
+      if (tabId === 'verifications') loadVerifications();
+      if (tabId === 'security') loadCashCodes();
+
+      if (window.innerWidth <= 1024) toggleSidebar();
+    }
+
+    // Dashboard & Realtime
+    async function initDashboard() {
+        const users = await store.getAllUsers();
+        document.getElementById('stat-total-users').textContent = users.length;
+
+        const { data: verifs } = await store.getPendingVerifications();
+        document.getElementById('stat-pending-verif').textContent = verifs.length;
+
+        // Populate online users (Simulation based on recent update)
+        const online = users.filter(u => u.name).slice(0, 5); // Just 5 for demo
+        document.getElementById('online-users').innerHTML = online.map(u => `
+            <div class="online-user">
+                <div class="status-dot"></div>
+                <div class="user-avatar" style="font-size: 12px;">${(u.name || 'U').charAt(0).toUpperCase()}</div>
+                <div style="flex:1;">
+                    <div style="font-size: 13px; font-weight: 600;">${u.name}</div>
+                    <div style="font-size: 10px; color: #64748b;">${u.role.toUpperCase()}</div>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('online-count').textContent = online.length;
+
+        addLog('Sistema', 'info', 'Panel de administración sincronizado con Supabase.');
+    }
+
+    function addLog(source, type, msg) {
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        currentLogs.unshift({ time, source, type, msg });
+        if (currentLogs.length > 20) currentLogs.pop();
+        
+        const container = document.getElementById('realtime-logs');
+        container.innerHTML = currentLogs.map(l => `
+            <div class="log-entry animate-slide-in">
+                <span class="log-time">${l.time}</span>
+                <span style="font-weight: 700; min-width: 60px;">${l.source}</span>
+                <div class="log-type-${l.type}">${l.msg}</div>
+            </div>
+        `).join('');
+    }
+
+    // Listen for Realtime Events via Store
+    store.on('new_order', (order) => {
+        addLog('Órdenes', 'success', `Nuevo pedido detectado: ${order.id} por ${order.clientName}`);
+        if(document.getElementById('dashboard-tab').classList.contains('hidden')) showToast('Nuevo pedido en curso 🏍️', 'info');
+    });
+
+    store.on('status_change', (order) => {
+        addLog('Logística', 'warn', `Pedido #${order.id.slice(-4)} ahora en estado: ${order.status}`);
+    });
+
+    // Existing Loaders
     async function loadUsers() {
       const tbody = document.getElementById('users-tbody');
-      const allUsers = await store.getAllUsers();
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando base de datos...</td></tr>';
       
-      if (allUsers.length === 0) {
-         tbody.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron usuarios activos.</td></tr>';
-         return;
-      }
-
-      tbody.innerHTML = allUsers.map(u => {
-        const badgeClass = u.role === 'driver' ? 'badge-driver' : 'badge-client';
-        const roleName = u.role === 'driver' ? 'REPARTIDOR' : 'CLIENTE';
-        const currentPin = u.pin ? `****${u.pin}` : `(SMS) ****`;
-        
+      const users = await store.getAllUsers();
+      tbody.innerHTML = users.map(u => {
+        const badgeClass = u.role === 'client' ? 'badge-client' : 'badge-driver';
+        const roleName = u.role === 'client' ? 'Cliente' : 'Driver';
+        const pinText = u.pin ? `****${u.pin.slice(-2)}` : `<span class="text-muted">SMS Only</span>`;
         return `
           <tr>
-            <td style="font-weight: 600;">${u.name || 'Usuario sin nombre'}</td>
-            <td style="color: #94a3b8;">${u.phone || 'N/A'}</td>
-            <td><span class="badge-role ${badgeClass}">${roleName}</span></td>
-            <td><code class="code-badge">${currentPin}</code></td>
+            <td style="font-weight: 600;">${u.name || 'Sin nombre'} <br><small style="color:#64748b;">${u.phone}</small></td>
+            <td><span class="badge ${badgeClass}">${roleName}</span></td>
+            <td><code class="code-badge">${pinText}</code></td>
             <td>
               <button class="action-btn" onclick="openPinModal('${u.id}', '${escapeHTML(u.name)}')">
-                <i class="fas fa-key"></i> Editar PIN
+                <i class="fas fa-key"></i> PIN
               </button>
             </td>
           </tr>
@@ -337,27 +498,13 @@
       }).join('');
     }
 
-    function switchTab(tabId, el) {
-      document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.add('hidden'));
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      
-      document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-      el.classList.add('active');
-      
-      if (tabId === 'security') loadCashCodes();
-      else if (tabId === 'users') loadUsers();
-      else if (tabId === 'verifications') loadVerifications();
-    }
-
-    // ── Verification System Logic ──
     async function loadVerifications() {
       const tbody = document.getElementById('verifications-tbody');
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Sincronizando solicitudes...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Escaneando cola de procesos...</td></tr>';
+      const { data } = await store.getPendingVerifications();
       
-      const { data, error } = await store.getPendingVerifications();
-      
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay solicitudes pendientes. 👏</td></tr>';
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Todo al día. No hay solicitudes pendientes. ✅</td></tr>';
         return;
       }
 
@@ -367,32 +514,26 @@
             <div style="font-weight: 600;">${u.name}</div>
             <div style="font-size: 0.8rem; color: #94a3b8;">${u.phone}</div>
           </td>
-          <td style="font-weight: 500; color: var(--color-primary);">${u.full_name || 'N/A'}</td>
+          <td style="font-weight: 500; color: var(--accent);">${u.full_name || 'N/A'}</td>
           <td>
             <div style="display: flex; gap: 8px;">
-              <a href="${u.id_photo_url}" target="_blank" title="Ver ID Oficial">
-                  <div style="width: 50px; height: 35px; background: rgba(255,255,255,0.05); border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+              <a href="${u.id_photo_url}" target="_blank" title="ID Frente">
+                  <div style="width: 45px; height: 32px; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border);">
                       <i class="fas fa-id-card"></i>
                   </div>
               </a>
-              <a href="${u.profile_photo_url}" target="_blank" title="Ver Selfie">
-                  <div style="width: 35px; height: 35px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
-                      <i class="fas fa-camera" style="font-size: 0.7rem; color: white;"></i>
+              <a href="${u.profile_photo_url}" target="_blank" title="Selfie Realtime">
+                  <div style="width: 32px; height: 32px; background: rgba(249,115,22,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--accent);">
+                      <i class="fas fa-user-check" style="font-size: 0.7rem; color: var(--accent);"></i>
                   </div>
               </a>
             </div>
           </td>
           <td>
             <div style="display: flex; gap: 8px;">
-               <button class="action-btn" style="background: rgba(34,197,94,0.15); color: #22c55e; border-color: rgba(34,197,94,0.3);" onclick="handleApprove('${u.id}', true)">
-                <i class="fas fa-check"></i> Aprobar
-               </button>
-               <button class="action-btn btn-warn" onclick="handleApprove('${u.id}', false)">
-                <i class="fas fa-times"></i> Rechazar
-               </button>
-               <button class="action-btn" style="background: rgba(59,130,246,0.15); color: #3b82f6; border-color: rgba(59,130,246,0.3);" onclick="printVerificationReport('${u.id}')">
-                <i class="fas fa-file-pdf"></i> Reporte
-               </button>
+               <button class="action-btn" style="color: #22c55e;" onclick="handleApprove('${u.id}', true)">Aprobar</button>
+               <button class="action-btn btn-warn" onclick="handleApprove('${u.id}', false)">Rechazar</button>
+               <button class="action-btn" onclick="printVerificationReport('${u.id}')" title="Imprimir Constancia"><i class="fas fa-print"></i></button>
             </div>
           </td>
         </tr>
@@ -402,172 +543,88 @@
     async function handleApprove(userId, approve) {
       const notes = approve ? '' : prompt('Motivo del rechazo:');
       if (!approve && notes === null) return;
-
-      showToast(approve ? 'Aprobando...' : 'Rechazando...', 'info');
-      const result = await store.approveVerification(userId, approve, notes || '');
-      
-      if (result.success) {
-        showToast(approve ? 'Usuario VERIFICADO ✅' : 'Solicitud rechazada ❌', 'success');
+      showToast('Actualizando...', 'info');
+      const res = await store.approveVerification(userId, approve, notes || '');
+      if (res.success) {
+        addLog('Seguridad', approve ? 'success' : 'warn', `Solicitud de verificación ${approve ? 'Aprobada' : 'Rechazada'}`);
         loadVerifications();
-      } else {
-        showToast('Error: ' + result.error, 'error');
       }
     }
 
     async function printVerificationReport(userId) {
-        showToast('Generando reporte técnico...', 'info');
-        const { data } = await store.getPendingVerifications(); 
+        const { data } = await store.getAllUsers(); 
         const u = data.find(x => x.id === userId);
-        if (!u) return showToast('Error al obtener datos.', 'error');
+        if (!u) return;
 
         const cert = document.getElementById('printable-certificate');
         cert.innerHTML = `
             <div class="cert-header">
                 <img src="../assets/logo.png" class="cert-logo">
-                <h2 style="margin: 0; color: #1e293b;">CONSTANCIA DE VERIFICACIÓN DE IDENTIDAD</h2>
-                <div style="font-size: 12px; color: #64748b; margin-top: 5px;">MOTO CLICK S.A. DE C.V. — SEGURIDAD Y CONFIANZA</div>
+                <h2 style="margin: 0; color: #1e293b;">CONSTANCIA DE VERIFICACIÓN</h2>
             </div>
-
             <div class="cert-grid">
                 <div class="cert-info">
                     <div class="cert-label">Nombre del Cliente</div>
-                    <div class="cert-value">${u.name || (u.full_name || 'N/A')}</div>
-
+                    <div class="cert-value">${u.name || u.full_name}</div>
                     <div class="cert-label">Datos Legales</div>
                     <div class="cert-value">${u.full_name || 'N/A'}</div>
-
-                    <div class="cert-label">Teléfono de Enlace</div>
-                    <div class="cert-value">${u.phone || 'N/A'}</div>
-
-                    <div class="cert-label">Estatus de Auditoría</div>
-                    <div class="cert-value">
-                        <span class="cert-badge">VERIFICADO <i class="fas fa-certificate"></i></span>
-                    </div>
-
-                    <div class="cert-label">ID Sistema (UID)</div>
-                    <div class="cert-value" style="font-family: monospace; font-size: 12px;">${u.id}</div>
+                    <div class="cert-label">Estatus</div>
+                    <div class="cert-value"><span class="cert-badge">VERIFICADO</span></div>
                 </div>
-
-                <div class="cert-photo-box" style="flex: 1;">
-                    <div class="cert-label" style="margin-bottom: 8px;">Fotografía Selfie</div>
-                    <img src="${u.profile_photo_url}" class="cert-photo-img" style="border-radius: 50%; height: 180px; width: 180px; object-fit: cover;">
+                <div class="cert-photo-box">
+                    <img src="${u.profile_photo_url}" class="cert-photo-img" style="border-radius: 50%; width:150px; height:150px; object-fit:cover;">
                 </div>
             </div>
-
-            <div class="cert-label" style="margin-bottom: 10px;">Evidencia de Identificación Oficial</div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: center;">
-                <img src="${u.id_photo_url}" style="max-height: 350px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto;">
-            </div>
-
-            <div class="cert-footer">
-                Este documento es una representación digital del estatus de auditoría del usuario en la plataforma Moto Click.
-                Fechado al día: ${new Date().toLocaleDateString('es-MX')} a las ${new Date().toLocaleTimeString('es-MX')}.
-                <br><br>
-                <strong>Firma de la Central de Operaciones Moto Click 🏍️</strong>
-            </div>
+            <img src="${u.id_photo_url}" style="width:100%; border-radius:12px; margin-top:20px;">
         `;
-
-        cert.style.display = 'block';
-        setTimeout(() => {
-            window.print();
-            cert.style.display = 'none';
-        }, 500);
+        window.print();
     }
 
-    // ── Cash Codes Logic ──
     async function loadCashCodes() {
       const tbody = document.getElementById('codes-tbody');
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center">Consultando...</td></tr>';
-      
-      const { data, error } = await store.getAllCashCodes();
-      
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay códigos generados.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = data.map(c => {
-        const status = c.is_used ? '<span class="badge-role" style="background:#334155; color:#94a3b8;">USADO</span>' : 
-                      (c.is_active ? '<span class="badge-role" style="background:rgba(34,197,94,0.15); color:#22c55e;">ACTIVO</span>' : 
-                                    '<span class="badge-role" style="background:rgba(239,68,68,0.15); color:#ef4444;">INACTIVO</span>');
-        
-        return `
+      const { data } = await store.getAllCashCodes();
+      if (!data) return;
+      tbody.innerHTML = data.map(c => `
           <tr>
-            <td><code class="code-badge" style="font-size:1rem; padding:6px 12px;">${c.code}</code></td>
-            <td>${c.generated_by || 'Admin'}</td>
-            <td>${status}</td>
-            <td class="fs-xs">${new Date(c.created_at).toLocaleString()}</td>
-            <td class="fs-xs">${c.expires_at ? new Date(c.expires_at).toLocaleString() : 'N/A'}</td>
+            <td><code class="code-badge">${c.code}</code></td>
+            <td>${c.generated_by}</td>
+            <td>${c.is_used ? 'USADO' : 'ACTIVO'}</td>
+            <td class="fs-xs">${new Date(c.created_at).toLocaleDateString()}</td>
+            <td class="fs-xs">${new Date(c.expires_at).toLocaleDateString()}</td>
           </tr>
-        `;
-      }).join('');
+      `).join('');
     }
 
     async function openCreateCodeModal() {
-      const prefix = "MOTO-EFEC-";
-      const random = Math.floor(1000 + Math.random() * 9000);
-      const newCode = prefix + random;
-      
-      if (confirm(`¿Generar nuevo código de verificación: ${newCode}?`)) {
-        showToast('Generando...', 'info');
-        const { error } = await store.generateCashCode(newCode, "Admin Central");
-        if (!error) {
-          showToast('¡Código creado con éxito!');
-          loadCashCodes();
-        } else {
-          showToast('Error al crear código: ' + error.message, 'error');
-        }
+      const newCode = "MOTO-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+      if (confirm(`¿Generar código: ${newCode}?`)) {
+        await store.generateCashCode(newCode, "Admin Central");
+        loadCashCodes();
       }
     }
 
     function openPinModal(id, name) {
       document.getElementById('edit-user-id').value = id;
-      document.getElementById('pin-modal-subtitle').innerHTML = `Nuevo acceso para <b>${name}</b>`;
-      document.getElementById('new-pin-input').value = '';
-      document.getElementById('sql-alert').classList.add('hidden');
+      document.getElementById('pin-modal-subtitle').innerHTML = `Seguridad para: <b>${name}</b>`;
       document.getElementById('pin-modal').style.display = 'flex';
     }
-
-    function closeModal() {
-      document.getElementById('pin-modal').style.display = 'none';
-    }
-
+    function closeModal() { document.getElementById('pin-modal').style.display = 'none'; }
     async function handleSavePin(e) {
       e.preventDefault();
       const id = document.getElementById('edit-user-id').value;
-      const newPin = document.getElementById('new-pin-input').value;
-      const btn = e.target.querySelector('[type="submit"]');
-
-      btn.disabled = true; btn.textContent = 'Procesando...';
-      const result = await store.updateUser(id, { pin: newPin });
-      btn.disabled = false; btn.textContent = 'Guardar PIN';
-
-      if (result.success) {
-        showToast('Credencial actualizada con éxito');
-        closeModal();
-        loadUsers();
-      } else {
-        if (result.error && (result.error.includes('schema') || result.error.includes('PGRST105'))) {
-          document.getElementById('sql-alert').classList.remove('hidden');
-        } else {
-          showToast(result.error, 'error');
-        }
-      }
+      const pin = document.getElementById('new-pin-input').value;
+      const res = await store.updateUser(id, { pin });
+      if (res.success) { showToast('PIN actualizado'); closeModal(); loadUsers(); }
     }
 
-    function logoutAdmin() {
-      localStorage.removeItem('mc_admin_session');
-      window.location.replace('/admin/');
-    }
+    function logoutAdmin() { localStorage.removeItem('mc_admin_session'); window.location.replace('/admin/'); }
+    function escapeHTML(str) { return (str || '').replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t] || t)); }
 
-    function escapeHTML(str) {
-      return (str || '').replace(/[&<>'"]/g, tag => ({
-          '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-      }[tag] || tag));
-    }
-
-    document.addEventListener('DOMContentLoaded', loadUsers);
+    document.addEventListener('DOMContentLoaded', () => {
+      initDashboard();
+      // Auto-refresh every 30s
+      setInterval(initDashboard, 30000);
+    });
   </script>
-  <div id="printable-certificate"></div>
 </body>
 </html>
