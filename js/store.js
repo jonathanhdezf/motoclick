@@ -432,6 +432,60 @@ class MotoClickStore {
     const cur = this.getCurrentUser(); if (cur && cur.id === id) this.setCurrentUser(users[idx]);
     return { success: true, user: users[idx] };
   }
+
+  // ── Cash Verification Dynamic System ──
+  async verifyCashCode(code) {
+    if (this._useFallback) return { success: code === "MOTO-EFEC-2026" };
+    
+    try {
+      const { data, error } = await this._sb.from('cash_verification_codes')
+        .select('*')
+        .eq('code', code.toUpperCase())
+        .eq('is_active', true)
+        .eq('is_used', false);
+        
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        // Optional: Expiration check (Done by policy if desired, or here)
+        return { success: true, codeData: data[0] };
+      }
+      return { success: false, message: 'Código inválido o ya utilizado' };
+    } catch (err) {
+      console.error('[Store] verifyCashCode Error:', err);
+      return { success: false, message: 'Error de servidor' };
+    }
+  }
+
+  async markCashCodeUsed(codeId) {
+    if (this._useFallback) return true;
+    const { error } = await this._sb.from('cash_verification_codes')
+      .update({ is_used: true, used_at: new Date().toISOString() })
+      .eq('id', codeId);
+    return !error;
+  }
+
+  async generateCashCode(code, adminName, expiresHours = 24) {
+    if (this._useFallback) return { success: true };
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + expiresHours);
+    
+    const { data, error } = await this._sb.from('cash_verification_codes').insert({
+      code: code.toUpperCase(),
+      generated_by: adminName,
+      expires_at: expiresAt.toISOString()
+    }).select();
+    
+    return { data, error };
+  }
+
+  async getAllCashCodes() {
+    if (this._useFallback) return { data: [] };
+    const { data, error } = await this._sb.from('cash_verification_codes')
+      .select('*')
+      .order('created_at', { ascending: false });
+    return { data, error };
+  }
 }
 
 function generateId() {

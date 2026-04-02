@@ -98,3 +98,30 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER trigger_actualizar_subtotal
 AFTER INSERT OR UPDATE OR DELETE ON public.ticket_detalle
 FOR EACH ROW EXECUTE FUNCTION actualizar_subtotal_orden();
+
+-- ==============================================================================
+-- 6. Seguridad Dinámica: Códigos de Verificación de Efectivo
+-- Propósito: Prevenir fraude permitiendo al admin generar códigos temporales/únicos.
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.cash_verification_codes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code TEXT UNIQUE NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_used BOOLEAN DEFAULT FALSE,
+    generated_by TEXT, -- Nombre o ID del admin
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE,
+    used_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Habilitar RLS
+ALTER TABLE public.cash_verification_codes ENABLE ROW LEVEL SECURITY;
+
+-- Lectura pública para validación (solo si no están usados y están activos)
+DROP POLICY IF EXISTS "Public select active codes" ON public.cash_verification_codes;
+CREATE POLICY "Public select active codes" ON public.cash_verification_codes FOR SELECT USING (is_active = true AND is_used = false);
+
+-- Admin tiene control total
+DROP POLICY IF EXISTS "Admin full access codes" ON public.cash_verification_codes;
+CREATE POLICY "Admin full access codes" ON public.cash_verification_codes FOR ALL USING (true);
+

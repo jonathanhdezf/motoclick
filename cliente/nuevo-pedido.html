@@ -1247,37 +1247,41 @@
     window.addEventListener('load', init);
     document.addEventListener('DOMContentLoaded', init);
 
-    // ── Cash Verification System ──
-    const VALID_CASH_CODE = "MOTO-EFEC-2026";
-    
-    function validateCashCode() {
+    // ── Cash Verification Dynamic System ──
+    async function validateCashCode() {
       const input = document.getElementById('cash-verify-code');
-      const code = input.value.trim().toUpperCase();
+      const codeInput = input.value.trim().toUpperCase();
       const cardLabel = document.getElementById('cash-payment-label');
       const radio = document.getElementById('radio-cash');
       const successBadge = document.getElementById('verify-success');
       const verifyBox = document.getElementById('cash-verification-box');
       
-      if (code === VALID_CASH_CODE) {
+      if (!codeInput) return;
+
+      showToast('Verificando código...', 'info');
+      const result = await store.verifyCashCode(codeInput);
+      
+      if (result.success) {
         // Unlock Cash
         cardLabel.classList.remove('disabled');
         radio.disabled = false;
-        radio.checked = true; // Auto select it for convenience
+        radio.checked = true; // Auto select it
         successBadge.classList.add('active');
         input.style.borderColor = "#22c55e";
         
-        // Visual feedback
-        showToast('¡Código Correcto! Pago en efectivo desbloqueado.', 'success');
+        // Save code metadata to order form potentially (optional)
+        window._verifiedCashCodeId = result.codeData?.id; 
+
+        showToast('¡Código Validado! Pago en efectivo desbloqueado.', 'success');
         
-        // Hide help text after 3s
         setTimeout(() => {
           document.querySelector('.verification-help').style.opacity = "0.3";
           document.querySelector('.verification-help').style.pointerEvents = "none";
-        }, 3000);
+        }, 1500);
       } else {
         input.classList.add('animate-shake');
         input.style.borderColor = "#ef4444";
-        showToast('Código de verificación inválido.', 'error');
+        showToast(result.message || 'Código inválido.', 'error');
         setTimeout(() => input.classList.remove('animate-shake'), 400);
       }
     }
