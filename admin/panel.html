@@ -580,6 +580,12 @@
       }
     }
 
+    async function printVerificationReport(userId) {
+        showToast('Generando reporte técnico...', 'info');
+        const users = await store.getAllUsers(); 
+        const u = users.find(x => x.id === userId);
+        if (!u) return showToast('Error al obtener datos.', 'error');
+
         const cert = document.getElementById('printable-certificate');
         cert.innerHTML = `
             <div class="cert-header">
