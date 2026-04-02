@@ -785,16 +785,30 @@
         </div>
       </div>
     </div>
-    </div>
-
-
     <!-- QR Modal -->
     <div class="modal-overlay hidden qr-modal-overlay" id="qr-modal">
         <div class="modal-content card-glass animate-pop-in qr-modal-card">
             <div class="qr-modal-header">
+                <div class="qr-modal-title">
+                    <h4>Pago en OXXO</h4>
+                    <span class="qr-modal-subtitle">Depósito Inmediato</span>
+                </div>
+                <button type="button" class="qr-close-btn" aria-label="Cerrar" onclick="closeQrModal()">&times;</button>
+            </div>
+            
+            <div class="qr-image-container">
+                <img src="../assets/qr-transfer.jpeg" alt="QR OXXO" class="qr-image">
+            </div>
+            
+            <div class="qr-modal-footer">
+                <p>Presenta este código en caja al pagar. El movimiento se acredita al instante.</p>
+            </div>
+            
+            <button type="button" class="btn btn-primary btn-block btn-lg qr-submit-btn" onclick="closeQrModal()">
+                Cerrar Ventana
+            </button>
+        </div>
     </div>
-
-
     <!-- Profile / Verification Modal -->
     <div class="modal-overlay hidden" id="profile-modal">
         <div class="modal-content card-glass animate-pop-in profile-modal-card">
