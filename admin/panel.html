@@ -133,6 +133,28 @@
     
     .modal-actions { display: flex; gap: 12px; margin-top: 2rem; }
     .code-badge { background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; color: var(--color-primary); font-family: monospace; }
+    /* Print Styles */
+    @media print {
+      body * { visibility: hidden; }
+      #printable-certificate, #printable-certificate * { visibility: visible; }
+      #printable-certificate { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+
+    #printable-certificate {
+      background: white; color: #0f172a; padding: 40px; font-family: 'Inter', sans-serif;
+      border: 10px double #cbd5e1; display: none; line-height: 1.6;
+    }
+    .cert-header { text-align: center; border-bottom: 2px solid var(--color-primary); margin-bottom: 30px; padding-bottom: 20px; }
+    .cert-logo { height: 60px; margin-bottom: 10px; }
+    .cert-grid { display: flex; gap: 30px; margin-bottom: 30px; align-items: start; }
+    .cert-photo-box { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; background: #f8fafc; }
+    .cert-photo-img { width: 100%; border-radius: 6px; }
+    .cert-info { flex: 2; }
+    .cert-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+    .cert-value { font-size: 16px; font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+    .cert-badge { display: inline-block; padding: 4px 12px; background: #22c55e; color: white; border-radius: 20px; font-size: 12px; font-weight: 800; }
+    .cert-footer { margin-top: 50px; border-top: 1px dashed #cbd5e1; padding-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; }
   </style>
 </head>
 <body>
@@ -368,6 +390,9 @@
                <button class="action-btn btn-warn" onclick="handleApprove('${u.id}', false)">
                 <i class="fas fa-times"></i> Rechazar
                </button>
+               <button class="action-btn" style="background: rgba(59,130,246,0.15); color: #3b82f6; border-color: rgba(59,130,246,0.3);" onclick="printVerificationReport('${u.id}')">
+                <i class="fas fa-file-pdf"></i> Reporte
+               </button>
             </div>
           </td>
         </tr>
@@ -387,6 +412,66 @@
       } else {
         showToast('Error: ' + result.error, 'error');
       }
+    }
+
+    async function printVerificationReport(userId) {
+        showToast('Generando reporte técnico...', 'info');
+        const { data } = await store.getPendingVerifications(); 
+        const u = data.find(x => x.id === userId);
+        if (!u) return showToast('Error al obtener datos.', 'error');
+
+        const cert = document.getElementById('printable-certificate');
+        cert.innerHTML = `
+            <div class="cert-header">
+                <img src="../assets/logo.png" class="cert-logo">
+                <h2 style="margin: 0; color: #1e293b;">CONSTANCIA DE VERIFICACIÓN DE IDENTIDAD</h2>
+                <div style="font-size: 12px; color: #64748b; margin-top: 5px;">MOTO CLICK S.A. DE C.V. — SEGURIDAD Y CONFIANZA</div>
+            </div>
+
+            <div class="cert-grid">
+                <div class="cert-info">
+                    <div class="cert-label">Nombre del Cliente</div>
+                    <div class="cert-value">${u.name || (u.full_name || 'N/A')}</div>
+
+                    <div class="cert-label">Datos Legales</div>
+                    <div class="cert-value">${u.full_name || 'N/A'}</div>
+
+                    <div class="cert-label">Teléfono de Enlace</div>
+                    <div class="cert-value">${u.phone || 'N/A'}</div>
+
+                    <div class="cert-label">Estatus de Auditoría</div>
+                    <div class="cert-value">
+                        <span class="cert-badge">VERIFICADO <i class="fas fa-certificate"></i></span>
+                    </div>
+
+                    <div class="cert-label">ID Sistema (UID)</div>
+                    <div class="cert-value" style="font-family: monospace; font-size: 12px;">${u.id}</div>
+                </div>
+
+                <div class="cert-photo-box" style="flex: 1;">
+                    <div class="cert-label" style="margin-bottom: 8px;">Fotografía Selfie</div>
+                    <img src="${u.profile_photo_url}" class="cert-photo-img" style="border-radius: 50%; height: 180px; width: 180px; object-fit: cover;">
+                </div>
+            </div>
+
+            <div class="cert-label" style="margin-bottom: 10px;">Evidencia de Identificación Oficial</div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: center;">
+                <img src="${u.id_photo_url}" style="max-height: 350px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto;">
+            </div>
+
+            <div class="cert-footer">
+                Este documento es una representación digital del estatus de auditoría del usuario en la plataforma Moto Click.
+                Fechado al día: ${new Date().toLocaleDateString('es-MX')} a las ${new Date().toLocaleTimeString('es-MX')}.
+                <br><br>
+                <strong>Firma de la Central de Operaciones Moto Click 🏍️</strong>
+            </div>
+        `;
+
+        cert.style.display = 'block';
+        setTimeout(() => {
+            window.print();
+            cert.style.display = 'none';
+        }, 500);
     }
 
     // ── Cash Codes Logic ──
@@ -483,5 +568,6 @@
 
     document.addEventListener('DOMContentLoaded', loadUsers);
   </script>
+  <div id="printable-certificate"></div>
 </body>
 </html>
