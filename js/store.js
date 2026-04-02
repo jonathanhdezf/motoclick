@@ -185,6 +185,25 @@ class MotoClickStore {
     return data || [];
   }
 
+  async getUserById(id) {
+    if (this._useFallback) {
+      const users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+      return users.find(u => u.id === id) || null;
+    }
+    const { data, error } = await this._sb.from('users').select('*').eq('id', id).maybeSingle();
+    if (error) console.error('[Store] getUserById Error:', error);
+    return data;
+  }
+
+  async getUserByPhone(phone, role) {
+    if (this._useFallback) {
+      const users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+      return users.find(u => u.phone === phone && u.role === role) || null;
+    }
+    const { data, error } = await this._sb.from('users').select('*').eq('phone', phone).eq('role', role).maybeSingle();
+    return data;
+  }
+
   async updateUser(id, updates) {
     if (this._useFallback) return this._fb_updateUser(id, updates);
     const { data, error } = await this._sb.from('users')
