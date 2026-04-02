@@ -54,8 +54,15 @@ CREATE TABLE IF NOT EXISTS public.comercios_prospectos (
     estado_afiliacion VARCHAR(50) DEFAULT 'no_contactado' -- no_contactado, en_proceso, afiliado
 );
 
--- 5. Tabla: users (Asegurar columna PIN para seguridad PWA)
+-- 5. Tabla: users (Asegurar columna PIN para seguridad PWA y Verificación)
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pin TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS id_photo_url TEXT; 
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS profile_photo_url TEXT;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS verification_status TEXT DEFAULT 'not_requested'; -- not_requested, pending, verified, rejected
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS verification_date TIMESTAMP WITH TIME ZONE;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS verification_notes TEXT;
 
 -- ==============================================================================
 -- Funciones Supabase RPC o Reglas de Políticas RLS (Row Level Security)

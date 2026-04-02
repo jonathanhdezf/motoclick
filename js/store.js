@@ -486,6 +486,37 @@ class MotoClickStore {
       .order('created_at', { ascending: false });
     return { data, error };
   }
+
+  // ── Verification System ──
+  async submitVerificationRequest(userId, full_name, id_photo_url, profile_photo_url) {
+    if (this._useFallback) return { success: true };
+    const { error } = await this._sb.from('users').update({
+      full_name,
+      id_photo_url,
+      profile_photo_url,
+      verification_status: 'pending'
+    }).eq('id', userId);
+    return { success: !error, error };
+  }
+
+  async getPendingVerifications() {
+    if (this._useFallback) return { data: [] };
+    const { data, error } = await this._sb.from('users')
+      .select('*')
+      .eq('verification_status', 'pending');
+    return { data, error };
+  }
+
+  async approveVerification(userId, isVerified = true, notes = '') {
+    if (this._useFallback) return { success: true };
+    const { error } = await this._sb.from('users').update({
+      is_verified: isVerified,
+      verification_status: isVerified ? 'verified' : 'rejected',
+      verification_date: new Date().toISOString(),
+      verification_notes: notes
+    }).eq('id', userId);
+    return { success: !error, error };
+  }
 }
 
 function generateId() {

@@ -255,8 +255,13 @@
       margin-top: 5px;
     }
     .verify-success-badge.active { display: flex; }
-      color: var(--color-primary);
-      border-color: var(--color-primary);
+    
+    .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
     }
 
     /* Utility Helpers */
@@ -448,9 +453,47 @@
     }
     .qr-submit-btn {
       border-radius: 16px;
-      font-weight: 700;
       height: 54px;
     }
+    
+    /* Profile Modal Styles */
+    .profile-modal-card { max-width: 450px; }
+    .profile-header { text-align: center; margin-bottom: var(--space-lg); }
+    .profile-avatar-wrapper { 
+      width: 80px; height: 80px; 
+      margin: 0 auto 12px; 
+      background: var(--gradient-primary); 
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: white;
+      position: relative;
+      border: 3px solid rgba(255,255,255,0.1);
+    }
+    .verified-badge-mini {
+      position: absolute; bottom: 0; right: 0;
+      background: #00e65b; color: #000;
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; border: 2px solid var(--bg-secondary);
+    }
+    .verification-status-banner {
+      padding: 12px; border-radius: 12px;
+      font-size: 0.85rem; margin-bottom: var(--space-lg);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .banner-pending { background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); color: #eab308; }
+    .banner-verified { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
+    .banner-none { background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2); }
+    
+    .id-upload-box {
+      border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 20px;
+      text-align: center; cursor: pointer;
+      transition: all 0.3s;
+    }
+    .id-upload-box:hover { border-color: var(--color-primary); background: rgba(255,255,255,0.02); }
+    .id-preview { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; }
+    
     body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
     
     /* Autocomplete dropdown style fix */
@@ -491,8 +534,13 @@
         <img src="../assets/logo.png" alt="MotoClick Logo" class="brand-logo">
       </a>
       <div class="navbar-actions">
-        <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" title="Editar Perfil"></span>
-        <button class="btn btn-sm btn-secondary" onclick="handleLogout()" id="btn-logout">Salir</button>
+        <div class="u-flex u-items-center gap-md">
+          <div class="user-greeting" id="user-greeting" onclick="openProfileModal()" title="Ver Perfil">
+             <span id="user-display-name"></span>
+             <i id="header-verified-badge" class="fas fa-check-circle text-accent hidden" title="Usuario Verificado"></i>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="handleLogout()" id="btn-logout">Salir</button>
+        </div>
       </div>
     </nav>
 
@@ -719,24 +767,63 @@
     <div class="modal-overlay hidden qr-modal-overlay" id="qr-modal">
         <div class="modal-content card-glass animate-pop-in qr-modal-card">
             <div class="qr-modal-header">
-                <div class="qr-modal-title">
-                    <h4>Pago en OXXO</h4>
-                    <span class="qr-modal-subtitle">Depósito Inmediato</span>
+    </div>
+
+
+    <!-- Profile / Verification Modal -->
+    <div class="modal-overlay hidden" id="profile-modal">
+        <div class="modal-content card-glass animate-pop-in profile-modal-card">
+            <div class="modal-header">
+                <h3>👤 Mi Perfil</h3>
+                <button type="button" class="modal-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            
+            <div class="profile-header mt-md">
+                <div class="profile-avatar-wrapper">
+                    <span id="profile-initials">M</span>
+                    <div id="verified-badge" class="verified-badge-mini hidden">
+                        <i class="fas fa-check"></i>
+                    </div>
                 </div>
-                <button type="button" class="qr-close-btn" aria-label="Cerrar" onclick="closeQrModal()">&times;</button>
+                <h4 id="profile-name-text" class="m-0">Nombre de Usuario</h4>
+                <p id="profile-phone-text" class="text-muted fs-xs m-0">55 0000 0000</p>
             </div>
-            
-            <div class="qr-image-container">
-                <img src="../assets/qr-transfer.jpeg" alt="QR OXXO" class="qr-image">
+
+            <div id="verification-banner" class="verification-status-banner banner-none">
+                <i class="fas fa-shield-alt"></i>
+                <span id="verification-text">Tu cuenta no está verificada aún.</span>
             </div>
-            
-            <div class="qr-modal-footer">
-                <p>Presenta este código en caja al pagar. El movimiento se acredita al instante.</p>
+
+            <form id="verification-form" onsubmit="handleVerificationSubmit(event)">
+                <div id="verification-fields" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo (como en tu ID)</label>
+                        <input type="text" id="verify-full-name" class="form-input" placeholder="Ej. Juan Pérez García" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Foto de Identificación (INE / Pasaporte)</label>
+                        <div class="id-upload-box" onclick="document.getElementById('id-photo-input').click()">
+                            <i class="fas fa-camera fs-xl mb-xs"></i>
+                            <p class="fs-xs text-muted m-0">Haz clic para subir o tomar foto</p>
+                            <input type="file" id="id-photo-input" accept="image/*" class="hidden" onchange="previewID(this)">
+                            <img id="id-preview-img" class="id-preview">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block mt-lg" id="btn-submit-verification">
+                        Solicitar Verificación
+                    </button>
+                </div>
+                
+                <button type="button" id="btn-trigger-verification" class="btn btn-outline btn-block" onclick="showVerificationFields()">
+                    ✨ Iniciar Verificación
+                </button>
+            </form>
+
+            <div class="mt-xl pt-lg border-top">
+                <button class="btn btn-sm btn-link text-muted btn-block" onclick="handleLogout()">Cerrar Sesión</button>
             </div>
-            
-            <button type="button" class="btn btn-primary btn-block btn-lg qr-submit-btn" onclick="closeQrModal()">
-                Cerrar Ventana
-            </button>
         </div>
     </div>
 
@@ -748,14 +835,129 @@
   <script>
     const user = requireAuth('client');
     if (user) {
-      document.getElementById('user-greeting').innerHTML =
-        `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
-      renderHistory();
+      // Replaced by init() logic
     }
 
-    function init() {
-       // Google Maps ready
-       console.log("Google Maps API loaded in Nuevo Pedido");
+    // ── Profile & Verification Logic ──
+    async function openProfileModal() {
+        const pModal = document.getElementById('profile-modal');
+        const user = store.getCurrentUser();
+        
+        document.getElementById('profile-name-text').textContent = user.name || 'Usuario';
+        document.getElementById('profile-phone-text').textContent = user.phone || '';
+        document.getElementById('profile-initials').textContent = (user.name || 'M').charAt(0).toUpperCase();
+        
+        const banner = document.getElementById('verification-banner');
+        const vText = document.getElementById('verification-text');
+        const vFields = document.getElementById('verification-fields');
+        const vTrigger = document.getElementById('btn-trigger-verification');
+        const vBadge = document.getElementById('verified-badge');
+        const hBadge = document.getElementById('header-verified-badge');
+        
+        // Reset
+        banner.className = 'verification-status-banner banner-none';
+        vFields.classList.add('hidden');
+        vTrigger.classList.remove('hidden');
+        vBadge.classList.add('hidden');
+        
+        if (user.is_verified) {
+            banner.className = 'verification-status-banner banner-verified';
+            vText.textContent = '¡Cuenta Verificada con éxito!';
+            vTrigger.classList.add('hidden');
+            vBadge.classList.remove('hidden');
+            hBadge.classList.remove('hidden');
+        } else if (user.verification_status === 'pending') {
+            banner.className = 'verification-status-banner banner-pending';
+            vText.textContent = 'Verificación pendiente de revisión.';
+            vTrigger.classList.add('hidden');
+        } else if (user.verification_status === 'rejected') {
+            banner.className = 'verification-status-banner banner-pending';
+            banner.style.borderColor = '#ef4444';
+            vText.textContent = 'Verificación rechazada. Intenta de nuevo.';
+            vTrigger.classList.remove('hidden');
+            vTrigger.textContent = 'Reintentar Verificación';
+        } else {
+            vText.textContent = 'Tu cuenta no está verificada aún.';
+        }
+        
+        pModal.classList.remove('hidden');
+        pModal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+        const modal = document.getElementById('profile-modal');
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+
+    function showVerificationFields() {
+        document.getElementById('verification-fields').classList.remove('hidden');
+        document.getElementById('btn-trigger-verification').classList.add('hidden');
+        document.getElementById('verification-banner').classList.add('hidden');
+    }
+
+    function previewID(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.getElementById('id-preview-img');
+                img.src = e.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function handleVerificationSubmit(e) {
+        e.preventDefault();
+        const fullName = document.getElementById('verify-full-name').value.trim();
+        const btn = document.getElementById('btn-submit-verification');
+        const user = store.getCurrentUser();
+
+        if (!fullName) return showToast('Nombre completo requerido', 'error');
+
+        btn.disabled = true;
+        btn.textContent = 'Enviando solicitud...';
+
+        // NOTE: Simulate cloud upload
+        const fakePhotoUrl = "https://placeholder-url.com/id-" + user.id + ".jpg";
+        
+        const result = await store.submitVerificationRequest(user.id, fullName, fakePhotoUrl, user.avatar_url);
+        
+        if (result.success) {
+            // Update local state temporarily so UI reflects it immediately
+            const updatedUser = await store.getUserById(user.id);
+            if (updatedUser) store.setCurrentUser(updatedUser);
+            
+            showToast('¡Solicitud enviada! Avisaremos cuando se apruebe.', 'success');
+            setTimeout(() => {
+                closeProfileModal();
+                openProfileModal(); // Refresh view
+            }, 1000);
+        } else {
+            showToast('Error al enviar solicitud: ' + (result.error?.message || 'Error desconocido'), 'error');
+            btn.disabled = false;
+            btn.textContent = 'Solicitar Verificación';
+        }
+    }
+
+    async function init() {
+      console.log("Google Maps API loaded in Nuevo Pedido");
+      const user = store.getCurrentUser();
+      if (user) {
+        // Fresh from DB for verification status
+        const freshUser = await store.getUserById(user.id);
+        if (freshUser) store.setCurrentUser(freshUser);
+        
+        const curUser = store.getCurrentUser();
+        document.getElementById('user-display-name').textContent = `Hola, ${curUser.name || 'Usuario'}`;
+        
+        if (curUser.is_verified) {
+            document.getElementById('header-verified-badge').classList.remove('hidden');
+        }
+        
+        await renderHistory();
+      }
     }
 
     async function handleSubmitOrder(e) {

@@ -146,6 +146,9 @@
       <a href="panel.html" class="nav-item active">
         <i class="fas fa-users"></i> Usuarios
       </a>
+      <a href="#" class="nav-item" onclick="switchTab('verifications', this)">
+        <i class="fas fa-id-card"></i> Verificaciones
+      </a>
       <a href="#" class="nav-item" onclick="switchTab('security', this)">
         <i class="fas fa-shield-alt"></i> Seguridad
       </a>
@@ -186,6 +189,30 @@
               </thead>
               <tbody id="users-tbody">
                 <tr><td colspan="5" class="text-center">Sincronizando con Supabase...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verifications Tab -->
+      <div id="verifications-tab" class="dashboard-tab hidden animate-fade-in">
+        <div class="card">
+          <h2>Solicitudes de Verificación</h2>
+          <p class="card-subtitle">Revisa la documentación y otorga insignias de confianza a los clientes.</p>
+          
+          <div class="table-responsive">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>Usuario / Teléfono</th>
+                  <th>Nombre Real</th>
+                  <th>Doc. Identidad</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="verifications-tbody">
+                <tr><td colspan="4" class="text-center">Cargando solicitudes...</td></tr>
               </tbody>
             </table>
           </div>
@@ -297,6 +324,62 @@
       
       if (tabId === 'security') loadCashCodes();
       else if (tabId === 'users') loadUsers();
+      else if (tabId === 'verifications') loadVerifications();
+    }
+
+    // ── Verification System Logic ──
+    async function loadVerifications() {
+      const tbody = document.getElementById('verifications-tbody');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Sincronizando solicitudes...</td></tr>';
+      
+      const { data, error } = await store.getPendingVerifications();
+      
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay solicitudes pendientes. 👏</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(u => `
+        <tr>
+          <td>
+            <div style="font-weight: 600;">${u.name}</div>
+            <div style="font-size: 0.8rem; color: #94a3b8;">${u.phone}</div>
+          </td>
+          <td style="font-weight: 500; color: var(--color-primary);">${u.full_name || 'N/A'}</td>
+          <td>
+            <a href="${u.id_photo_url}" target="_blank" title="Ver Documento">
+                <div style="width: 60px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+                    <i class="fas fa-image"></i>
+                </div>
+            </a>
+          </td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+               <button class="action-btn" style="background: rgba(34,197,94,0.15); color: #22c55e; border-color: rgba(34,197,94,0.3);" onclick="handleApprove('${u.id}', true)">
+                <i class="fas fa-check"></i> Aprobar
+               </button>
+               <button class="action-btn btn-warn" onclick="handleApprove('${u.id}', false)">
+                <i class="fas fa-times"></i> Rechazar
+               </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handleApprove(userId, approve) {
+      const notes = approve ? '' : prompt('Motivo del rechazo:');
+      if (!approve && notes === null) return;
+
+      showToast(approve ? 'Aprobando...' : 'Rechazando...', 'info');
+      const result = await store.approveVerification(userId, approve, notes || '');
+      
+      if (result.success) {
+        showToast(approve ? 'Usuario VERIFICADO ✅' : 'Solicitud rechazada ❌', 'success');
+        loadVerifications();
+      } else {
+        showToast('Error: ' + result.error, 'error');
+      }
     }
 
     // ── Cash Codes Logic ──
