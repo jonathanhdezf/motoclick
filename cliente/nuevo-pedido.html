@@ -519,7 +519,8 @@
       transition: all 0.3s;
     }
     .id-upload-box:hover { border-color: var(--color-primary); background: rgba(255,255,255,0.02); }
-    .id-preview { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; }
+    .id-preview { width: 100%; height: 140px; object-fit: contain; border-radius: 12px; margin-top: 10px; display: none; background: rgba(0,0,0,0.2); }
+    .selfie-preview { height: 160px; object-fit: cover; border-radius: 50% !important; width: 160px; margin: 10px auto; }
     
     body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
     
@@ -841,12 +842,22 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Foto de Identificación (INE / Pasaporte)</label>
+                        <label class="form-label">Foto de Identificación (Frente)</label>
                         <div class="id-upload-box" onclick="document.getElementById('id-photo-input').click()">
-                            <i class="fas fa-camera fs-xl mb-xs"></i>
-                            <p class="fs-xs text-muted m-0">Haz clic para subir o tomar foto</p>
-                            <input type="file" id="id-photo-input" accept="image/*" class="hidden" onchange="previewID(this)">
+                            <i class="fas fa-id-card fs-xl mb-xs"></i>
+                            <p class="fs-xs text-muted m-0">Haz clic para subir o tomar foto de ID</p>
+                            <input type="file" id="id-photo-input" accept="image/*" class="hidden" onchange="previewFile(this, 'id-preview-img')">
                             <img id="id-preview-img" class="id-preview">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Fotografía Selfie (Perfil Real)</label>
+                        <div class="id-upload-box" onclick="document.getElementById('selfie-photo-input').click()">
+                            <i class="fas fa-camera-retro fs-xl mb-xs"></i>
+                            <p class="fs-xs text-muted m-0">Tómate una selfie para tu perfil</p>
+                            <input type="file" id="selfie-photo-input" accept="image/*" capture="user" class="hidden" onchange="previewFile(this, 'selfie-preview-img')">
+                            <center><img id="selfie-preview-img" class="id-preview selfie-preview"></center>
                         </div>
                     </div>
                     
@@ -940,11 +951,11 @@
         document.getElementById('verification-banner').classList.add('hidden');
     }
 
-    function previewID(input) {
+    function previewFile(input, imgId) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = e => {
-                const img = document.getElementById('id-preview-img');
+                const img = document.getElementById(imgId);
                 img.src = e.target.result;
                 img.style.display = 'block';
             };
@@ -959,25 +970,33 @@
         const user = store.getCurrentUser();
 
         if (!fullName) return showToast('Nombre completo requerido', 'error');
+        
+        const idFile = document.getElementById('id-photo-input').files[0];
+        const selfieFile = document.getElementById('selfie-photo-input').files[0];
+        
+        if (!idFile || !selfieFile) return showToast('Debes subir ambos documentos (ID y Selfie)', 'error');
 
         btn.disabled = true;
         btn.textContent = 'Enviando solicitud...';
 
         // NOTE: Simulate cloud upload
-        const fakePhotoUrl = "https://placeholder-url.com/id-" + user.id + ".jpg";
+        const fakeIdPhotoUrl = "https://placeholder-url.com/id-" + user.id + ".jpg";
+        const fakeSelfieUrl = "https://placeholder-url.com/profile-" + user.id + ".jpg";
         
-        const result = await store.submitVerificationRequest(user.id, fullName, fakePhotoUrl, user.avatar_url);
+        const result = await store.submitVerificationRequest(user.id, fullName, fakeIdPhotoUrl, fakeSelfieUrl);
         
         if (result.success) {
             // Update local state temporarily so UI reflects it immediately
-            const updatedUser = await store.getUserById(user.id);
-            if (updatedUser) store.setCurrentUser(updatedUser);
+            if (typeof store.getUserById === 'function') {
+                const updatedUser = await store.getUserById(user.id);
+                if (updatedUser) store.setCurrentUser(updatedUser);
+            }
             
-            showToast('¡Solicitud enviada! Avisaremos cuando se apruebe.', 'success');
+            showToast('¡Solicitud enviada! Avisaremos cuando se apruebe. 🛡️', 'success');
             setTimeout(() => {
                 closeProfileModal();
-                openProfileModal(); // Refresh view
-            }, 1000);
+                init(); // Refresh view
+            }, 1500);
         } else {
             showToast('Error al enviar solicitud: ' + (result.error?.message || 'Error desconocido'), 'error');
             btn.disabled = false;
