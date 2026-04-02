@@ -37,6 +37,33 @@
       color: var(--text-accent);
       font-weight: 600;
     }
+    
+    /* Navbar Profile Trigger */
+    .user-profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 6px 14px;
+      border-radius: 30px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .user-profile-trigger:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(249, 115, 22, 0.3);
+      transform: translateY(-1px);
+    }
+    .user-profile-trigger:active { transform: scale(0.98); }
+    
+    .navbar-actions { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+    }
     .form-group-header {
       display: flex;
       justify-content: space-between;
@@ -534,13 +561,11 @@
         <img src="../assets/logo.png" alt="MotoClick Logo" class="brand-logo">
       </a>
       <div class="navbar-actions">
-        <div class="u-flex u-items-center gap-md">
-          <div class="user-greeting" id="user-greeting" onclick="openProfileModal()" title="Ver Perfil">
-             <span id="user-display-name"></span>
-             <i id="header-verified-badge" class="fas fa-check-circle text-accent hidden" title="Usuario Verificado"></i>
-          </div>
-          <button class="btn btn-sm btn-secondary" onclick="handleLogout()" id="btn-logout">Salir</button>
+        <div class="user-profile-trigger" id="user-greeting" onclick="openProfileModal()" title="Ver Perfil">
+           <span id="user-display-name"></span>
+           <i id="header-verified-badge" class="fas fa-check-circle text-accent hidden" title="Usuario Verificado"></i>
         </div>
+        <button class="btn btn-sm btn-secondary" onclick="handleLogout()" id="btn-logout">Salir</button>
       </div>
     </nav>
 
@@ -842,8 +867,11 @@
 
     // ── Profile & Verification Logic ──
     async function openProfileModal() {
-        const pModal = document.getElementById('profile-modal');
         const user = store.getCurrentUser();
+        if (!user) return navigateTo('../');
+
+        const pModal = document.getElementById('profile-modal');
+        if (!pModal) return;
         
         document.getElementById('profile-name-text').textContent = user.name || 'Usuario';
         document.getElementById('profile-phone-text').textContent = user.phone || '';
