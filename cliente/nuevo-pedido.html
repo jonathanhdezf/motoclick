@@ -952,8 +952,27 @@
         const curUser = store.getCurrentUser();
         document.getElementById('user-display-name').textContent = `Hola, ${curUser.name || 'Usuario'}`;
         
+        const hBadge = document.getElementById('header-verified-badge');
+        
+        // 🛡️ Logic for Verified Account (Automatic Cash Unlock)
         if (curUser.is_verified) {
-            document.getElementById('header-verified-badge').classList.remove('hidden');
+            if (hBadge) hBadge.classList.remove('hidden');
+            
+            // Unlock Cash Payment
+            const cashCard = document.getElementById('cash-payment-label');
+            const cashRadio = document.getElementById('radio-cash');
+            const vBox = document.getElementById('cash-verification-box');
+            
+            if (cashCard) {
+                cashCard.classList.remove('disabled');
+                const subtext = cashCard.querySelector('.payment-subtext');
+                if (subtext) {
+                    subtext.innerHTML = '<i class="fas fa-shield-alt"></i> Cuenta Verificada';
+                    subtext.style.color = "#22c55e";
+                }
+            }
+            if (cashRadio) cashRadio.disabled = false;
+            if (vBox) vBox.classList.remove('active'); // No need for codes if already verified
         }
         
         await renderHistory();
