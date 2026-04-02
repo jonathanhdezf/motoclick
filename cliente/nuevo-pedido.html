@@ -854,9 +854,9 @@
 
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/supabase-config.js"></script>
-  <script src="../js/store.js"></script>
-  <script src="../js/utils.js"></script>
+  <script src="../js/supabase-config.js?v=1.1"></script>
+  <script src="../js/store.js?v=1.1"></script>
+  <script src="../js/utils.js?v=1.1"></script>
   <script>
     const user = requireAuth('client');
     if (user) {
@@ -895,7 +895,7 @@
             vText.textContent = '¡Cuenta Verificada con éxito!';
             vTrigger.classList.add('hidden');
             vBadge.classList.remove('hidden');
-            hBadge.classList.remove('hidden');
+            if(hBadge) hBadge.classList.remove('hidden');
         } else if (user.verification_status === 'pending') {
             banner.className = 'verification-status-banner banner-pending';
             vText.textContent = 'Verificación pendiente de revisión.';
@@ -977,13 +977,17 @@
       
       // 1. Logic for Identity Display & Checkout Dynamic Unlock
       if (user) {
-        // Fresh from DB for verification status
-        const freshUser = await store.getUserById(user.id);
-        if (freshUser) store.setCurrentUser(freshUser);
+        // Safe check for cached environments
+        let freshUser = user;
+        if (typeof store.getUserById === 'function') {
+           freshUser = await store.getUserById(user.id) || user;
+           store.setCurrentUser(freshUser);
+        }
         
         const curUser = store.getCurrentUser();
         const displayEl = document.getElementById('user-display-name');
         if (displayEl) displayEl.textContent = `Hola, ${curUser.name || 'Usuario'}`;
+
         
         const hBadge = document.getElementById('header-verified-badge');
         
