@@ -560,7 +560,9 @@
             <div style="display: flex; gap: 8px;">
                <button class="action-btn" style="color: #22c55e;" onclick="handleApprove('${u.id}', true)">Aprobar</button>
                <button class="action-btn btn-warn" onclick="handleApprove('${u.id}', false)">Rechazar</button>
-               <button class="action-btn" onclick="printVerificationReport('${u.id}')" title="Imprimir Constancia"><i class="fas fa-print"></i></button>
+               <button class="action-btn" style="background: rgba(59,130,246,0.15); color: #3b82f6; border-color: rgba(59,130,246,0.3);" onclick="printVerificationReport('${u.id}')">
+                <i class="fas fa-file-pdf"></i> Reporte
+               </button>
             </div>
           </td>
         </tr>
