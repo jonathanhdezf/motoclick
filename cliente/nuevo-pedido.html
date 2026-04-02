@@ -852,13 +852,18 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Fotografía Selfie (Perfil Real)</label>
+                        <label class="form-label">Fotografía Selfie (Captura en Vivo)</label>
                         <div class="id-upload-box" onclick="document.getElementById('selfie-photo-input').click()">
-                            <i class="fas fa-camera-retro fs-xl mb-xs"></i>
-                            <p class="fs-xs text-muted m-0">Tómate una selfie para tu perfil</p>
-                            <input type="file" id="selfie-photo-input" accept="image/*" capture="user" class="hidden" onchange="previewFile(this, 'selfie-preview-img')">
+                            <i class="fas fa-camera-viewfinder fs-xl mb-xs"></i>
+                            <p class="fs-xs text-muted m-0">Toca para abrir cámara frontal y tomar selfie</p>
+                            <input type="file" id="selfie-photo-input" 
+                                   accept="image/*" 
+                                   capture="user" 
+                                   class="hidden" 
+                                   onchange="previewFile(this, 'selfie-preview-img')">
                             <center><img id="selfie-preview-img" class="id-preview selfie-preview"></center>
                         </div>
+                        <p class="fs-xs text-muted mt-xs"><i class="fas fa-info-circle"></i> Solo capturas directas de cámara para seguridad.</p>
                     </div>
                     
                     <button type="submit" class="btn btn-primary btn-block mt-lg" id="btn-submit-verification">
