@@ -362,7 +362,7 @@
   </div>
 
   <!-- PIN Modal -->
-  <div id="pin-modal" class="modal-overlay">
+  <div id="pin-modal" class="modal-overlay hidden">
     <div class="modal-content card-glass">
       <h3 style="margin-top:0;">🔑 Acceso Seguro</h3>
       <p id="pin-modal-subtitle" style="font-size: 14px; color: #94a3b8; margin-bottom: 1.5rem;"></p>
@@ -580,33 +580,34 @@
       }
     }
 
-    async function printVerificationReport(userId) {
-        const { data } = await store.getAllUsers(); 
-        const u = data.find(x => x.id === userId);
-        if (!u) return;
-
         const cert = document.getElementById('printable-certificate');
         cert.innerHTML = `
             <div class="cert-header">
-                <img src="../assets/logo.png" class="cert-logo">
+                <img src="../assets/logo_motoclick_blanco.png" class="cert-logo" style="filter: brightness(0.2);">
                 <h2 style="margin: 0; color: #1e293b;">CONSTANCIA DE VERIFICACIÓN</h2>
             </div>
             <div class="cert-grid">
                 <div class="cert-info">
                     <div class="cert-label">Nombre del Cliente</div>
-                    <div class="cert-value">${u.name || u.full_name}</div>
+                    <div class="cert-value">${u.name || (u.full_name || 'N/A')}</div>
                     <div class="cert-label">Datos Legales</div>
                     <div class="cert-value">${u.full_name || 'N/A'}</div>
-                    <div class="cert-label">Estatus</div>
-                    <div class="cert-value"><span class="cert-badge">VERIFICADO</span></div>
+                    <div class="cert-label">Estatus de Auditoría</div>
+                    <div class="cert-value"><span class="cert-badge">VERIFICADO <i class="fas fa-certificate"></i></span></div>
                 </div>
                 <div class="cert-photo-box">
                     <img src="${u.profile_photo_url}" class="cert-photo-img" style="border-radius: 50%; width:150px; height:150px; object-fit:cover;">
                 </div>
             </div>
-            <img src="${u.id_photo_url}" style="width:100%; border-radius:12px; margin-top:20px;">
+            <div class="cert-label" style="margin-bottom: 10px;">Evidencia de ID Oficial</div>
+            <img src="${u.id_photo_url}" style="width:100%; border-radius:12px; margin-top:20px; max-height: 400px; object-fit: contain;">
         `;
-        window.print();
+        
+        cert.style.display = 'block';
+        setTimeout(() => {
+            window.print();
+            cert.style.display = 'none';
+        }, 500);
     }
 
     async function loadCashCodes() {
