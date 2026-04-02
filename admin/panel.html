@@ -9,7 +9,7 @@
   <style>
     :root {
       --sb-width: 280px;
-      --header-h: 70px;
+      --header-h: 100px;
       --accent: #f97316;
       --bg-dark: #0f172a;
       --bg-card: rgba(30, 41, 59, 0.7);
@@ -49,10 +49,11 @@
 
     .sidebar-header {
       height: var(--header-h);
-      display: flex; align-items: center; padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: center; padding: 0 1rem;
       border-bottom: 1px solid var(--border);
     }
-    .brand-logo { height: 32px; filter: drop-shadow(0 0 8px var(--accent)); }
+    .brand-logo { height: 60px; filter: drop-shadow(0 0 12px rgba(255,255,255,0.2)); transition: transform 0.3s; }
+    .brand-logo:hover { transform: scale(1.05); }
 
     .nav-menu { padding: 1.5rem; flex: 1; }
     .nav-group { margin-bottom: 2rem; }
@@ -400,10 +401,31 @@
     const store = new MotoClickStore();
     let currentLogs = [];
 
-    // Navigation
+    // Navigation & History Logic for Mobile
     function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
+      const sb = document.getElementById('sidebar');
+      const isOpen = sb.classList.contains('open');
+      
+      if (!isOpen) {
+        sb.classList.add('open');
+        // Push state so back button closes the menu
+        history.pushState({ menuOpen: true }, '');
+      } else {
+        sb.classList.remove('open');
+        // Only go back if we are sure we pushed a state
+        if (history.state && history.state.menuOpen) {
+            history.back();
+        }
+      }
     }
+
+    // Handle back button to close menu
+    window.onpopstate = function(event) {
+        const sb = document.getElementById('sidebar');
+        if (sb.classList.contains('open')) {
+            sb.classList.remove('open');
+        }
+    };
 
     function switchTab(tabId, el) {
       document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.add('hidden'));
@@ -420,7 +442,12 @@
       if (tabId === 'verifications') loadVerifications();
       if (tabId === 'security') loadCashCodes();
 
-      if (window.innerWidth <= 1024) toggleSidebar();
+      // Close menu on navigation for mobile
+      const sb = document.getElementById('sidebar');
+      if (sb.classList.contains('open')) {
+          sb.classList.remove('open');
+          if (history.state && history.state.menuOpen) history.back();
+      }
     }
 
     // Dashboard & Realtime
