@@ -198,6 +198,63 @@
     }
     .chip:hover {
       background: rgba(249, 115, 22, 0.1);
+      border-color: rgba(249, 115, 22, 0.3);
+      color: var(--text-accent);
+      transform: translateY(-1px);
+    }
+
+    /* Verification Flow Styles */
+    .payment-card.disabled {
+      opacity: 0.5;
+      filter: grayscale(0.8);
+      cursor: not-allowed;
+      border-color: rgba(255,255,255,0.05) !important;
+      background: rgba(255,255,255,0.02) !important;
+      pointer-events: none;
+    }
+    .payment-card.disabled:hover { transform: none; border-color: rgba(255,255,255,0.05) !important; }
+    
+    .verification-container {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(249, 115, 22, 0.05);
+      border: 1px dashed rgba(249, 115, 22, 0.3);
+      border-radius: var(--radius-md);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .verification-container.active { display: block; }
+    .verification-help {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.8rem;
+      line-height: 1.4;
+    }
+    .verification-link {
+      color: var(--text-accent);
+      text-decoration: underline;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .verification-input-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-verify {
+      padding: 0 15px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .verify-success-badge {
+      display: none;
+      color: #22c55e;
+      font-size: 0.8rem;
+      font-weight: 700;
+      align-items: center;
+      gap: 4px;
+      margin-top: 5px;
+    }
+    .verify-success-badge.active { display: flex; }
       color: var(--color-primary);
       border-color: var(--color-primary);
     }
@@ -494,16 +551,33 @@
             <!-- Payment -->
             <div class="section-title">💰 Forma de pago</div>
             <div class="payment-options">
-              <label class="payment-card">
-                <input type="radio" name="paymentMethod" value="cash" checked onchange="toggleTransferInfo(false)">
+              <label class="payment-card disabled" id="cash-payment-label">
+                <input type="radio" name="paymentMethod" id="radio-cash" value="cash" disabled onchange="toggleTransferInfo(false)">
                 <div class="payment-card-body">
                   <span class="payment-icon">💵</span>
-                  <span class="payment-label">Efectivo</span>
-                  <span class="text-muted payment-subtext">Paga al recibir</span>
+                  <div class="u-flex-column">
+                    <span class="payment-label">Efectivo</span>
+                    <span class="text-muted payment-subtext">Solo usuarios verificados</span>
+                  </div>
                 </div>
               </label>
+              
+              <!-- Verification Widget (Always visible if cash is disabled) -->
+              <div id="cash-verification-box" class="verification-container active">
+                <p class="verification-help">
+                  ⚠️ El pago en efectivo está restringido. 
+                  <a href="https://wa.me/522331072438?text=Hola%20MotoClick!%20Solicito%20mi%20c%C3%B3digo%20de%20verificaci%C3%B3n%20para%20pago%20en%20efectivo%20%F0%9F%92%B5" target="_blank" class="verification-link">Solicita tu código aquí</a> vía WhatsApp con la central.
+                </p>
+                <div class="verification-input-wrapper">
+                  <input type="text" id="cash-verify-code" class="form-input m-b-0" placeholder="Ingresa tu código (ej. MOTO-XXXX)">
+                  <button type="button" class="btn btn-primary btn-verify" onclick="validateCashCode()">Validar</button>
+                </div>
+                <div id="verify-success" class="verify-success-badge">
+                  <i class="fas fa-check-circle"></i> ¡Código validado! Pago en efectivo habilitado.
+                </div>
+              </div>
               <label class="payment-card">
-                <input type="radio" name="paymentMethod" value="card" onchange="toggleTransferInfo(false)">
+                <input type="radio" name="paymentMethod" value="card" checked onchange="toggleTransferInfo(false)">
                 <div class="payment-card-body">
                   <span class="payment-icon">💳</span>
                   <span class="payment-label">Tarjeta</span>
@@ -666,7 +740,7 @@
         </div>
     </div>
 
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places&callback=init"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
@@ -1172,6 +1246,42 @@
     // Run init on both events to ensure it catches the API load
     window.addEventListener('load', init);
     document.addEventListener('DOMContentLoaded', init);
+
+    // ── Cash Verification System ──
+    const VALID_CASH_CODE = "MOTO-EFEC-2026";
+    
+    function validateCashCode() {
+      const input = document.getElementById('cash-verify-code');
+      const code = input.value.trim().toUpperCase();
+      const cardLabel = document.getElementById('cash-payment-label');
+      const radio = document.getElementById('radio-cash');
+      const successBadge = document.getElementById('verify-success');
+      const verifyBox = document.getElementById('cash-verification-box');
+      
+      if (code === VALID_CASH_CODE) {
+        // Unlock Cash
+        cardLabel.classList.remove('disabled');
+        radio.disabled = false;
+        radio.checked = true; // Auto select it for convenience
+        successBadge.classList.add('active');
+        input.style.borderColor = "#22c55e";
+        
+        // Visual feedback
+        showToast('¡Código Correcto! Pago en efectivo desbloqueado.', 'success');
+        
+        // Hide help text after 3s
+        setTimeout(() => {
+          document.querySelector('.verification-help').style.opacity = "0.3";
+          document.querySelector('.verification-help').style.pointerEvents = "none";
+        }, 3000);
+      } else {
+        input.classList.add('animate-shake');
+        input.style.borderColor = "#ef4444";
+        showToast('Código de verificación inválido.', 'error');
+        setTimeout(() => input.classList.remove('animate-shake'), 400);
+      }
+    }
   </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places&callback=init"></script>
 </body>
 </html>
