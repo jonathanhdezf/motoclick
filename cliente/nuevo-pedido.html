@@ -972,15 +972,18 @@
     }
 
     async function init() {
-      console.log("Google Maps API loaded in Nuevo Pedido");
+      console.log("🚀 Motor de MotoClick Iniciado");
       const user = store.getCurrentUser();
+      
+      // 1. Logic for Identity Display & Checkout Dynamic Unlock
       if (user) {
         // Fresh from DB for verification status
         const freshUser = await store.getUserById(user.id);
         if (freshUser) store.setCurrentUser(freshUser);
         
         const curUser = store.getCurrentUser();
-        document.getElementById('user-display-name').textContent = `Hola, ${curUser.name || 'Usuario'}`;
+        const displayEl = document.getElementById('user-display-name');
+        if (displayEl) displayEl.textContent = `Hola, ${curUser.name || 'Usuario'}`;
         
         const hBadge = document.getElementById('header-verified-badge');
         
@@ -988,7 +991,6 @@
         if (curUser.is_verified) {
             if (hBadge) hBadge.classList.remove('hidden');
             
-            // Unlock Cash Payment
             const cashCard = document.getElementById('cash-payment-label');
             const cashRadio = document.getElementById('radio-cash');
             const vBox = document.getElementById('cash-verification-box');
@@ -1002,10 +1004,47 @@
                 }
             }
             if (cashRadio) cashRadio.disabled = false;
-            if (vBox) vBox.classList.remove('active'); // No need for codes if already verified
+            if (vBox) vBox.classList.remove('active');
         }
         
         await renderHistory();
+      }
+
+      // 2. Google Maps Places Logic
+      if (typeof google === 'undefined') return;
+
+      const options = {
+        bounds: TEZIUTLAN_BOUNDS,
+        strictBounds: false, 
+        componentRestrictions: { country: "mx" },
+        fields: ["formatted_address", "geometry", "name"],
+      };
+
+      const pickupInput = document.getElementById('pickup-address');
+      const deliveryInput = document.getElementById('delivery-address');
+
+      if (pickupInput && !pickupAutocomplete) {
+        pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
+        pickupAutocomplete.addListener('place_changed', () => {
+          const place = pickupAutocomplete.getPlace();
+          if (place.geometry && place.geometry.location) {
+            currentCoords.pickup = [place.geometry.location.lat(), place.geometry.location.lng()];
+            pickupInput.value = place.formatted_address || place.name;
+            calculateRouteDistance();
+          }
+        });
+      }
+      
+      if (deliveryInput && !deliveryAutocomplete) {
+        deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, options);
+        deliveryAutocomplete.addListener('place_changed', () => {
+          const place = deliveryAutocomplete.getPlace();
+          if (place.geometry && place.geometry.location) {
+            currentCoords.delivery = [place.geometry.location.lat(), place.geometry.location.lng()];
+            deliveryInput.value = place.formatted_address || place.name;
+            calculateRouteDistance();
+          }
+        });
       }
     }
 
@@ -1428,47 +1467,8 @@
         modal.classList.add('hidden');
     }
 
-    function init() {
-      if (typeof google === 'undefined') return;
+    // init has been moved and consolidated above
 
-      const options = {
-        bounds: TEZIUTLAN_BOUNDS,
-        strictBounds: false, 
-        componentRestrictions: { country: "mx" },
-        fields: ["formatted_address", "geometry", "name"],
-      };
-
-      const pickupInput = document.getElementById('pickup-address');
-      const deliveryInput = document.getElementById('delivery-address');
-
-      // Ensure inputs exist before binding
-      if (pickupInput && !pickupAutocomplete) {
-        pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
-      }
-      if (deliveryInput && !deliveryAutocomplete) {
-        deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, options);
-      }
-
-      if (pickupAutocomplete) {
-        pickupAutocomplete.addListener('place_changed', () => {
-          const place = pickupAutocomplete.getPlace();
-          if (place.geometry && place.geometry.location) {
-            currentCoords.pickup = [place.geometry.location.lat(), place.geometry.location.lng()];
-            pickupInput.value = place.formatted_address || place.name;
-            calculateRouteDistance();
-          }
-        });
-      }
-
-      deliveryAutocomplete.addListener('place_changed', () => {
-        const place = deliveryAutocomplete.getPlace();
-        if (place.geometry && place.geometry.location) {
-          currentCoords.delivery = [place.geometry.location.lat(), place.geometry.location.lng()];
-          deliveryInput.value = place.formatted_address || place.name;
-          calculateRouteDistance();
-        }
-      });
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
       init();
