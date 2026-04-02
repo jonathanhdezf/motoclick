@@ -835,7 +835,9 @@
   <script>
     const user = requireAuth('client');
     if (user) {
-      // Replaced by init() logic
+      // Immediate greet to avoid flicker
+      const nameEl = document.getElementById('user-display-name');
+      if (nameEl) nameEl.textContent = `Hola, ${user.name || 'Usuario'}`;
     }
 
     // ── Profile & Verification Logic ──
@@ -1442,10 +1444,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       init();
-      setTimeout(() => {
-        document.body.style.visibility = 'visible';
-        document.body.style.opacity = '1';
-      }, 150);
     });
 
     function handleLogout() {
@@ -1464,9 +1462,10 @@
       desc.focus();
     }
 
-    // Run init on both events to ensure it catches the API load
-    window.addEventListener('load', init);
-    document.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('load', () => {
+       document.body.style.visibility = 'visible';
+       document.body.style.opacity = '1';
+    });
 
     // ── Cash Verification Dynamic System ──
     async function validateCashCode() {
