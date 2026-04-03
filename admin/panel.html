@@ -589,11 +589,17 @@
     async function handleApprove(userId, approve) {
       const notes = approve ? '' : prompt('Motivo del rechazo:');
       if (!approve && notes === null) return;
-      showToast('Actualizando...', 'info');
+      
+      showToast('Enviando actualización a Supabase...', 'info');
+      
       const res = await store.approveVerification(userId, approve, notes || '');
+      
       if (res.success) {
+        showToast(approve ? '¡Usuario verificado con éxito! 🛡️' : 'Solicitud rechazada correctamente.', approve ? 'success' : 'warning');
         addLog('Seguridad', approve ? 'success' : 'warn', `Solicitud de verificación ${approve ? 'Aprobada' : 'Rechazada'}`);
         loadVerifications();
+      } else {
+        showToast('Error al actualizar: ' + (res.error?.message || 'Error desconocido'), 'error');
       }
     }
 
