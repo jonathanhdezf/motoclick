@@ -340,12 +340,12 @@
     </div>
   </div>
 
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&callback=init"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&callback=init&loading=async"></script>
   
   <script>
     // --- Configuration & State ---
@@ -353,8 +353,8 @@
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('id');
     
-    // Instancia global para este módulo
-    const supabase = (typeof supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined') 
+    // Instancia global para este módulo (Renombrado para evitar conflicto con SDK)
+    const sbClient = (typeof window.supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined') 
         ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) 
         : null;
 
@@ -467,8 +467,9 @@
 
     // --- UI Modals ---
     async function queryCatalog(codigo) {
+      if (!sbClient) return '';
       try {
-        const { data, error } = await supabase
+        const { data, error } = await sbClient
           .from('catalogo_maestro')
           .select('nombre, marca')
           .eq('codigo_barras', codigo)
@@ -552,8 +553,9 @@
       closeItemModal();
       
       try {
+        if (!sbClient) return;
         // Insert into Supabase
-        const { data, error } = await supabase
+        const { data, error } = await sbClient
           .from('ticket_detalle')
           .insert([item])
           .select()
@@ -577,8 +579,9 @@
     }
 
     async function loadTicketData() {
+       if (!sbClient) return;
        try {
-          const { data, error } = await supabase
+          const { data, error } = await sbClient
             .from('ticket_detalle')
             .select('*')
             .eq('id_orden', orderId)
@@ -623,12 +626,12 @@
 
     // --- BI Gathering ---
     async function saveCommerceProspect() {
-       if (!commerceName) return;
+       if (!commerceName || !sbClient) return;
        
        const subtotal = ticketItems.reduce((acc, curr) => acc + curr.precio_unitario, 0);
        
        try {
-          await supabase.from('comercios_prospectos').insert([{
+          await sbClient.from('comercios_prospectos').insert([{
              id_orden: orderId,
              nombre_comercio: commerceName,
              lat: locationCaptured ? locationCaptured.lat : 0,
@@ -638,7 +641,7 @@
           }]);
           
           // Also update main order 
-          await supabase.from('orders').update({
+          await sbClient.from('orders').update({
              nombre_comercio_local: commerceName,
              estado_ticket: 'armando'
           }).eq('id', orderId);
@@ -648,7 +651,7 @@
 
     // --- Finalization ---
     async function finishPurchase() {
-       if (ticketItems.length === 0) {
+       if (ticketItems.length === 0 || !sbClient) {
           showToast('No hay artículos en el ticket', 'warning');
           return;
        }
@@ -658,7 +661,7 @@
        
        try {
           // Trigger handled the subtotal real-time update in DB, we just update status here if needed
-          await supabase.from('orders').update({
+          await sbClient.from('orders').update({
              estado_ticket: 'consolidado'
           }).eq('id', orderId);
           
