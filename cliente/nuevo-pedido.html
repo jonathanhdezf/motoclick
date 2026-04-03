@@ -982,30 +982,41 @@
         if (!idFile || !selfieFile) return showToast('Debes subir ambos documentos (ID y Selfie)', 'error');
 
         btn.disabled = true;
-        btn.textContent = 'Enviando solicitud...';
+        btn.textContent = 'Subiendo archivos...';
 
-        // NOTE: Simulate cloud upload
-        const fakeIdPhotoUrl = "https://placeholder-url.com/id-" + user.id + ".jpg";
-        const fakeSelfieUrl = "https://placeholder-url.com/profile-" + user.id + ".jpg";
-        
-        const result = await store.submitVerificationRequest(user.id, fullName, fakeIdPhotoUrl, fakeSelfieUrl);
-        
-        if (result.success) {
-            // Update local state temporarily so UI reflects it immediately
-            if (typeof store.getUserById === 'function') {
-                const updatedUser = await store.getUserById(user.id);
-                if (updatedUser) store.setCurrentUser(updatedUser);
-            }
+        try {
+            // 1. Upload ID Photo
+            const idPath = `ids/${user.id}_${Date.now()}.jpg`;
+            const { publicUrl: idUrl, error: idError } = await store.uploadFile('identity-photos', idPath, idFile);
+            if (idError) throw new Error('Error al subir ID: ' + idError.message);
+
+            // 2. Upload Selfie Photo
+            const selfiePath = `selfies/${user.id}_${Date.now()}.jpg`;
+            const { publicUrl: selfieUrl, error: selfieError } = await store.uploadFile('identity-photos', selfiePath, selfieFile);
+            if (selfieError) throw new Error('Error al subir Selfie: ' + selfieError.message);
+
+            // 3. Submit request with REAL URLs
+            const result = await store.submitVerificationRequest(user.id, fullName, idUrl, selfieUrl);
             
-            showToast('¡Solicitud enviada! Avisaremos cuando se apruebe. 🛡️', 'success');
-            setTimeout(() => {
-                closeProfileModal();
-                init(); // Refresh view
-            }, 1500);
-        } else {
-            showToast('Error al enviar solicitud: ' + (result.error?.message || 'Error desconocido'), 'error');
+            if (result.success) {
+                if (typeof store.getUserById === 'function') {
+                    const updatedUser = await store.getUserById(user.id);
+                    if (updatedUser) store.setCurrentUser(updatedUser);
+                }
+                
+                showToast('¡Solicitud enviada con éxito! 🛡️', 'success');
+                setTimeout(() => {
+                    closeProfileModal();
+                    init(); 
+                }, 1500);
+            } else {
+                throw new Error(result.error?.message || 'Error en la solicitud');
+            }
+        } catch (err) {
+            showToast('Error: ' + err.message, 'error');
             btn.disabled = false;
             btn.textContent = 'Solicitar Verificación';
+            console.error('Verification Error:', err);
         }
     }
 

@@ -506,6 +506,21 @@ class MotoClickStore {
     return { data, error };
   }
 
+  // ── Storage Methods ──
+  async uploadFile(bucket, path, file) {
+    if (this._useFallback) return { publicUrl: 'https://placeholder-url.com/sim.jpg' };
+    
+    const { data, error } = await this._sb.storage.from(bucket).upload(path, file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+
+    if (error) return { error };
+
+    const { data: { publicUrl } } = this._sb.storage.from(bucket).getPublicUrl(path);
+    return { publicUrl };
+  }
+
   // ── Verification System ──
   async submitVerificationRequest(userId, full_name, id_photo_url, profile_photo_url) {
     if (this._useFallback) return { success: true };
