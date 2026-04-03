@@ -571,6 +571,11 @@
   <script src="../js/store.js?v=2.1"></script>
   <script src="../js/utils.js?v=2.1"></script>
   <script>
+    // 🛡️ Seguridad Proactiva: Verificar sesión al instante
+    if (!localStorage.getItem('mc_admin_session') && !localStorage.getItem('isAdmin')) {
+      window.location.replace('../index.html');
+    }
+
     const store = new MotoClickStore();
     let currentUserId = null;
 
@@ -923,9 +928,12 @@
 
     function logoutAdmin() {
       if (confirm('¿Abandonar el panel de administración?')) {
-        localStorage.removeItem('mc_admin_session');
-        localStorage.removeItem('isAdmin');
-        window.location.href = '../index.html';
+        // Limpieza exhaustiva
+        localStorage.clear(); 
+        sessionStorage.clear();
+        
+        // Redirección con reemplazo de historial (Previene "botón atrás")
+        window.location.replace('../index.html');
       }
     }
 
