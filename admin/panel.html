@@ -608,7 +608,7 @@
     async function loadSecurityCodes() {
       const tbody = document.getElementById('security-tbody');
       tbody.innerHTML = '<tr><td colspan="4" class="text-center">Leyendo bóveda de seguridad...</td></tr>';
-      const codes = await store.getSecurityCodes();
+      const codes = await store.getAllCashCodes();
       tbody.innerHTML = codes.map(c => `
         <tr>
           <td><code class="code-badge u-ls-1">${c.code}</code></td>
@@ -703,7 +703,7 @@
       const pin = document.getElementById('new-pin-input').value;
       if (pin.length < 4) return showToast('El PIN debe tener al menos 4 dígitos', 'error');
       
-      const { error } = await store.updateUserPIN(currentUserId, pin);
+      const { error } = await store.updateUser(currentUserId, { pin });
       if (!error) {
         showToast('PIN actualizado correctamente', 'success');
         closePinModal();

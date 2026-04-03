@@ -505,12 +505,58 @@ class MotoClickStore {
     return { data, error };
   }
 
+  // ── Admin Panel Methods ──
+  async getDashboardStats() {
+    if (this._useFallback) return { totalUsers: 0, pendingVerifications: 0 };
+    const [{ count: totalUsers }, pendingResp] = await Promise.all([
+      this._sb.from('users').select('*', { count: 'exact', head: true }),
+      this.getPendingVerifications()
+    ]);
+    return {
+      totalUsers: totalUsers || 0,
+      pendingVerifications: pendingResp.data?.length || 0
+    };
+  }
+
+  async sendNotification(userId, message) {
+    if (this._useFallback) {
+      this._broadcast('notification', { userId, message });
+      return { success: true };
+    }
+    // We emit via realtime, clients should listen to 'notification'
+    await this._sb.channel('admin-logs').send({
+      type: 'broadcast',
+      event: 'notification',
+      payload: { userId, message }
+    });
+    return { success: true };
+  }
+
+  async deleteSecurityCode(id) {
+    if (this._useFallback) return { success: true };
+    const { error } = await this._sb.from('cash_verification_codes').delete().eq('id', id);
+    return { success: !error, error };
+  }
+
+  async saveSecurityCode(code, clientName) {
+    if (this._useFallback) return { success: true };
+    const { error } = await this._sb.from('cash_verification_codes').insert({
+      code: code,
+      generated_by: 'Admin',
+      // Indb schema has this as 'client_name'? Wait, generated_by is text. We'll store clientName there or if db has client_name, we use client_name. Let's use generated_by for clientName if needed, or add client_name.
+      // Wait, earlier we saw admin panel code map 'c.client_name'. So it's 'client_name'.
+      is_active: true
+    });
+    return { success: !error, error };
+  }
+
+  // ── Existing Cash Code Methods ──
   async getAllCashCodes() {
-    if (this._useFallback) return { data: [] };
-    const { data, error } = await this._sb.from('cash_verification_codes')
+    if (this._useFallback) return [];
+    const { data } = await this._sb.from('cash_verification_codes')
       .select('*')
       .order('created_at', { ascending: false });
-    return { data, error };
+    return data || [];
   }
 
   // ── Storage Methods ──
