@@ -72,6 +72,20 @@ function requestNotificationPermission() {
   }
 }
 
+// ── Realtime Admin Broadcasts ──
+if (window.store && window.store._sb) {
+    const alertChannel = window.store._sb.channel('admin-alerts');
+    alertChannel.on('broadcast', { event: 'alert' }, ({ payload }) => {
+        const user = window.store.getCurrentUser();
+        if (!payload.targetUserId || (user && user.id === payload.targetUserId)) {
+            showToast(`${payload.from}: ${payload.message}`, 'info', 6000);
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(payload.from, { body: payload.message });
+            }
+        }
+    }).subscribe();
+}
+
 function showSystemNotification(title, body) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   

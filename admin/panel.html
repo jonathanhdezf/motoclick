@@ -484,11 +484,14 @@
         document.getElementById('online-users').innerHTML = online.map(u => `
             <div class="online-user">
                 <div class="status-dot"></div>
-                <div class="user-avatar" style="font-size: 12px;">${(u.name || 'U').charAt(0).toUpperCase()}</div>
+                <div class="user-avatar" style="font-size: 11px;">${(u.name || 'U').charAt(0).toUpperCase()}</div>
                 <div style="flex:1;">
                     <div style="font-size: 13px; font-weight: 600;">${u.name}</div>
-                    <div style="font-size: 10px; color: #64748b;">${u.role.toUpperCase()}</div>
+                    <div style="font-size: 10px; color: #64748b;">${u.role === 'client' ? 'Cliente' : 'Driver'} <span style="font-size:8px;">●</span> Online</div>
                 </div>
+                <button class="action-btn" onclick="sendNotification('${u.id}', '${u.name || 'Usuario'}')" style="padding: 6px 10px; border-radius: 8px;" title="🔔 Enviar Alerta">
+                  <i class="fas fa-bell"></i>
+                </button>
             </div>
         `).join('');
         document.getElementById('online-count').textContent = online.length;
@@ -665,17 +668,52 @@
 
     async function loadCashCodes() {
       const tbody = document.getElementById('codes-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Leyendo registros...</td></tr>';
       const { data } = await store.getAllCashCodes();
-      if (!data) return;
+      
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay códigos activos. 🛡️</td></tr>';
+        return;
+      }
+
       tbody.innerHTML = data.map(c => `
-          <tr>
-            <td><code class="code-badge">${c.code}</code></td>
-            <td>${c.generated_by}</td>
-            <td>${c.is_used ? 'USADO' : 'ACTIVO'}</td>
-            <td class="fs-xs">${new Date(c.created_at).toLocaleDateString()}</td>
-            <td class="fs-xs">${new Date(c.expires_at).toLocaleDateString()}</td>
-          </tr>
+        <tr>
+          <td><code style="font-weight:700; color:var(--accent); font-size:1.1rem;">${c.code}</code></td>
+          <td>${c.generated_by || 'Admin'}</td>
+          <td>${timeAgo(c.created_at)}</td>
+          <td>
+            <span class="badge ${c.is_used ? 'btn-warn' : 'badge-client'}">
+              ${c.is_used ? 'USADO' : 'ACTIVO'}
+            </span>
+          </td>
+        </tr>
       `).join('');
+    }
+
+    async function sendNotification(userId, userName) {
+        const msg = prompt(`Mensaje Directo para ${userName}:`, "Tienes un pedido pendiente. Por favor verifica tu app. 🏍️");
+        if (!msg) return;
+
+        showToast('Transmitiendo señal...', 'info');
+        
+        try {
+            const channel = store._sb.channel('admin-alerts');
+            await channel.send({
+                type: 'broadcast',
+                event: 'alert',
+                payload: { 
+                    targetUserId: userId, 
+                    message: msg, 
+                    from: 'MotoClick Admin' 
+                }
+            });
+            showToast(`Mensaje enviado a ${userName} 🛰️`, 'success');
+            addLog('Sistema', 'success', `Alerta enviada: "${msg}" -> ${userName}`);
+        } catch (err) {
+            showToast('Fallo en la comunicación', 'error');
+            console.error('Broadcast error:', err);
+        }
     }
 
     async function openCreateCodeModal() {
