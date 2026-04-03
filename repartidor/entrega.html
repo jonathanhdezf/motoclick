@@ -453,16 +453,16 @@
         : '👤';
       
       const verifiedIcon = order.clientIsVerified
-        ? `<i class="fas fa-check-circle verified-badge" title="Cliente Verificado ✅"></i>`
+        ? `<span style="margin-left: 8px; padding: 3px 8px; background: rgba(34, 197, 94, 0.15); color: #22c55e; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(34,197,94,0.3); display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-check-circle"></i> Usuario Verificado</span>`
         : '';
 
       document.getElementById('client-info').innerHTML = `
         <div class="client-avatar">${avatarContent}</div>
         <div style="flex: 1;">
-          <div style="font-weight: 600; display: flex; align-items: center;">
+          <div style="font-weight: 600; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
              ${order.clientName || 'Cliente'} ${verifiedIcon}
           </div>
-          <div style="font-size: 0.85rem; color: var(--text-muted);">📞 ${order.clientPhone || 'No disponible'}</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">📞 ${order.clientPhone || 'No disponible'}</div>
         </div>
       `;
 
