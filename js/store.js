@@ -79,7 +79,7 @@ class MotoClickStore {
       clientPhone:       row.client_phone,
       driverId:          row.driver_id,
       driverName:        row.driver_name,
-      driverPhoto:       row.driver_photo,
+      driverPhoto:       row.driver?.profile_photo_url || row.driver_photo,
       driverLocation:    row.driver_location,
       status:            row.status,
       description:       row.description,
@@ -254,7 +254,7 @@ class MotoClickStore {
   async getOrderById(id) {
     if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
     const { data, error } = await this._sb.from('orders')
-      .select('*, client:users!client_id(is_verified, verification_status, profile_photo_url), driver:users!driver_id(is_verified, verification_status)')
+      .select('*, client:users!client_id(is_verified, verification_status, profile_photo_url), driver:users!driver_id(is_verified, verification_status, profile_photo_url)')
       .eq('id', id)
       .maybeSingle();
     if (error) console.error('[Store] getOrderById Error:', error);
