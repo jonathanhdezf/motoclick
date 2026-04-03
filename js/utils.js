@@ -672,7 +672,7 @@ window.saveProfileChanges = async function() {
 
   const updates = { name: nameInput.value.trim() };
   if (window._tempProfilePhoto) {
-    updates.photo = window._tempProfilePhoto;
+    updates.profile_photo_url = window._tempProfilePhoto;
   }
   
   if (user.role === 'client') {

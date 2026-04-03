@@ -589,8 +589,15 @@ class MotoClickStore {
   async updateUser(userId, data_payload) {
     if (this._useFallback) return this._fb_updateUser(userId, data_payload);
     
+    // 🛡️ Saneamiento: Mapear nombres de columnas frontend -> backend si es necesario
+    const cleanPayload = { ...data_payload };
+    if (cleanPayload.photo) {
+      cleanPayload.profile_photo_url = cleanPayload.photo;
+      delete cleanPayload.photo;
+    }
+    
     // Attempt real DB write
-    const { data, error } = await this._sb.from('users').update(data_payload).eq('id', userId).select().single();
+    const { data, error } = await this._sb.from('users').update(cleanPayload).eq('id', userId).select().single();
     
     if (!error) {
       this.setCurrentUser(data);
@@ -598,7 +605,7 @@ class MotoClickStore {
 
     // Force Frontend Overrides (Optimistic Bypass)
     const updatedDocs = JSON.parse(localStorage.getItem('mc_admin_updates') || '{}');
-    updatedDocs[userId] = { ...(updatedDocs[userId] || {}), ...data_payload };
+    updatedDocs[userId] = { ...(updatedDocs[userId] || {}), ...cleanPayload };
     localStorage.setItem('mc_admin_updates', JSON.stringify(updatedDocs));
     
     return { success: !error, user: data, error: error?.message };
