@@ -693,10 +693,10 @@
               <button class="action-btn" onclick="printIdentityReport('${u.id}', '${u.full_name || u.name}', '${u.full_name || 'N/A'}', '${u.id_photo_url}', '${u.profile_photo_url}')" title="Imprimir Reporte PDF" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
                 <i class="fas fa-file-pdf"></i>
               </button>
-              <button class="action-btn active" onclick="approveIdentity('${userId}')" title="Aprobar Identidad">
+              <button class="action-btn active" onclick="approveIdentity('${u.id}')" title="Aprobar Identidad">
                 <i class="fas fa-check"></i>
               </button>
-              <button class="action-btn btn-warn" onclick="rejectIdentity('${userId}')" title="Rechazar">
+              <button class="action-btn btn-warn" onclick="rejectIdentity('${u.id}')" title="Rechazar">
                 <i class="fas fa-times"></i>
               </button>
             </div>
