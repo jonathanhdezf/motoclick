@@ -353,6 +353,11 @@
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('id');
     
+    // Instancia global para este módulo
+    const supabase = (typeof supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined') 
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) 
+        : null;
+
     let commerceName = '';
     let locationCaptured = null;
     let html5QrcodeScanner = null;
