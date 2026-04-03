@@ -143,19 +143,27 @@ class MotoClickStore {
   async registerUser(userData) {
     if (this._useFallback) return this._fb_registerUser(userData);
     
+    // Payload base (Columnas garantizadas en users)
     const payload = {
-      name: userData.name, phone: userData.phone, role: userData.role,
-      vehicle: userData.vehicle || null, address: userData.address || null
+      name: userData.name, 
+      phone: userData.phone, 
+      role: userData.role
     };
-    if (userData.pin) payload.pin = userData.pin;
 
-    let { data, error } = await this._sb.from('users').insert([payload]).select().single();
+    // Intentar inserción con columnas extendidas (puede fallar si el esquema es viejo o tiene caché)
+    const extendedPayload = { ...payload };
+    if (userData.pin) extendedPayload.pin = userData.pin;
+    if (userData.address) extendedPayload.address = userData.address;
+    if (userData.vehicle) extendedPayload.vehicle = userData.vehicle;
+
+    let { data, error } = await this._sb.from('users').insert([extendedPayload]).select().single();
     
-    if (error && (error.code === 'PGRST105' || (error.message && error.message.includes('pin') && error.message.includes('column')))) {
-      // Intentar de nuevo sin PIN para no romper el registro si el DB schema aún no es actualizado
-      delete payload.pin;
+    // Si falla por columna inexistente (address, vehicle, pin), reintentamos con el payload base
+    if (error && (error.code === 'PGRST105' || error.message.includes('column'))) {
+      console.warn('[Store] Registro: Reintentando con esquema simplificado por error de columnas.');
       const retry = await this._sb.from('users').insert([payload]).select().single();
-      data = retry.data; error = retry.error;
+      data = retry.data; 
+      error = retry.error;
     }
 
     if (error) {
