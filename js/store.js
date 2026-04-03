@@ -101,9 +101,9 @@ class MotoClickStore {
       cancelReason:      row.cancel_reason,
       cancelledBy:       row.cancelled_by,
       // Joined fields
-      clientIsVerified:  row.client?.is_verified,
+      clientIsVerified:  row.client?.is_verified || row.client?.verification_status === 'verified',
       clientPhoto:       row.client?.profile_photo_url,
-      driverIsVerified:  row.driver?.is_verified,
+      driverIsVerified:  row.driver?.is_verified || row.driver?.verification_status === 'verified',
     };
   }
 
@@ -243,7 +243,7 @@ class MotoClickStore {
   async getOrderById(id) {
     if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
     const { data, error } = await this._sb.from('orders')
-      .select('*, client:client_id(is_verified, profile_photo_url), driver:driver_id(is_verified)')
+      .select('*, client:client_id(is_verified, verification_status, profile_photo_url), driver:driver_id(is_verified, verification_status)')
       .eq('id', id)
       .maybeSingle();
     if (error) console.error('[Store] getOrderById Error:', error);
