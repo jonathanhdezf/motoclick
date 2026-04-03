@@ -309,6 +309,9 @@
           <a href="#" class="nav-link" onclick="switchTab('users', this)">
             <i class="fas fa-users"></i> Gestión Usuarios
           </a>
+          <a href="#" class="nav-link" onclick="switchTab('logs', this)">
+            <i class="fas fa-list-ul"></i> Logs de Sistema
+          </a>
         </div>
 
         <div class="nav-group">
@@ -487,6 +490,20 @@
               </div>
             </div>
           </div>
+        <!-- System Logs Tab -->
+        <section id="logs-tab" class="dashboard-tab hidden">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="m-0">📜 Historial de Auditoría Global</h3>
+              <div class="badge badge-green" id="log-count">0 Eventos</div>
+            </div>
+            <div class="p-1-5">
+              <p class="fs-sm text-muted mb-1-5">Registro consolidado de toda la actividad crítica en la plataforma (Últimos 100 eventos).</p>
+              <div id="global-audit-list" class="flex-col gap-1" style="max-height: 60vh; overflow-y: auto;">
+                <div class="text-center p-2 text-muted">Consultando base de datos...</div>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </main>
@@ -628,8 +645,15 @@
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
       el.classList.add('active');
 
-      const titles = { dashboard: 'Panel General', users: 'Gestión de Cuentas', verifications: 'Auditoría de Identidad', security: 'Códigos de Pago' };
+      const titles = { 
+        dashboard: 'Panel General', 
+        users: 'Gestión de Cuentas', 
+        verifications: 'Auditoría de Identidad', 
+        security: 'Códigos de Pago',
+        logs: 'Historial de Auditoría'
+      };
       document.getElementById('page-title').innerText = titles[tabId];
+      if (tabId === 'logs') loadGlobalAuditLogs();
       if (window.innerWidth <= 1024) toggleSidebar();
     }
 
@@ -1070,6 +1094,76 @@
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
+    }
+
+    async function loadGlobalAuditLogs() {
+      const container = document.getElementById('global-audit-list');
+      if (!container) return;
+
+      try {
+        // Consultamos órdenes y códigos para crear un feed unificado
+        const [{ data: orders }, codes] = await Promise.all([
+          store._sb.from('orders').select('*').order('created_at', { ascending: false }).limit(50),
+          store.getAllCashCodes()
+        ]);
+
+        const events = [];
+        
+        // Mapear órdenes
+        (orders || []).forEach(o => {
+          events.push({
+            time: new Date(o.created_at),
+            type: o.status === 'entregado' ? 'success' : o.status === 'cancelado' ? 'warning' : 'info',
+            msg: `📦 Orden #${o.id.slice(0,5)}: Status cambiado a ${o.status.toUpperCase()}`,
+            meta: `Cliente: ${o.client_name || 'N/A'}`
+          });
+        });
+
+        // Mapear códigos
+        (codes || []).forEach(c => {
+          events.push({
+            time: new Date(c.created_at),
+            type: 'info',
+            msg: `🔑 Código ${c.code} generado para ${c.client_name || 'Cliente'}`,
+            meta: `Admin Central`
+          });
+          if (c.is_used && c.used_at) {
+            events.push({
+              time: new Date(c.used_at),
+              type: 'success',
+              msg: `✅ Código ${c.code} canjeado exitosamente`,
+              meta: `Usuario ID: ${c.client_id?.slice(0,8)}...`
+            });
+          }
+        });
+
+        // Ordenar por tiempo descendente
+        events.sort((a, b) => b.time - a.time);
+
+        document.getElementById('log-count').innerText = `${events.length} Eventos`;
+
+        if (events.length === 0) {
+          container.innerHTML = '<div class="text-center p-2 text-muted">No hay registros aún</div>';
+          return;
+        }
+
+        container.innerHTML = events.map(e => `
+          <div class="list-item" style="border-left: 3px solid ${e.type === 'success' ? '#22c55e' : e.type === 'warning' ? '#ef4444' : '#3b82f6'}; padding-left: 15px;">
+            <div class="flex-col u-flex-1">
+              <div class="fs-sm fw-700">${e.msg}</div>
+              <div class="fs-xs text-muted">${e.meta}</div>
+            </div>
+            <div class="text-right">
+              <div class="fs-xs fw-800 uppercase" style="opacity: 0.5;">${e.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+              <div class="fs-xs text-muted">${e.time.toLocaleDateString()}</div>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('Audit Load Error:', err);
+        container.innerHTML = '<div class="text-center p-2 text-danger">Error al cargar registros históricos</div>';
+      }
     }
 
     initDashboard();
