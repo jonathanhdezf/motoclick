@@ -588,6 +588,22 @@
     </div>
   </div>
 
+  <!-- Logout Confirmation Modal -->
+  <div id="logout-modal" class="modal-overlay hidden">
+    <div class="modal-content u-modal-config animate-fade-in" style="max-width: 400px; text-align: center; padding: 2.5rem;">
+      <div class="u-logout-icon-box mb-2">
+         <i class="fas fa-sign-out-alt fa-2x"></i>
+      </div>
+      <h3 class="mb-1">¿Cerrar Sesión?</h3>
+      <p class="fs-sm text-muted mb-2">Estás a punto de abandonar el panel de administración. Deberás ingresar tus credenciales nuevamente para acceder.</p>
+      
+      <div class="modal-actions" style="gap: 12px;">
+        <button class="action-btn u-flex-1 u-rounded-12" onclick="closeLogoutModal()">Cancelar</button>
+        <button class="action-btn active btn-warn u-flex-1 u-rounded-12" onclick="confirmLogout()">Abandonar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js?v=2.1"></script>
   <script src="../js/store.js?v=2.1"></script>
@@ -1067,14 +1083,22 @@
     }
 
     function logoutAdmin() {
-      if (confirm('¿Abandonar el panel de administración?')) {
-        // Limpieza exhaustiva
-        localStorage.clear(); 
-        sessionStorage.clear();
-        
-        // Redirección con reemplazo de historial (Previene "botón atrás")
-        window.location.replace('../index.html');
-      }
+      const modal = document.getElementById('logout-modal');
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    }
+
+    function closeLogoutModal() {
+      const modal = document.getElementById('logout-modal');
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+
+    function confirmLogout() {
+      showToast('Cerrando sesión...', 'info');
+      localStorage.clear(); 
+      sessionStorage.clear();
+      window.location.replace('../index.html');
     }
 
     function printIdentityReport(userId, name, fullName, idPhoto, profilePhoto) {
@@ -1199,6 +1223,13 @@
     .logs-container { max-height: 300px; overflow-y: auto; padding: 1.5rem; }
     .log-entry { display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 13px; border-left: 2px solid var(--accent); padding-left: 1rem; }
     .log-time { color: #64748b; font-weight: 700; min-width: 45px; }
+
+    /* Logout Modal Specific Styles */
+    .u-logout-icon-box {
+      width: 70px; height: 70px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;
+      color: #ef4444;
+    }
   </style>
 </body>
 </html>
