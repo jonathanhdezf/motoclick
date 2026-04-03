@@ -79,6 +79,7 @@
     .top-bar {
       height: var(--header-h);
       background: rgba(15, 23, 42, 0.8);
+      -webkit-backdrop-filter: blur(16px);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
@@ -153,7 +154,7 @@
     .premium-table tr td { background: var(--glass); padding: 16px 1rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .premium-table tr td:first-child { border-left: 1px solid var(--border); border-radius: 16px 0 0 16px; }
     .premium-table tr td:last-child { border-right: 1px solid var(--border); border-radius: 0 16px 16px 0; }
-    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-responsive { width: 100%; overflow-x: auto; }
 
     /* Utils */
     .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
@@ -187,10 +188,12 @@
     /* Fix Toast Visibility in Admin */
     .toast-container { z-index: 9999 !important; }
 
-    /* PIN Modal Styles */
+    /* Modal & Glass */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.8); 
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
       z-index: 2000; display: none; align-items: center; justify-content: center;
     }
     .modal-overlay.hidden { display: none !important; }
@@ -199,7 +202,22 @@
       padding: 2rem; border-radius: 24px; width: 90%; max-width: 400px;
     }
     .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
-    .card-glass { background: var(--bg-card); backdrop-filter: blur(12px); }
+    .card-glass { 
+      background: var(--bg-card); 
+      -webkit-backdrop-filter: blur(12px); 
+      backdrop-filter: blur(12px); 
+    }
+
+    /* Layout Components */
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border); }
+    .logout-link { color: #ef4444 !important; }
+    .top-bar-left { display: flex; align-items: center; gap: 1rem; }
+    .top-bar-right { display: flex; align-items: center; gap: 1.5rem; }
+    .page-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
+    .admin-status { text-align: right; line-height: 1.2; }
+    .status-name { font-size: 14px; font-weight: 700; }
+    .status-indicator { font-size: 11px; color: #22c55e; }
+    .status-indicator i { font-size: 6px; vertical-align: middle; margin-right: 4px; }
   </style>
 </head>
 <body>
@@ -233,8 +251,8 @@
         </div>
       </nav>
 
-      <div style="padding: 1.5rem; border-top: 1px solid var(--border);">
-        <a href="#" class="nav-link" onclick="logoutAdmin()" style="color: #ef4444;">
+      <div class="sidebar-footer">
+        <a href="#" class="nav-link logout-link" onclick="logoutAdmin()">
           <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
         </a>
       </div>
@@ -242,14 +260,14 @@
 
     <main class="main-content">
       <header class="top-bar">
-        <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="top-bar-left">
           <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-          <h2 id="page-title" style="margin:0; font-size: 1.25rem;">Panel General</h2>
+          <h2 id="page-title" class="page-title">Panel General</h2>
         </div>
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
-          <div style="text-align: right; line-height: 1.2;" class="no-mobile">
-            <div style="font-size: 14px; font-weight: 700;">Central Operativa</div>
-            <div style="font-size: 11px; color: #22c55e;"><i class="fas fa-circle" style="font-size: 6px;"></i> Sistema Online</div>
+        <div class="top-bar-right">
+          <div class="admin-status no-mobile">
+            <div class="status-name">Central Operativa</div>
+            <div class="status-indicator"><i class="fas fa-circle"></i> Sistema Online</div>
           </div>
           <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
         </div>
@@ -573,7 +591,7 @@
           <td style="font-weight: 500; color: #22c55e;">${u.full_name || 'N/A'}</td>
           <td>
             <div style="display: flex; gap: 8px;">
-              <a href="${u.id_photo_url || '#'}" target="_blank" title="Ver ID Oficial">
+              <a href="${u.id_photo_url || '#'}" target="_blank" rel="noopener" title="Ver ID Oficial">
                   <div style="width: 50px; height: 35px; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); overflow: hidden;">
                       ${u.id_photo_url ? `<img src="${u.id_photo_url}" style="width:100%; height:100%; object-fit: cover;">` : '<i class="fas fa-id-card"></i>'}
                   </div>
