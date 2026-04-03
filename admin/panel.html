@@ -492,15 +492,42 @@
     </div>
   </div>
 
-  <!-- PIN Modal -->
-  <div id="pin-modal" class="modal-overlay">
-    <div class="modal-content">
-      <h3 class="mb-1">🔑 Cambiar PIN</h3>
-      <p id="pin-modal-user" class="fs-sm text-muted mb-1-5"></p>
-      <input type="password" id="new-pin-input" class="form-input-premium" placeholder="Nuevo PIN (4-6 dígitos)" maxlength="6">
+  <!-- Edit User Modal -->
+  <div id="edit-user-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 450px;">
+      <h3 class="mb-1">⚙️ Gestión de Usuario</h3>
+      <p id="edit-modal-subtitle" class="fs-sm text-muted mb-1-5"></p>
+      
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 20px;">
+         <div>
+            <label class="fs-sm text-muted">Nombre Completo</label>
+            <input type="text" id="edit-u-name" class="form-input-premium" placeholder="Nombre completo">
+         </div>
+         <div>
+            <label class="fs-sm text-muted">Teléfono Registrado (Solo lectura)</label>
+            <input type="text" id="edit-u-phone" class="form-input-premium" disabled style="opacity: 0.7;">
+         </div>
+         <div>
+            <label class="fs-sm text-muted">Rol en Plataforma</label>
+            <select id="edit-u-role" class="form-input-premium" style="background:#0f172a; cursor:pointer;">
+               <option value="client">Cliente Habitual</option>
+               <option value="driver">Repartidor Motoclick</option>
+               <option value="admin">Administrador del Sistema</option>
+            </select>
+         </div>
+         <div>
+            <label class="fs-sm text-muted">Credencial de Acceso (NIP)</label>
+            <input type="text" id="edit-u-pin" class="form-input-premium" placeholder="Nuevo NIP (Opcional)" maxlength="6">
+         </div>
+      </div>
+
+      <div class="modal-actions" style="margin-bottom: 12px; flex-direction: column;">
+        <button class="action-btn active btn-warn" id="btn-modal-delete" style="width: 100%; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;">🗑️ Borrar Usuario Definitivamente</button>
+      </div>
+
       <div class="modal-actions">
-        <button class="action-btn u-flex-1" onclick="closePinModal()">Cancelar</button>
-        <button class="action-btn active u-flex-1" id="save-pin-btn">Guardar</button>
+        <button class="action-btn u-flex-1" onclick="closeEditModal()" style="border-radius:12px;">Cancelar</button>
+        <button class="action-btn active u-flex-1" id="btn-modal-save" style="border-radius:12px;">💾 Guardar Cambios</button>
       </div>
     </div>
   </div>
@@ -586,11 +613,8 @@
             <td><code class="code-badge">${pinText}</code></td>
             <td>
               <div class="u-flex-gap-2">
-                <button class="action-btn" onclick="openPinModal('${u.id}', '${safeName}')" title="🔑 Cambiar PIN" style="font-size: 16px;">
-                  🔑
-                </button>
-                <button class="action-btn btn-warn" onclick="handleDeleteUser('${u.id}', '${safeName}')" title="🗑️ Eliminar permanentemente" style="font-size: 16px;">
-                  🗑️
+                <button class="action-btn" onclick="openEditModal('${u.id}', '${safeName}', '${u.phone}', '${u.role}', '${u.pin || ''}')" title="⚙️ Gestionar Usuario" style="font-size: 14px; width: auto; padding: 0 10px; gap: 5px;">
+                  ⚙️ Gestionar
                 </button>
               </div>
             </td>
@@ -710,45 +734,70 @@
       loadSecurityCodes();
     }
 
-    async function handleDeleteUser(userId, userName) {
-      if (!confirm(`¿Estás seguro de eliminar permanentemente a ${userName}? Esta acción no se puede deshacer.`)) return;
-      
-      showToast('Eliminando...', 'info');
-      const { error } = await store.deleteUser(userId);
-      if (!error) {
-        showToast('Usuario eliminado', 'success');
-        addLog(`Usuario eliminado: ${userName} (${userId})`, 'warning');
-        loadUsers();
-        loadStats();
-      } else {
-        showToast('Error al eliminar: ' + error.message, 'error');
-      }
-    }
-
-    function openPinModal(userId, userName) {
+    // --- Advanced User Management Logic ---
+    let currentEditName = '';
+    
+    function openEditModal(userId, userName, phone, role, pin) {
       currentUserId = userId;
-      document.getElementById('pin-modal-user').innerText = `Usuario: ${userName}`;
-      document.getElementById('pin-modal').classList.remove('hidden');
-      document.getElementById('pin-modal').style.display = 'flex';
-    }
-
-    function closePinModal() {
-      document.getElementById('pin-modal').classList.add('hidden');
-      document.getElementById('pin-modal').style.display = 'none';
-      document.getElementById('new-pin-input').value = '';
-    }
-
-    document.getElementById('save-pin-btn').onclick = async () => {
-      const pin = document.getElementById('new-pin-input').value;
-      if (pin.length < 4) return showToast('El PIN debe tener al menos 4 dígitos', 'error');
+      currentEditName = userName;
+      document.getElementById('edit-modal-subtitle').innerText = `ID: ${userId}`;
+      document.getElementById('edit-u-name').value = userName || '';
+      document.getElementById('edit-u-phone').value = phone || '';
+      document.getElementById('edit-u-role').value = role || 'client';
+      document.getElementById('edit-u-pin').value = pin || '';
       
-      const { error } = await store.updateUser(currentUserId, { pin });
+      const modal = document.getElementById('edit-user-modal');
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      const modal = document.getElementById('edit-user-modal');
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+      currentUserId = null;
+    }
+
+    document.getElementById('btn-modal-save').onclick = async () => {
+      const pin = document.getElementById('edit-u-pin').value;
+      const name = document.getElementById('edit-u-name').value;
+      const role = document.getElementById('edit-u-role').value;
+      
+      const payload = {};
+      if (pin) {
+        if (pin.length < 4) return showToast('El NIP debe tener al menos 4 dígitos', 'error');
+        payload.pin = pin;
+      }
+      if (name && name !== currentEditName) payload.name = name;
+      if (role) payload.role = role;
+      
+      if (Object.keys(payload).length === 0) return closeEditModal();
+      
+      showToast('Actualizando perfil...', 'info');
+      const { error } = await store.updateUser(currentUserId, payload);
       if (!error) {
-        showToast('PIN actualizado correctamente', 'success');
-        closePinModal();
+        showToast('¡Usuario actualizado exitosamente!', 'success');
+        addLog(`Perfil de usuario editado: ${name || currentEditName}`, 'info');
+        closeEditModal();
         loadUsers();
       } else {
         showToast('Error: ' + error.message, 'error');
+      }
+    };
+
+    document.getElementById('btn-modal-delete').onclick = async () => {
+      if (!confirm(`¿Estás 100% SEGURO de eliminar permanentemente a ${currentEditName}? Esta acción es destructiva e irrecuperable.`)) return;
+      
+      showToast('Ejecutando borrado...', 'warn');
+      const { error } = await store.deleteUser(currentUserId);
+      if (!error) {
+        showToast('Usuario erradicado del sistema', 'success');
+        addLog(`Usuario eliminado radicalmente: ${currentEditName} (${currentUserId})`, 'warning');
+        closeEditModal();
+        loadUsers();
+        loadStats();
+      } else {
+        showToast('Error al borrar: ' + error.message, 'error');
       }
     };
 
