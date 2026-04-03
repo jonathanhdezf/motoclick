@@ -3,70 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MotoClick — Central de Operaciones</title>
-  <link rel="stylesheet" href="../styles/main.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <title>MotoClick | Panel de Administración Premium</title>
+  <link rel="icon" href="../assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --sb-width: 280px;
-      --header-h: 100px;
       --accent: #22c55e;
       --bg-dark: #0f172a;
       --bg-card: rgba(30, 41, 59, 0.7);
       --glass: rgba(255, 255, 255, 0.03);
       --border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --sb-width: 280px;
+      --header-h: 80px;
     }
 
-    body {
-      background: var(--bg-dark);
-      color: #f8fafc;
-      margin: 0;
-      font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-      overflow-x: hidden;
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      background: var(--bg-dark); color: var(--text-main); 
+      font-family: 'Urbanist', sans-serif; overflow-x: hidden; 
     }
 
-    /* Layout */
-    .app-container { display: flex; min-height: 100vh; }
-
-    /* Sidebar - Mobile Responsive */
+    /* Sidebar Styles */
     .sidebar {
-      width: var(--sb-width);
-      background: #020617;
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      left: 0; top: 0; bottom: 0;
-      z-index: 1000;
+      width: var(--sb-width); height: 100vh; position: fixed; left: 0; top: 0;
+      background: #0f172a; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 1000;
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
     @media (max-width: 1024px) {
       .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
+      .sidebar.open { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
       .main-content { margin-left: 0 !important; }
     }
 
-    .sidebar-header {
-      height: var(--header-h);
-      display: flex; align-items: center; justify-content: center; padding: 0 1rem;
-      border-bottom: 1px solid var(--border);
+    .brand-area {
+      padding: 2.5rem 1.5rem; display: flex; align-items: center; gap: 0.75rem;
+      font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;
     }
-    .brand-logo { height: 60px; filter: drop-shadow(0 0 12px rgba(255,255,255,0.2)); transition: transform 0.3s; }
-    .brand-logo:hover { transform: scale(1.05); }
+    .brand-logo { height: 32px; filter: drop-shadow(0 0 10px rgba(34,197,94,0.4)); }
 
-    .nav-menu { padding: 1.5rem; flex: 1; }
+    .nav-menu { flex: 1; padding: 0 1rem; overflow-y: auto; }
     .nav-group { margin-bottom: 2rem; }
-    .nav-label { font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 1rem; padding-left: 0.5rem; }
-    
-    .nav-link {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 1rem; color: #94a3b8; text-decoration: none;
-      border-radius: 12px; margin-bottom: 4px; transition: all 0.2s;
+    .nav-label {
+      padding: 0 1rem; font-size: 11px; font-weight: 700; color: #475569;
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.75rem;
     }
-    .nav-link:hover, .nav-link.active {
-      background: rgba(34, 197, 94, 0.1);
-      color: var(--accent);
+
+    .nav-link {
+      display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem;
+      color: #94a3b8; text-decoration: none; border-radius: 12px;
+      transition: all 0.2s; font-weight: 500; margin-bottom: 0.25rem;
+    }
+    .nav-link i { font-size: 1.1rem; width: 24px; text-align: center; }
+    .nav-link:hover { background: var(--glass); color: white; }
+    .nav-link.active {
+      background: rgba(34, 197, 94, 0.1); color: var(--accent);
       border-left: 3px solid var(--accent);
     }
 
@@ -99,54 +94,24 @@
       padding: 1rem; border-radius: 20px; position: relative; overflow: hidden;
       min-width: 0; word-wrap: break-word;
     }
-    .stat-card::after {
-      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
-      pointer-events: none;
-    }
     .stat-icon {
-      width: 48px; height: 48px; border-radius: 12px;
+      width: 40px; height: 40px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem; margin-bottom: 1rem;
+      margin-bottom: 1rem; font-size: 1.25rem;
     }
 
-    /* Interactive Columns */
-    .dashboard-cols {
-      display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;
-    }
-    @media (max-width: 1200px) { .dashboard-cols { grid-template-columns: 1fr; } }
+    /* Cards & Panels */
+    .dashboard-cols { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+    @media (max-width: 1280px) { .dashboard-cols { grid-template-columns: 1fr; } }
 
     .panel-card {
       background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 24px; padding: 1.5rem; height: 100%;
+      border-radius: 24px; overflow: hidden; height: 100%;
     }
-    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-
-    /* Real-time Logs */
-    .logs-container { 
-      height: 400px; overflow-y: auto; 
-      display: flex; flex-direction: column; gap: 10px;
-      padding-right: 10px;
+    .panel-header {
+      padding: 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .log-entry {
-      background: var(--glass); border: 1px solid var(--border);
-      padding: 10px 14px; border-radius: 10px; font-size: 13px;
-      display: flex; gap: 12px; align-items: start;
-    }
-    .log-time { color: #64748b; font-family: monospace; }
-    .log-type-info { color: #3b82f6; }
-    .log-type-success { color: #22c55e; }
-    .log-type-warn { color: #f97316; }
-
-    /* Online Users */
-    .online-list { display: flex; flex-direction: column; gap: 12px; }
-    .online-user {
-      display: flex; align-items: center; gap: 12px;
-      padding: 8px; border-radius: 12px; transition: background 0.2s;
-    }
-    .online-user:hover { background: var(--glass); }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e; flex-shrink: 0; }
-    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
     /* Tables */
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
@@ -218,13 +183,25 @@
     .status-name { font-size: 14px; font-weight: 700; }
     .status-indicator { font-size: 11px; color: #22c55e; }
     .status-indicator i { font-size: 6px; vertical-align: middle; margin-right: 4px; }
+
+    /* Utility Classes to eliminate inline styles */
+    .flex { display: flex; align-items: center; }
+    .gap-1 { gap: 1rem; }
+    .m-0 { margin: 0 !important; }
+    .mt-1 { margin-top: 4px; }
+    .fs-xs { font-size: 11px !important; }
+    .fs-sm { font-size: 13px !important; }
+    .fw-800 { font-weight: 800; }
+    .uppercase { text-transform: uppercase; }
+    .ls-1 { letter-spacing: 0.5px; }
+    .text-muted { color: #94a3b8; }
   </style>
 </head>
 <body>
-
-  <div class="app-container">
+  <div style="display: flex; min-height: 100vh;">
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
+      <div class="brand-area">
         <img src="../assets/logo_motoclick_blanco.png" class="brand-logo" alt="Logo">
         <span>Admin Pro</span>
       </div>
@@ -279,30 +256,30 @@
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon" style="background: rgba(59,130,246,0.15); color: #3b82f6;"><i class="fas fa-shopping-bag"></i></div>
-              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Órdenes Mes</div>
-              <div style="font-size: clamp(20px, 5vw, 28px); font-weight: 800; margin-top: 4px;">128</div>
+              <div class="fs-xs text-muted uppercase ls-1">Órdenes Mes</div>
+              <div class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">128</div>
             </div>
             <div class="stat-card">
               <div class="stat-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;"><i class="fas fa-users-viewfinder"></i></div>
-              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Usuarios</div>
-              <div id="stat-total-users" style="font-size: clamp(20px, 5vw, 28px); font-weight: 800; margin-top: 4px;">--</div>
+              <div class="fs-xs text-muted uppercase">Usuarios</div>
+              <div id="stat-total-users" class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">--</div>
             </div>
             <div class="stat-card">
               <div class="stat-icon" style="background: rgba(234,179,8,0.15); color: #eab308;"><i class="fas fa-shield-check"></i></div>
-              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Verif. Pend.</div>
-              <div id="stat-pending-verif" style="font-size: clamp(20px, 5vw, 28px); font-weight: 800; margin-top: 4px;">--</div>
+              <div class="fs-xs text-muted uppercase">Verif. Pend.</div>
+              <div id="stat-pending-verif" class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">--</div>
             </div>
             <div class="stat-card">
               <div class="stat-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;"><i class="fas fa-bolt"></i></div>
-              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Respuesta</div>
-              <div style="font-size: clamp(20px, 5vw, 28px); font-weight: 800; margin-top: 4px;">4.2m</div>
+              <div class="fs-xs text-muted uppercase">Respuesta</div>
+              <div class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">4.2m</div>
             </div>
           </div>
 
           <div class="dashboard-cols">
             <div class="panel-card">
               <div class="panel-header">
-                <h3 style="margin:0;">🚨 Actividad Realtime</h3>
+                <h3 class="m-0">🚨 Actividad Realtime</h3>
                 <div class="badge" style="background: rgba(34,197,94,0.1); color: #22c55e;">Live Feed</div>
               </div>
               <div class="logs-container" id="realtime-logs">
@@ -315,11 +292,13 @@
 
             <div class="panel-card">
               <div class="panel-header">
-                <h3 style="margin:0;">👤 Ahora Conectados</h3>
-                <span id="online-count" class="badge" style="background: #22c55e; color: white;">0</span>
+                <h3 class="m-0">🛰️ Broadcaster</h3>
               </div>
-              <div class="online-list" id="online-users">
-                <div class="text-center text-muted" style="padding: 2rem;">No hay sesiones activas detected.</div>
+              <div style="padding: 1.5rem;">
+                <p class="fs-xs text-muted" style="margin-bottom: 1rem;">Envía notificaciones instantáneas a todos los repartidores y clientes conectados en este momento.</p>
+                <div id="connected-broadcaster-list">
+                  <div class="text-center text-muted fs-sm">Cargando unidades...</div>
+                </div>
               </div>
             </div>
           </div>
@@ -327,226 +306,166 @@
 
         <!-- Users Tab -->
         <section id="users-tab" class="dashboard-tab hidden">
-           <div class="panel-card">
-             <div class="panel-header">
-                <h3>👥 Gestión de Usuarios</h3>
-                <button class="action-btn" onclick="loadUsers()"><i class="fas fa-sync"></i> Refrescar</button>
-             </div>
-             <div class="table-responsive">
-               <table class="premium-table">
-                 <thead>
-                   <tr>
-                     <th>Usuario</th>
-                     <th>Rol</th>
-                     <th>PIN Actual</th>
-                     <th>Acciones</th>
-                   </tr>
-                 </thead>
-                 <tbody id="users-tbody"></tbody>
-               </table>
-             </div>
-           </div>
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="m-0">👥 Gestión de Cuentas</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="premium-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>PIN Acceso</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <!-- Verifications Tab -->
         <section id="verifications-tab" class="dashboard-tab hidden">
-           <div class="panel-card">
-             <div class="panel-header">
-                <h3>🛡️ Solicitudes de Identidad</h3>
-                <p style="color: #64748b; font-size: 13px;">Valida documentos y fotografías selfie de tus clientes.</p>
-             </div>
-             <div class="table-responsive">
-               <table class="premium-table">
-                 <thead>
-                   <tr>
-                     <th>Usuario / Teléfono</th>
-                     <th>Nombre Real</th>
-                     <th>Multimedia</th>
-                     <th>Acciones</th>
-                   </tr>
-                 </thead>
-                 <tbody id="verifications-tbody"></tbody>
-               </table>
-             </div>
-           </div>
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="m-0">🛡️ Auditoría de Identidad</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="premium-table">
+                <thead>
+                  <tr>
+                    <th>Solicitante</th>
+                    <th>Nombre Real</th>
+                    <th>Documentos</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="verifications-tbody"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
-        <!-- Cash Codes Tab -->
+        <!-- Security Tab (Codes) -->
         <section id="security-tab" class="dashboard-tab hidden">
-           <div class="panel-card" style="max-width: 800px; margin: 0 auto;">
-             <div class="panel-header">
-                <h3>🏦 Códigos de Efectivo</h3>
-                <button class="action-btn" onclick="openCreateCodeModal()" style="background: var(--accent); border:none;">
-                  <i class="fas fa-plus"></i> Nuevo Código
-                </button>
-             </div>
-             <div class="table-responsive">
-               <table class="premium-table">
-                 <thead>
-                   <tr>
-                     <th>Código</th>
-                     <th>Creador</th>
-                     <th>Estado</th>
-                     <th>Fecha</th>
-                     <th>Expira</th>
-                   </tr>
-                 </thead>
-                 <tbody id="codes-tbody"></tbody>
-               </table>
-             </div>
-           </div>
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="m-0">🔑 Códigos de Verificación de Pago</h3>
+            </div>
+            <div style="padding: 1.5rem;">
+              <div style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 0.5rem; color: #3b82f6;">Manual de Uso</h4>
+                <p class="fs-sm text-muted">Cuando un cliente solicita pagar en efectivo, debe proporcionarte su nombre. Genera un código único aquí y dáselo. El repartidor solo podrá ver el pedido si el cliente ingresa este código exacto.</p>
+              </div>
+              
+              <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="form-group">
+                  <label class="nav-label">Nombre del Cliente</label>
+                  <input type="text" id="security-client-name" class="cert-value" style="width: 100%; border: 1px solid var(--border); background: var(--glass); color: white; padding: 12px; border-radius: 10px;" placeholder="Ej. Juan Pérez">
+                </div>
+                <div class="form-group">
+                  <label class="nav-label">Acción</label>
+                  <button class="action-btn" onclick="generatePaymentCode()" style="width: 100%; background: var(--accent); color: white; height: 45px; border-radius: 10px;">
+                    <i class="fas fa-plus"></i> Generar Código Único
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-responsive" style="margin-top: 2rem;">
+                <table class="premium-table">
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Cliente</th>
+                      <th>Creado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="security-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </main>
   </div>
 
-  <!-- PIN Modal -->
-  <div id="pin-modal" class="modal-overlay hidden">
-    <div class="modal-content card-glass">
-      <h3 style="margin-top:0;">🔑 Acceso Seguro</h3>
-      <p id="pin-modal-subtitle" style="font-size: 14px; color: #94a3b8; margin-bottom: 1.5rem;"></p>
-      
-      <div id="sql-alert" class="sql-alert hidden">
-        <strong>⚠️ Atención:</strong> Debes ejecutar el SQL en Supabase para usar esta función:
-        <code class="sql-code">ALTER TABLE users ADD COLUMN IF NOT EXISTS pin TEXT;</code>
+  <!-- Identidad Certificate (Imprimible) -->
+  <div id="printable-certificate">
+    <div class="cert-header">
+      <img src="../assets/logo.png" class="cert-logo" alt="MotoClick Logo">
+      <h2 style="margin:0; text-transform: uppercase; letter-spacing: 2px;">Certificado de Calidad e Identidad</h2>
+    </div>
+    <div class="cert-grid">
+      <div class="cert-photo-box">
+        <img id="cert-photo" class="cert-photo-img" src="" alt="Foto Driver">
+        <div style="margin-top: 10px; font-weight: 800; color: #22c55e;">AUDITADO</div>
       </div>
-
-      <form onsubmit="handleSavePin(event)">
-        <input type="hidden" id="edit-user-id">
-        <div class="form-group">
-          <label class="form-label" style="font-size: 12px; margin-bottom: 6px;">Nuevo PIN (4-6 dígitos)</label>
-          <input type="text" id="new-pin-input" class="form-input" placeholder="Ej. 2026" required pattern="[0-9]{4,6}">
-        </div>
-        <div class="modal-actions">
-          <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar PIN</button>
-          <button type="button" class="btn btn-warn" style="flex: 1;" onclick="closeModal()">Cancelar</button>
-        </div>
-      </form>
+      <div class="cert-info">
+        <div class="cert-label">Nombre del Repartidor</div>
+        <div id="cert-name" class="cert-value">--</div>
+        <div class="cert-label">Documento Identidad</div>
+        <div id="cert-id" class="cert-value">--</div>
+        <div class="cert-label">Estado de Verificación</div>
+        <div class="cert-badge">ACTIVO / VERIFICADO</div>
+      </div>
+    </div>
+    <div class="cert-footer">
+      Este documento certifica que el driver ha pasado los protocolos de seguridad de MotoClick.
+      <br>Generado automáticamente por la Central de Operaciones.
     </div>
   </div>
 
-  <div id="printable-certificate"></div>
+  <!-- PIN Modal -->
+  <div id="pin-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 1rem;">🔑 Cambiar PIN</h3>
+      <p id="pin-modal-user" class="fs-sm text-muted" style="margin-bottom: 1.5rem;"></p>
+      <input type="password" id="new-pin-input" class="cert-value" style="width:100%; border: 1px solid var(--border); background: var(--glass); color: white; padding: 12px; border-radius: 12px;" placeholder="Nuevo PIN (4-6 dígitos)" maxlength="6">
+      <div class="modal-actions">
+        <button class="action-btn" style="flex:1" onclick="closePinModal()">Cancelar</button>
+        <button class="action-btn active" style="flex:1" id="save-pin-btn">Guardar</button>
+      </div>
+    </div>
+  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/supabase-config.js?v=1.1"></script>
-  <script src="../js/store.js?v=1.1"></script>
-  <script src="../js/utils.js?v=1.1"></script>
-
+  <script src="../js/supabase.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
   <script>
-    // Security
-    const session = localStorage.getItem('mc_admin_session');
-    if (!session) window.location.replace('/admin/');
-
     const store = new MotoClickStore();
-    let currentLogs = [];
+    let currentUserId = null;
 
-    // Navigation & History Logic for Mobile
+    // --- Navigation Logic ---
     function toggleSidebar() {
-      const sb = document.getElementById('sidebar');
-      const isOpen = sb.classList.contains('open');
-      
-      if (!isOpen) {
-        sb.classList.add('open');
-        // Push state so back button closes the menu
-        history.pushState({ menuOpen: true }, '');
-      } else {
-        sb.classList.remove('open');
-        // Only go back if we are sure we pushed a state
-        if (history.state && history.state.menuOpen) {
-            history.back();
-        }
-      }
+      document.getElementById('sidebar').classList.toggle('open');
     }
-
-    // Handle back button to close menu
-    window.onpopstate = function(event) {
-        const sb = document.getElementById('sidebar');
-        if (sb.classList.contains('open')) {
-            sb.classList.remove('open');
-        }
-    };
 
     function switchTab(tabId, el) {
       document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.add('hidden'));
+      document.getElementById(tabId + '-tab').classList.remove('hidden');
+      
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      
-      document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-      if (el) el.classList.add('active');
-      
-      const titles = { dashboard: 'Panel General', users: 'Gestión Usuarios', verifications: 'Verificaciones', security: 'Códigos de Pago' };
-      document.getElementById('page-title').textContent = titles[tabId];
+      el.classList.add('active');
 
-      if (tabId === 'dashboard') initDashboard();
-      if (tabId === 'users') loadUsers();
-      if (tabId === 'verifications') loadVerifications();
-      if (tabId === 'security') loadCashCodes();
-
-      // Close menu on navigation for mobile
-      const sb = document.getElementById('sidebar');
-      if (sb.classList.contains('open')) {
-          sb.classList.remove('open');
-          if (history.state && history.state.menuOpen) history.back();
-      }
+      const titles = { dashboard: 'Panel General', users: 'Gestión de Cuentas', verifications: 'Auditoría de Identidad', security: 'Códigos de Pago' };
+      document.getElementById('page-title').innerText = titles[tabId];
+      if (window.innerWidth <= 1024) toggleSidebar();
     }
 
-    // Dashboard & Realtime
-    async function initDashboard() {
-        const users = await store.getAllUsers();
-        document.getElementById('stat-total-users').textContent = users.length;
-
-        const { data: verifs } = await store.getPendingVerifications();
-        document.getElementById('stat-pending-verif').textContent = verifs.length;
-
-        // Populate online users (Simulation based on recent update)
-        const online = users.filter(u => u.name).slice(0, 5); // Just 5 for demo
-        document.getElementById('online-users').innerHTML = online.map(u => `
-            <div class="online-user">
-                <div class="status-dot"></div>
-                <div class="user-avatar" style="font-size: 11px;">${(u.name || 'U').charAt(0).toUpperCase()}</div>
-                <div style="flex:1;">
-                    <div style="font-size: 13px; font-weight: 600;">${u.name}</div>
-                    <div style="font-size: 10px; color: #64748b;">${u.role === 'client' ? 'Cliente' : 'Driver'} <span style="font-size:8px;">●</span> Online</div>
-                </div>
-                <button class="action-btn" onclick="sendNotification('${u.id}', '${u.name || 'Usuario'}')" style="padding: 6px 10px; border-radius: 8px;" title="🔔 Enviar Alerta">
-                  <i class="fas fa-bell"></i>
-                </button>
-            </div>
-        `).join('');
-        document.getElementById('online-count').textContent = online.length;
-
-        addLog('Sistema', 'info', 'Panel de administración sincronizado con Supabase.');
+    // --- Data Loaders ---
+    async function loadStats() {
+      const stats = await store.getDashboardStats();
+      document.getElementById('stat-total-users').innerText = stats.totalUsers || 0;
+      document.getElementById('stat-pending-verif').innerText = stats.pendingVerifications || 0;
     }
 
-    function addLog(source, type, msg) {
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        currentLogs.unshift({ time, source, type, msg });
-        if (currentLogs.length > 20) currentLogs.pop();
-        
-        const container = document.getElementById('realtime-logs');
-        container.innerHTML = currentLogs.map(l => `
-            <div class="log-entry animate-slide-in">
-                <span class="log-time">${l.time}</span>
-                <span style="font-weight: 700; min-width: 60px;">${l.source}</span>
-                <div class="log-type-${l.type}">${l.msg}</div>
-            </div>
-        `).join('');
-    }
-
-    // Listen for Realtime Events via Store
-    store.on('new_order', (order) => {
-        addLog('Órdenes', 'success', `Nuevo pedido detectado: ${order.id} por ${order.clientName}`);
-        if(document.getElementById('dashboard-tab').classList.contains('hidden')) showToast('Nuevo pedido en curso 🏍️', 'info');
-    });
-
-    store.on('status_change', (order) => {
-        addLog('Logística', 'warn', `Pedido #${order.id.slice(-4)} ahora en estado: ${order.status}`);
-    });
-
-    // Existing Loaders
     async function loadUsers() {
       const tbody = document.getElementById('users-tbody');
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando base de datos...</td></tr>';
-      
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Sincronizando base de datos...</td></tr>';
       const users = await store.getAllUsers();
       tbody.innerHTML = users.map(u => {
         const badgeClass = u.role === 'client' ? 'badge-client' : 'badge-driver';
@@ -591,179 +510,229 @@
           <td style="font-weight: 500; color: #22c55e;">${u.full_name || 'N/A'}</td>
           <td>
             <div style="display: flex; gap: 8px;">
-              <a href="${u.id_photo_url || '#'}" target="_blank" rel="noopener" title="Ver ID Oficial">
+               <a href="${u.id_photo_url || '#'}" target="_blank" rel="noopener" title="Ver ID Oficial">
                   <div style="width: 50px; height: 35px; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); overflow: hidden;">
                       ${u.id_photo_url ? `<img src="${u.id_photo_url}" style="width:100%; height:100%; object-fit: cover;">` : '<i class="fas fa-id-card"></i>'}
                   </div>
               </a>
-              <a href="${u.profile_photo_url || '#'}" target="_blank" title="Ver Selfie">
+              <a href="${u.profile_photo_url || '#'}" target="_blank" rel="noopener" title="Ver Selfie">
                   <div style="width: 35px; height: 35px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
-                      ${u.profile_photo_url ? `<img src="${u.profile_photo_url}" style="width:100%; height:100%; object-fit: cover;">` : '<i class="fas fa-user-check" style="font-size: 0.7rem; color: white;"></i>'}
+                      ${u.profile_photo_url ? `<img src="${u.profile_photo_url}" style="width:100%; height:100%; object-fit: cover;">` : '<i class="fas fa-user"></i>'}
                   </div>
               </a>
             </div>
           </td>
           <td>
-            <div style="display: flex; gap: 8px;">
-               <button class="action-btn" style="color: #22c55e;" onclick="handleApprove('${u.id}', true)">Aprobar</button>
-               <button class="action-btn btn-warn" onclick="handleApprove('${u.id}', false)">Rechazar</button>
-               <button class="action-btn" style="background: rgba(59,130,246,0.15); color: #3b82f6; border-color: rgba(59,130,246,0.3);" onclick="printVerificationReport('${u.id}')">
-                <i class="fas fa-file-pdf"></i> Reporte
-               </button>
+            <div style="display: flex; gap: 5px;">
+              <button class="action-btn active" onclick="approveIdentity('${u.id}')" title="Aprobar Identidad">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="action-btn btn-warn" onclick="rejectIdentity('${u.id}')" title="Rechazar">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
           </td>
         </tr>
       `).join('');
     }
 
-    async function handleApprove(userId, approve) {
-      const notes = approve ? '' : prompt('Motivo del rechazo:');
-      if (!approve && notes === null) return;
+    async function loadSecurityCodes() {
+      const tbody = document.getElementById('security-tbody');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Leyendo bóveda de seguridad...</td></tr>';
+      const codes = await store.getSecurityCodes();
+      tbody.innerHTML = codes.map(c => `
+        <tr>
+          <td><code class="code-badge" style="letter-spacing: 1px;">${c.code}</code></td>
+          <td style="font-weight: 500;">${c.client_name}</td>
+          <td class="text-muted"><small>${new Date(c.created_at).toLocaleString()}</small></td>
+          <td>
+            <button class="action-btn btn-warn" onclick="deleteCode('${c.id}')"><i class="fas fa-trash-alt"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // --- Actions ---
+    async function generatePaymentCode() {
+      const name = document.getElementById('security-client-name').value;
+      if (!name) return showToast('El nombre del cliente es obligatorio', 'error');
       
-      showToast('Enviando actualización a Supabase...', 'info');
-      
-      const res = await store.approveVerification(userId, approve, notes || '');
-      
-      if (res.success) {
-        showToast(approve ? '¡Usuario verificado con éxito! 🛡️' : 'Solicitud rechazada correctamente.', approve ? 'success' : 'warning');
-        addLog('Seguridad', approve ? 'success' : 'warn', `Solicitud de verificación ${approve ? 'Aprobada' : 'Rechazada'}`);
-        loadVerifications();
-      } else {
-        showToast('Error al actualizar: ' + (res.error?.message || 'Error desconocido'), 'error');
+      const code = 'MOTO-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+      const { error } = await store.saveSecurityCode(code, name);
+      if (!error) {
+        showToast('Código Generado: ' + code, 'success');
+        document.getElementById('security-client-name').value = '';
+        loadSecurityCodes();
       }
+    }
+
+    async function approveIdentity(userId) {
+      const ok = confirm("¿Emitir certificado de identidad verificado para este usuario?");
+      if (!ok) return;
+      
+      showToast('Actualizando...', 'info');
+      const { error } = await store.updateUserVerification(userId, 'verified');
+      if (!error) {
+        showToast('¡Usuario Verificado!', 'success');
+        loadVerifications();
+        loadStats();
+      } else {
+        showToast('Error: ' + error.message, 'error');
+      }
+    }
+
+    async function rejectIdentity(userId) {
+      const notes = prompt("Razón del rechazo (opcional):");
+      if (notes === null) return;
+      
+      showToast('Actualizando...', 'info');
+      const { error } = await store.updateUserVerification(userId, 'rejected', notes);
+      if (!error) {
+        showToast('Solicitud rechazada', 'success');
+        loadVerifications();
+        loadStats();
+      } else {
+        showToast('Error: ' + error.message, 'error');
+      }
+    }
+
+    async function deleteCode(id) {
+      if (!confirm("¿Eliminar este código?")) return;
+      await store.deleteSecurityCode(id);
+      loadSecurityCodes();
     }
 
     async function handleDeleteUser(userId, userName) {
-      if (!confirm(`¿Estás COMPLETAMENTE seguro de eliminar a "${userName}"?\nEsta acción no se puede deshacer y borrará todo su historial.`)) return;
+      if (!confirm(`¿Estás seguro de eliminar permanentemente a ${userName}? Esta acción no se puede deshacer.`)) return;
       
-      showToast('Eliminando usuario...', 'info');
-      const res = await store.deleteUser(userId);
+      showToast('Eliminando...', 'info');
+      const { error } = await store.deleteUser(userId);
+      if (!error) {
+        showToast('Usuario eliminado', 'success');
+        addLog(`Usuario eliminado: ${userName} (${userId})`, 'warning');
+        loadUsers();
+        loadStats();
+      } else {
+        showToast('Error al eliminar: ' + error.message, 'error');
+      }
+    }
+
+    function openPinModal(userId, userName) {
+      currentUserId = userId;
+      document.getElementById('pin-modal-user').innerText = `Usuario: ${userName}`;
+      document.getElementById('pin-modal').classList.remove('hidden');
+      document.getElementById('pin-modal').style.display = 'flex';
+    }
+
+    function closePinModal() {
+      document.getElementById('pin-modal').classList.add('hidden');
+      document.getElementById('pin-modal').style.display = 'none';
+      document.getElementById('new-pin-input').value = '';
+    }
+
+    document.getElementById('save-pin-btn').onclick = async () => {
+      const pin = document.getElementById('new-pin-input').value;
+      if (pin.length < 4) return showToast('El PIN debe tener al menos 4 dígitos', 'error');
       
-      if (res.success) {
-        showToast('Usuario eliminado permanentemente.', 'success');
-        addLog('Seguridad', 'warn', `Usuario eliminado: ${userName}`);
+      const { error } = await store.updateUserPIN(currentUserId, pin);
+      if (!error) {
+        showToast('PIN actualizado correctamente', 'success');
+        closePinModal();
         loadUsers();
       } else {
-        showToast('Error al eliminar: ' + (res.error?.message || 'Error desconocido'), 'error');
+        showToast('Error: ' + error.message, 'error');
       }
+    };
+
+    // --- Realtime Logs ---
+    function addLog(msg, type = 'info') {
+      const logs = document.getElementById('realtime-logs');
+      const entry = document.createElement('div');
+      entry.className = `log-entry animate-fade-in`;
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      entry.innerHTML = `<span class="log-time">${time}</span><div class="${type === 'warning' ? 'text-warn' : ''}">${msg}</div>`;
+      logs.prepend(entry);
     }
 
-    async function printVerificationReport(userId) {
-        showToast('Generando reporte técnico...', 'info');
-        const users = await store.getAllUsers(); 
-        const u = users.find(x => x.id === userId);
-        if (!u) return showToast('Error al obtener datos.', 'error');
-
-        const cert = document.getElementById('printable-certificate');
-        cert.innerHTML = `
-            <div class="cert-header">
-                <img src="../assets/logo_motoclick_blanco.png" class="cert-logo" style="filter: brightness(0.2);">
-                <h2 style="margin: 0; color: #1e293b;">CONSTANCIA DE VERIFICACIÓN</h2>
-            </div>
-            <div class="cert-grid">
-                <div class="cert-info">
-                    <div class="cert-label">Nombre del Cliente</div>
-                    <div class="cert-value">${u.name || (u.full_name || 'N/A')}</div>
-                    <div class="cert-label">Datos Legales</div>
-                    <div class="cert-value">${u.full_name || 'N/A'}</div>
-                    <div class="cert-label">Estatus de Auditoría</div>
-                    <div class="cert-value"><span class="cert-badge">VERIFICADO <i class="fas fa-certificate"></i></span></div>
-                </div>
-                <div class="cert-photo-box">
-                    <img src="${u.profile_photo_url}" class="cert-photo-img" style="border-radius: 50%; width:150px; height:150px; object-fit:cover;">
-                </div>
-            </div>
-            <div class="cert-label" style="margin-bottom: 10px;">Evidencia de ID Oficial</div>
-            <img src="${u.id_photo_url}" style="width:100%; border-radius:12px; margin-top:20px; max-height: 400px; object-fit: contain;">
-        `;
-        
-        cert.style.display = 'block';
-        setTimeout(() => {
-            window.print();
-            cert.style.display = 'none';
-        }, 500);
-    }
-
-    async function loadCashCodes() {
-      const tbody = document.getElementById('codes-tbody');
-      if (!tbody) return;
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Leyendo registros...</td></tr>';
-      const { data } = await store.getAllCashCodes();
+    async function initDashboard() {
+      loadStats();
+      loadUsers();
+      loadVerifications();
+      loadSecurityCodes();
       
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay códigos activos. 🛡️</td></tr>';
-        return;
-      }
+      // Suscribirse a cambios en tiempo real
+      supabase.channel('admin-logs')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+          addLog(`Nueva órden recibida #${payload.new.id.slice(0,5)}`);
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
+          addLog(`Usuario ${payload.new.name} actualizó perfil`);
+        })
+        .subscribe();
 
-      tbody.innerHTML = data.map(c => `
-        <tr>
-          <td><code style="font-weight:700; color:var(--accent); font-size:1.1rem;">${c.code}</code></td>
-          <td>${c.generated_by || 'Admin'}</td>
-          <td>${timeAgo(c.created_at)}</td>
-          <td>
-            <span class="badge ${c.is_used ? 'btn-warn' : 'badge-client'}">
-              ${c.is_used ? 'USADO' : 'ACTIVO'}
-            </span>
-          </td>
-        </tr>
+      // Listar usuarios "conectados" (presencia simplificada)
+      const listDiv = document.getElementById('connected-broadcaster-list');
+      const users = await store.getAllUsers();
+      listDiv.innerHTML = users.map(u => `
+        <div class="flex" style="padding: 8px 0; border-bottom: 1px solid var(--border); justify-content: space-between;">
+           <div class="flex">
+              <div class="user-avatar" style="width:24px; height:24px; font-size:10px; margin-right:8px;">${u.name?.[0] || 'U'}</div>
+              <span class="fs-sm">${u.name || 'Anónimo'}</span>
+           </div>
+           <button class="action-btn" onclick="sendBroadcast('${u.id}', '${u.name}')" title="Enviar Notificación">
+              <i class="fas fa-bell"></i>
+           </button>
+        </div>
       `).join('');
     }
 
-    async function sendNotification(userId, userName) {
-        const msg = prompt(`Mensaje Directo para ${userName}:`, "Tienes un pedido pendiente. Por favor verifica tu app. 🏍️");
-        if (!msg) return;
-
-        showToast('Transmitiendo señal...', 'info');
-        
-        try {
-            const channel = store._sb.channel('admin-alerts');
-            await channel.send({
-                type: 'broadcast',
-                event: 'alert',
-                payload: { 
-                    targetUserId: userId, 
-                    message: msg, 
-                    from: 'MotoClick Admin' 
-                }
-            });
-            showToast(`Mensaje enviado a ${userName} 🛰️`, 'success');
-            addLog('Sistema', 'success', `Alerta enviada: "${msg}" -> ${userName}`);
-        } catch (err) {
-            showToast('Fallo en la comunicación', 'error');
-            console.error('Broadcast error:', err);
-        }
-    }
-
-    async function openCreateCodeModal() {
-      const newCode = "MOTO-" + Math.random().toString(36).substr(2, 6).toUpperCase();
-      if (confirm(`¿Generar código: ${newCode}?`)) {
-        await store.generateCashCode(newCode, "Admin Central");
-        loadCashCodes();
+    async function sendBroadcast(userId, name) {
+      const msg = prompt(`Enviar notificación privada a ${name}:`);
+      if (!msg) return;
+      
+      const { error } = await store.sendNotification(userId, msg);
+      if (!error) {
+        showToast('Notificación enviada', 'success');
+        addLog(`Broadcast enviado a ${name}: ${msg}`, 'info');
       }
     }
 
-    function openPinModal(id, name) {
-      document.getElementById('edit-user-id').value = id;
-      document.getElementById('pin-modal-subtitle').innerHTML = `Seguridad para: <b>${name}</b>`;
-      document.getElementById('pin-modal').style.display = 'flex';
-    }
-    function closeModal() { document.getElementById('pin-modal').style.display = 'none'; }
-    async function handleSavePin(e) {
-      e.preventDefault();
-      const id = document.getElementById('edit-user-id').value;
-      const pin = document.getElementById('new-pin-input').value;
-      const res = await store.updateUser(id, { pin });
-      if (res.success) { showToast('PIN actualizado'); closeModal(); loadUsers(); }
+    function logoutAdmin() {
+      if (confirm('¿Cerrar sesión administrativa?')) {
+        localStorage.removeItem('isAdmin');
+        window.location.href = '../index.html';
+      }
     }
 
-    function logoutAdmin() { localStorage.removeItem('mc_admin_session'); window.location.replace('/admin/'); }
-    function escapeHTML(str) { return (str || '').replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t] || t)); }
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initDashboard();
-      // Auto-refresh every 30s
-      setInterval(initDashboard, 30000);
-    });
+    initDashboard();
   </script>
+  
+  <style>
+    /* Estilos inline que faltaban o eran necesarios */
+    .badge-client { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .badge-driver { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+    .code-badge { background: #000; color: #22c55e; padding: 4px 8px; border-radius: 6px; font-family: monospace; }
+    .action-btn { 
+      background: var(--glass); border: 1px solid var(--border); color: white;
+      width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+    }
+    .action-btn:hover { background: var(--accent); }
+    .action-btn.active { background: var(--accent); }
+    .action-btn.btn-warn:hover { background: #ef4444; }
+    .text-center { text-align: center; }
+    .text-warn { color: #f59e0b; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .id-thumb { width: 40px; height: 30px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border); }
+    .logs-container { max-height: 300px; overflow-y: auto; padding: 1.5rem; }
+    .log-entry { display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 13px; border-left: 2px solid var(--accent); padding-left: 1rem; }
+    .log-time { color: #64748b; font-weight: 700; min-width: 45px; }
+  </style>
 </body>
 </html>
