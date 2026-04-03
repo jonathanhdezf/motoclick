@@ -243,7 +243,7 @@ class MotoClickStore {
   async getOrderById(id) {
     if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
     const { data, error } = await this._sb.from('orders')
-      .select('*, client:client_id(is_verified, verification_status, profile_photo_url), driver:driver_id(is_verified, verification_status)')
+      .select('*, client:users!client_id(is_verified, verification_status, profile_photo_url), driver:users!driver_id(is_verified, verification_status)')
       .eq('id', id)
       .maybeSingle();
     if (error) console.error('[Store] getOrderById Error:', error);
