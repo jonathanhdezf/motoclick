@@ -578,6 +578,7 @@
         const roleName = u.role === 'client' ? 'Cliente' : 'Driver';
         const safePin = u.pin ? String(u.pin).slice(-2) : '';
         const pinText = u.pin ? `****${safePin}` : `<span class="text-muted">SMS Only</span>`;
+        const safeName = (u.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         return `
           <tr>
             <td class="u-fw-600">${u.name || 'Sin nombre'} <br><small class="u-c-muted">${u.phone}</small></td>
@@ -585,11 +586,11 @@
             <td><code class="code-badge">${pinText}</code></td>
             <td>
               <div class="u-flex-gap-2">
-                <button class="action-btn" onclick="openPinModal('${u.id}', '${escapeHTML(u.name || '')}')" title="🔑 Cambiar PIN">
-                  <i class="fas fa-key"></i>
+                <button class="action-btn" onclick="openPinModal('${u.id}', '${safeName}')" title="🔑 Cambiar PIN" style="font-size: 16px;">
+                  🔑
                 </button>
-                <button class="action-btn btn-warn" onclick="handleDeleteUser('${u.id}', '${escapeHTML(u.name || '')}')" title="🗑️ Eliminar permanentemente">
-                  <i class="fas fa-trash-alt"></i>
+                <button class="action-btn btn-warn" onclick="handleDeleteUser('${u.id}', '${safeName}')" title="🗑️ Eliminar permanentemente" style="font-size: 16px;">
+                  🗑️
                 </button>
               </div>
             </td>
@@ -653,7 +654,7 @@
           <td class="u-fw-500">${c.client_name}</td>
           <td class="text-muted"><small>${new Date(c.created_at).toLocaleString()}</small></td>
           <td>
-            <button class="action-btn btn-warn" onclick="deleteCode('${c.id}')"><i class="fas fa-trash-alt"></i></button>
+            <button class="action-btn btn-warn" onclick="deleteCode('${c.id}')" style="font-size: 16px;">🗑️</button>
           </td>
         </tr>
       `).join('');
