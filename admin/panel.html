@@ -268,6 +268,13 @@
     .u-manual-title { margin-bottom: 0.5rem; color: #3b82f6; }
     .u-grid-2 { grid-template-columns: 1fr 1fr; }
     .u-flex-1 { flex: 1; }
+    .u-btn-burger { display: block; font-size: 28px; line-height: 1; padding: 0 15px 0 0; color: #22c55e; }
+    .u-modal-config { max-width: 450px; }
+    .u-modal-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .u-select-dark { background: #0f172a; cursor: pointer; }
+    .u-w-full-rounded { width: 100%; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+    .u-rounded-12 { border-radius: 12px; }
+    .u-flex-col { flex-direction: column; }
   </style>
 </head>
 <body>
@@ -311,7 +318,7 @@
     <main class="main-content">
       <header class="top-bar">
         <div class="top-bar-left">
-          <button class="menu-toggle" onclick="toggleSidebar()" style="display: block; font-size: 28px; line-height: 1; padding: 0 15px 0 0; color: #22c55e;">☰</button>
+          <button class="menu-toggle u-btn-burger" onclick="toggleSidebar()">☰</button>
           <h2 id="page-title" class="page-title">Panel General</h2>
         </div>
         <div class="top-bar-right">
@@ -494,22 +501,22 @@
 
   <!-- Edit User Modal -->
   <div id="edit-user-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-content u-modal-config">
       <h3 class="mb-1">⚙️ Gestión de Usuario</h3>
       <p id="edit-modal-subtitle" class="fs-sm text-muted mb-1-5"></p>
       
-      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 20px;">
+      <div class="u-modal-fields">
          <div>
             <label class="fs-sm text-muted">Nombre Completo</label>
             <input type="text" id="edit-u-name" class="form-input-premium" placeholder="Nombre completo">
          </div>
          <div>
             <label class="fs-sm text-muted">Teléfono Registrado (Solo lectura)</label>
-            <input type="text" id="edit-u-phone" class="form-input-premium" disabled style="opacity: 0.7;">
+            <input type="text" id="edit-u-phone" class="form-input-premium" disabled>
          </div>
          <div>
             <label class="fs-sm text-muted">Rol en Plataforma</label>
-            <select id="edit-u-role" class="form-input-premium" style="background:#0f172a; cursor:pointer;">
+            <select id="edit-u-role" class="form-input-premium u-select-dark">
                <option value="client">Cliente Habitual</option>
                <option value="driver">Repartidor Motoclick</option>
                <option value="admin">Administrador del Sistema</option>
@@ -521,13 +528,13 @@
          </div>
       </div>
 
-      <div class="modal-actions" style="margin-bottom: 12px; flex-direction: column;">
-        <button class="action-btn active btn-warn" id="btn-modal-delete" style="width: 100%; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;">🗑️ Borrar Usuario Definitivamente</button>
+      <div class="modal-actions u-flex-col mb-1">
+        <button class="action-btn active btn-warn u-w-full-rounded" id="btn-modal-delete">🗑️ Borrar Usuario Definitivamente</button>
       </div>
 
       <div class="modal-actions">
-        <button class="action-btn u-flex-1" onclick="closeEditModal()" style="border-radius:12px;">Cancelar</button>
-        <button class="action-btn active u-flex-1" id="btn-modal-save" style="border-radius:12px;">💾 Guardar Cambios</button>
+        <button class="action-btn u-flex-1 u-rounded-12" onclick="closeEditModal()">Cancelar</button>
+        <button class="action-btn active u-flex-1 u-rounded-12" id="btn-modal-save">💾 Guardar Cambios</button>
       </div>
     </div>
   </div>
