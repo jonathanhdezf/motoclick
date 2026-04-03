@@ -366,7 +366,7 @@ function openProfileModal() {
       : `<div class="form-group" style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
            <label class="form-label" style="text-align: left;">Foto de perfil</label>
            <div class="profile-photo-preview" style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--primary-500); margin: 0 auto var(--space-sm); overflow: hidden; display: flex; align-items: center; justify-content: center;">
-             ${user.photo ? `<img src="${user.photo}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;">` : `<span id="modal-photo-icon" style="font-size: 2.5rem;">👤</span>`}
+             ${(user.profile_photo_url || user.photo) ? `<img src="${user.profile_photo_url || user.photo}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;">` : `<span id="modal-photo-icon" style="font-size: 2.5rem;">👤</span>`}
            </div>
            <label class="btn btn-sm btn-secondary" style="cursor: pointer; display: inline-block;">
              Cambiar Foto
