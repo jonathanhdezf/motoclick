@@ -476,7 +476,9 @@
                     <tr>
                       <th>Código</th>
                       <th>Cliente</th>
+                      <th>Estado</th>
                       <th>Creado</th>
+                      <th>Uso Detectado</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -738,13 +740,21 @@
 
     async function loadSecurityCodes() {
       const tbody = document.getElementById('security-tbody');
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Leyendo bóveda de seguridad...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center">Leyendo bóveda de seguridad...</td></tr>';
       const codes = await store.getAllCashCodes();
       tbody.innerHTML = codes.map(c => `
-        <tr>
+        <tr style="${c.is_used ? 'opacity: 0.6;' : ''}">
           <td><code class="code-badge u-ls-1">${c.code}</code></td>
-          <td class="u-fw-500">${c.client_name}</td>
+          <td class="u-fw-500">${c.client_name || 'N/A'}</td>
+          <td>
+            <span class="badge ${c.is_used ? 'badge-warn' : 'badge-green'}" style="${c.is_used ? 'background: rgba(245, 158, 11, 0.1); color: #f59e0b;' : ''}">
+              ${c.is_used ? 'UTILIZADO' : 'ACTIVO'}
+            </span>
+          </td>
           <td class="text-muted"><small>${new Date(c.created_at).toLocaleString()}</small></td>
+          <td class="${c.is_used ? 'text-accent' : 'text-muted'}">
+             <small>${c.used_at ? new Date(c.used_at).toLocaleString() : 'Pendiente'}</small>
+          </td>
           <td>
             <button class="action-btn btn-warn" onclick="deleteCode('${c.id}')" style="font-size: 16px;">🗑️</button>
           </td>
