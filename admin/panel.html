@@ -639,7 +639,7 @@
       if (!ok) return;
       
       showToast('Actualizando...', 'info');
-      const { error } = await store.updateUserVerification(userId, 'verified');
+      const { error } = await store.approveVerification(userId, true, '');
       if (!error) {
         showToast('¡Usuario Verificado!', 'success');
         loadVerifications();
@@ -654,7 +654,7 @@
       if (notes === null) return;
       
       showToast('Actualizando...', 'info');
-      const { error } = await store.updateUserVerification(userId, 'rejected', notes);
+      const { error } = await store.approveVerification(userId, false, notes);
       if (!error) {
         showToast('Solicitud rechazada', 'success');
         loadVerifications();
