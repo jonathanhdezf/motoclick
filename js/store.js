@@ -551,6 +551,12 @@ class MotoClickStore {
     }).eq('id', userId);
     return { success: !error, error };
   }
+
+  async deleteUser(userId) {
+    if (this._useFallback) return { success: true };
+    const { error } = await this._sb.from('users').delete().eq('id', userId);
+    return { success: !error, error };
+  }
 }
 
 function generateId() {

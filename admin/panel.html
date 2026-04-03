@@ -537,9 +537,14 @@
             <td><span class="badge ${badgeClass}">${roleName}</span></td>
             <td><code class="code-badge">${pinText}</code></td>
             <td>
-              <button class="action-btn" onclick="openPinModal('${u.id}', '${escapeHTML(u.name)}')">
-                <i class="fas fa-key"></i> PIN
-              </button>
+              <div style="display: flex; gap: 5px;">
+                <button class="action-btn" onclick="openPinModal('${u.id}', '${escapeHTML(u.name || '')}')" title="🔑 Cambiar PIN">
+                  <i class="fas fa-key"></i>
+                </button>
+                <button class="action-btn btn-warn" onclick="handleDeleteUser('${u.id}', '${escapeHTML(u.name || '')}')" title="🗑️ Eliminar permanentemente">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -604,6 +609,21 @@
         loadVerifications();
       } else {
         showToast('Error al actualizar: ' + (res.error?.message || 'Error desconocido'), 'error');
+      }
+    }
+
+    async function handleDeleteUser(userId, userName) {
+      if (!confirm(`¿Estás COMPLETAMENTE seguro de eliminar a "${userName}"?\nEsta acción no se puede deshacer y borrará todo su historial.`)) return;
+      
+      showToast('Eliminando usuario...', 'info');
+      const res = await store.deleteUser(userId);
+      
+      if (res.success) {
+        showToast('Usuario eliminado permanentemente.', 'success');
+        addLog('Seguridad', 'warn', `Usuario eliminado: ${userName}`);
+        loadUsers();
+      } else {
+        showToast('Error al eliminar: ' + (res.error?.message || 'Error desconocido'), 'error');
       }
     }
 
