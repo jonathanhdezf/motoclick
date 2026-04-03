@@ -295,7 +295,14 @@ class MotoClickStore {
   async createOrder(orderData) {
     if (this._useFallback) return this._fb_createOrder(orderData);
     const id = 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
-    const row = this._toDB({ id, ...orderData, status: 'pending', driverId: null });
+    
+    // Asegurar que el clientId esté presente
+    const finalOrderData = { ...orderData };
+    if (!finalOrderData.clientId && this._currentUser) {
+       finalOrderData.clientId = this._currentUser.id;
+    }
+
+    const row = this._toDB({ id, ...finalOrderData, status: 'pending', driverId: null });
     
     let { data, error } = await this._sb.from('orders').insert([row]).select().single();
     

@@ -144,3 +144,7 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admin App Full Edit" ON public.users; 
 CREATE POLICY "Admin App Full Edit" ON public.users FOR ALL USING (true); 
 
+-- 8. Bypass RLS para Órdenes (Post-Verificación)
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY; 
+DROP POLICY IF EXISTS "Global Orders Access" ON public.orders; 
+CREATE POLICY "Global Orders Access" ON public.orders FOR ALL USING (true); 
