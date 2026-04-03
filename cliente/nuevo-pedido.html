@@ -1152,6 +1152,13 @@
         showToast('Error al crear el pedido. Intenta de nuevo.', 'error');
         return;
       }
+
+      // 🛡️ SECURITY: Mark cash code as used if valid
+      if (window._verifiedCashCodeId) {
+        await store.markCashCodeUsed(window._verifiedCashCodeId);
+        window._verifiedCashCodeId = null;
+      }
+
       showToast('¡Mandado solicitado! Buscando repartidor...', 'success');
       setTimeout(() => navigateTo(`rastreo.html?id=${order.id}`), 800);
     }
