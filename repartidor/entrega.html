@@ -398,28 +398,50 @@
        if (typeof google !== 'undefined') loadOrder();
     }
 
+    let orderTerminalState = false;
+
     document.addEventListener('DOMContentLoaded', () => {
       loadOrder();
-      // Listen for updates
-      setInterval(loadOrder, 4000);
+      // Listen for updates - only if not in terminal state
+      const orderPoll = setInterval(() => {
+        if (orderTerminalState) {
+          clearInterval(orderPoll);
+          return;
+        }
+        loadOrder();
+      }, 5000);
     });
 
     async function loadOrder() {
-      const order = await store.getOrderById(orderId);
-      if (!order) {
-        showToast('Pedido no encontrado.', 'error');
-        return;
-      }
-      renderStatus(order.status);
-      renderDetails(order);
-      // Ensure coordinates are numbers for Google Maps
-      if (order.pickupCoords) order.pickupCoords = order.pickupCoords.map(Number);
-      if (order.deliveryCoords) order.deliveryCoords = order.deliveryCoords.map(Number);
+      if (orderTerminalState) return;
       
-      renderMap(order);
-      renderActions(order);
-      if (order.status === 'entregado') {
-        document.getElementById('completed-overlay').classList.remove('hidden');
+      try {
+        const order = await store.getOrderById(orderId);
+        if (!order) {
+          showToast('Pedido no encontrado.', 'error');
+          return;
+        }
+
+        // Terminal state check
+        if (['entregado', 'cancelado'].includes(order.status)) {
+          orderTerminalState = true;
+        }
+
+        renderStatus(order.status);
+        renderDetails(order);
+        
+        // Ensure coordinates are numbers for Google Maps
+        if (order.pickupCoords) order.pickupCoords = order.pickupCoords.map(Number);
+        if (order.deliveryCoords) order.deliveryCoords = order.deliveryCoords.map(Number);
+        
+        renderMap(order);
+        renderActions(order);
+        
+        if (order.status === 'entregado') {
+          document.getElementById('completed-overlay').classList.remove('hidden');
+        }
+      } catch (err) {
+        console.warn('Silent retry on order load failure...');
       }
     }
 
