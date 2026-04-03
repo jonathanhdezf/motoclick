@@ -296,8 +296,21 @@ class MotoClickStore {
     if (this._useFallback) return this._fb_createOrder(orderData);
     const id = 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
     const row = this._toDB({ id, ...orderData, status: 'pending', driverId: null });
-    const { data, error } = await this._sb.from('orders').insert([row]).select().single();
-    if (error) { console.error('[Store] createOrder:', error); return null; }
+    
+    let { data, error } = await this._sb.from('orders').insert([row]).select().single();
+    
+    // Si falla por columnas nuevas (client_name, client_phone), intentamos sin ellas
+    if (error && (error.code === 'PGRST105' || error.code === 'PGRST204' || error.message.includes('column'))) {
+      console.warn('[Store] createOrder: Reintentando sin columnas extendidas (Caché de esquema detectada)');
+      const fallbackRow = { ...row };
+      delete fallbackRow.client_name;
+      delete fallbackRow.client_phone;
+      const retry = await this._sb.from('orders').insert([fallbackRow]).select().single();
+      data = retry.data;
+      error = retry.error;
+    }
+
+    if (error) { console.error('[Store] createOrder Final Error:', error); return null; }
     return this._fromDB(data);
   }
 
