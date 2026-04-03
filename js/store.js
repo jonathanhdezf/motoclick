@@ -540,10 +540,26 @@ class MotoClickStore {
       return { success: true };
     }
     
-    // Attempt real suppression
-    await this._sb.from('users').delete().eq('id', userId);
+    // Attempt real suppression First
+    const { error } = await this._sb.from('users').delete().eq('id', userId);
     
-    // Force Frontend Cache Removal (Optimistic Bypass)
+    if (error) {
+       // Check for HTTP 409 Conflict (Foreign Key DB Enforcement)
+       if (error.code === '23503' || error.message.includes('foreign key constraint')) {
+          console.warn('[DB Integrity] Soft-Deleting user to protect historical orders...', userId);
+          // 409 Action: Soft Delete / Strip role entirely since we cannot drop DB row constraints
+          await this.updateUser(userId, { role: 'eliminado', pin: '0000', name: 'Usuario Suspendido' });
+          
+          // Still hide it from the admin interface using our local optimistic shield
+          const deletedIds = JSON.parse(localStorage.getItem('mc_admin_deleted_ids') || '[]');
+          if (!deletedIds.includes(userId)) deletedIds.push(userId);
+          localStorage.setItem('mc_admin_deleted_ids', JSON.stringify(deletedIds));
+          return { success: true, warning: 'soft-del' };
+       }
+       return { success: false, error }; // Other errors (RLS etc)
+    }
+    
+    // Normal Force Frontend Cache Removal (Optimistic Bypass)
     const deletedIds = JSON.parse(localStorage.getItem('mc_admin_deleted_ids') || '[]');
     if (!deletedIds.includes(userId)) deletedIds.push(userId);
     localStorage.setItem('mc_admin_deleted_ids', JSON.stringify(deletedIds));
