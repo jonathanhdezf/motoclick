@@ -691,13 +691,13 @@
           <td>
             <div class="u-flex-gap-2">
               <button class="action-btn" onclick="printIdentityReport('${u.id}', '${u.full_name || u.name}', '${u.full_name || 'N/A'}', '${u.id_photo_url}', '${u.profile_photo_url}')" title="Imprimir Reporte PDF" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
-                <i class="fas fa-file-pdf"></i>
+                📄
               </button>
               <button class="action-btn active" onclick="approveIdentity('${u.id}')" title="Aprobar Identidad">
-                <i class="fas fa-check"></i>
+                ✅
               </button>
               <button class="action-btn btn-warn" onclick="rejectIdentity('${u.id}')" title="Rechazar">
-                <i class="fas fa-times"></i>
+                ❌
               </button>
             </div>
           </td>
@@ -934,12 +934,13 @@
     .code-badge { background: #000; color: #22c55e; padding: 4px 8px; border-radius: 6px; font-family: monospace; }
     .action-btn { 
       background: var(--glass); border: 1px solid var(--border); color: white;
-      width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+      width: 34px; height: 34px; border-radius: 8px; cursor: pointer; transition: 0.2s;
       display: inline-flex; align-items: center; justify-content: center;
+      font-size: 16px; line-height: 1;
     }
-    .action-btn:hover { background: var(--accent); }
-    .action-btn.active { background: var(--accent); }
-    .action-btn.btn-warn { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+    .action-btn:hover { background: var(--accent); filter: brightness(1.2); }
+    .action-btn.active { background: var(--accent); color: white; border-color: rgba(255,255,255,0.2); }
+    .action-btn.btn-warn { color: #f87171; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
     .action-btn.btn-warn:hover { background: #ef4444; color: white; }
     .text-center { text-align: center; }
     .text-warn { color: #f59e0b; }
