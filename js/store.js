@@ -506,6 +506,15 @@ class MotoClickStore {
   }
 
   // ── Admin Panel Methods ──
+  async getAllUsers() {
+    if (this._useFallback) {
+      return JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+    }
+    const { data, error } = await this._sb.from('users').select('*').order('created_at', { ascending: false });
+    if (error) console.error('[Store] getAllUsers:', error);
+    return data || [];
+  }
+
   async getDashboardStats() {
     if (this._useFallback) return { totalUsers: 0, pendingVerifications: 0 };
     const [{ count: totalUsers }, pendingResp] = await Promise.all([

@@ -741,20 +741,6 @@
           .subscribe();
       }
 
-      // Listar usuarios "conectados" (presencia simplificada)
-      const listDiv = document.getElementById('connected-broadcaster-list');
-      const users = await store.getAllUsers();
-      listDiv.innerHTML = users.map(u => `
-        <div class="flex" style="padding: 8px 0; border-bottom: 1px solid var(--border); justify-content: space-between;">
-           <div class="flex">
-              <div class="user-avatar" style="width:24px; height:24px; font-size:10px; margin-right:8px;">${u.name?.[0] || 'U'}</div>
-              <span class="fs-sm">${u.name || 'Anónimo'}</span>
-           </div>
-           <button class="action-btn" onclick="sendBroadcast('${u.id}', '${u.name}')" title="Enviar Notificación">
-              <i class="fas fa-bell"></i>
-           </button>
-        </div>
-      `).join('');
     }
 
     async function sendBroadcast(userId, name) {
