@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 | MotoClick - Ruta No Encontrada</title>
+    <link rel="icon" type="image/png" href="assets/logo_motoclick_app.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00E65B;
+            --bg: #0A0F1A;
+            --text: #F1F5F9;
+            --accent: #22C55E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Urbanist', 'Space Grotesk', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── Cyber Background ── */
+        .cyber-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .grid-layer {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(rgba(0, 230, 91, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 230, 91, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            from { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            to { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+
+        /* ── Emergency Lights ── */
+        .emergency-light {
+            position: absolute;
+            width: 150vw;
+            height: 150vh;
+            background: radial-gradient(circle, rgba(0, 230, 91, 0.08) 0%, transparent 60%);
+            opacity: 0;
+            animation: strobe 4s infinite;
+            z-index: 1;
+        }
+
+        .light-2 { animation-delay: 2s; background: radial-gradient(circle, rgba(34, 197, 94, 0.06) 0%, transparent 70%); }
+
+        @keyframes strobe {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* ── Main Content ── */
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .error-code {
+            font-size: clamp(8rem, 20vw, 15rem);
+            font-weight: 900;
+            line-height: 0.8;
+            margin-bottom: 2rem;
+            color: transparent;
+            -webkit-text-stroke: 2px rgba(0, 230, 91, 0.3);
+            position: relative;
+            letter-spacing: -5px;
+            filter: drop-shadow(0 0 30px rgba(0, 230, 91, 0.2));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .error-code::before {
+            content: '404';
+            position: absolute;
+            inset: 0;
+            color: var(--primary);
+            clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+            animation: glitch 4s infinite linear alternate-reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); }
+            40% { transform: translate(-5px, -5px); }
+            60% { transform: translate(5px, 5px); }
+            80% { transform: translate(5px, -5px); }
+            100% { transform: translate(0); }
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 999px;
+            color: #EF4444;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to bottom, #fff, #94A3B8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ── Buttons ── */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #0A0F1A;
+            box-shadow: 0 10px 20px rgba(0, 230, 91, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 230, 91, 0.4);
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        /* ── Logo ── */
+        .logo-box {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            z-index: 20;
+        }
+
+        .logo-img {
+            height: 48px;
+            filter: drop-shadow(0 0 10px rgba(0, 230, 91, 0.3));
+        }
+
+        /* ── Decorative Elements ── */
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            top: -10%;
+            left: 0;
+            animation: scan 4s linear infinite;
+            z-index: 5;
+            opacity: 0.3;
+        }
+
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        @media (max-width: 480px) {
+            .logo-box { top: 20px; left: 50%; transform: translateX(-50%); }
+            .content { padding-top: 5rem; }
+            .actions { flex-direction: column; width: 100%; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-bg">
+        <div class="grid-layer"></div>
+        <div class="emergency-light"></div>
+        <div class="emergency-light light-2"></div>
+        <div class="scanner-line"></div>
+    </div>
+
+    <div class="logo-box">
+        <a href="index.html">
+            <img src="assets/logo_motoclick_app.png" class="logo-img" alt="MotoClick Logo">
+        </a>
+    </div>
+
+    <div class="content">
+        <div class="status-badge">
+            <i class="fas fa-satellite-dish"></i> Señal Perdida
+        </div>
+        
+        <div class="error-code">404</div>
+        
+        <h1>Ruta Fuera de Alcance</h1>
+        <p>Parece que has tomado un desvío equivocado. La página que buscas no está en nuestra zona de cobertura en este momento.</p>
+
+        <div class="actions">
+            <a href="index.html" class="btn btn-primary">
+                <i class="fas fa-home"></i> Volver a Base
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Retomar Ruta
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Efecto parallax sutil con el mouse
+        document.addEventListener('mousemove', (e) => {
+            const grid = document.querySelector('.grid-layer');
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            grid.style.transform = `perspective(500px) rotateX(${60 + y/2}deg) rotateZ(${x/4}deg) translateY(${y}px)`;
+        });
+    </script>
+</body>
+</html>
