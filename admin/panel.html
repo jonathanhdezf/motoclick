@@ -522,7 +522,11 @@
         // En celular: el menú oculto por CSS (-100%) se fuerza a 0px
         if (sidebar.style.transform === 'translateX(0px)') {
           sidebar.style.transform = '';
+          if (history.state && history.state.sidebar === 'open') {
+            history.back(); // Limpiamos el estado fantasma si lo cerramos manual
+          }
         } else {
+          history.pushState({ sidebar: 'open' }, null, '');
           sidebar.style.transform = 'translateX(0px)';
         }
       } else {
@@ -536,6 +540,15 @@
         }
       }
     }
+
+    // Interceptar botón "Atrás" del móvil
+    window.addEventListener('popstate', (e) => {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth <= 1024 && sidebar.style.transform === 'translateX(0px)') {
+        // Si el menú estaba abierto y dieron "atrás", solo lo cerramos
+        sidebar.style.transform = '';
+      }
+    });
 
     function switchTab(tabId, el) {
       document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.add('hidden'));
