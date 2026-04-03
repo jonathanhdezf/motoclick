@@ -668,9 +668,9 @@
           // Solo si la DB confirmó, mostramos el éxito
           showToast('Compra registrada exitosamente', 'success');
           
-          // Cleanup scanner
+          // Cleanup scanner (Html5Qrcode.clear() usually doesn't return a promise in simple mode)
           if (html5QrcodeScanner) {
-             html5QrcodeScanner.clear().catch(e => console.error(e));
+             try { html5QrcodeScanner.clear(); } catch(e) { console.warn('Scanner clear non-critical:', e); }
           }
           
           setTimeout(() => {
