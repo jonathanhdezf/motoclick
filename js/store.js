@@ -156,6 +156,9 @@ class MotoClickStore {
     if (userData.pin) extendedPayload.pin = userData.pin;
     if (userData.address) extendedPayload.address = userData.address;
     if (userData.vehicle) extendedPayload.vehicle = userData.vehicle;
+    if (userData.photo || userData.profile_photo_url) {
+      extendedPayload.profile_photo_url = userData.photo || userData.profile_photo_url;
+    }
 
     let { data, error } = await this._sb.from('users').insert([extendedPayload]).select().single();
     
@@ -607,6 +610,12 @@ class MotoClickStore {
     const updatedDocs = JSON.parse(localStorage.getItem('mc_admin_updates') || '{}');
     updatedDocs[userId] = { ...(updatedDocs[userId] || {}), ...cleanPayload };
     localStorage.setItem('mc_admin_updates', JSON.stringify(updatedDocs));
+
+    // 🔄 Sincronizar usuario actual si es él mismo
+    const cur = this.getCurrentUser();
+    if (cur && cur.id === userId && !error) {
+       this.setCurrentUser({ ...cur, ...cleanPayload, ...data });
+    }
     
     return { success: !error, user: data, error: error?.message };
   }
