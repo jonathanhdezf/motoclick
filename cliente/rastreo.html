@@ -94,6 +94,35 @@
       animation: spin 1s linear infinite;
     }
 
+    .map-stamp {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-15deg);
+      font-size: 3rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 10px 30px;
+      border: 6px solid;
+      border-radius: 12px;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      box-shadow: inset 0 0 0 3px currentColor, 0 8px 30px rgba(0,0,0,0.4);
+      background: rgba(10, 15, 26, 0.7);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+    .map-stamp.active {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) rotate(-10deg) scale(1.1);
+    }
+    .map-stamp.entregado { color: #22c55e; border-color: #22c55e; box-shadow: 0 10px 40px rgba(34, 197, 94, 0.2); }
+    .map-stamp.cancelado { color: #ef4444; border-color: #ef4444; box-shadow: 0 10px 40px rgba(239, 68, 68, 0.2); }
+
     @media (min-width: 900px) {
       .tracking-layout {
         grid-template-columns: 1fr 380px;
@@ -128,6 +157,7 @@
           <!-- Map -->
           <div class="map-container tracking-map">
             <div id="map"></div>
+            <div id="map-stamp" class="map-stamp hidden"></div>
             <div class="waiting-overlay hidden" id="waiting-overlay">
               <div class="waiting-spinner"></div>
               <p class="waiting-text">Buscando repartidor disponible...</p>
@@ -211,6 +241,17 @@
       renderStatus(order.status);
       renderSummary(order);
       renderMap(order);
+
+      const mapStamp = document.getElementById('map-stamp');
+      if (order.status === 'entregado') {
+        mapStamp.innerHTML = 'ENTREGADO';
+        mapStamp.className = 'map-stamp entregado active';
+      } else if (order.status === 'cancelado') {
+        mapStamp.innerHTML = 'CANCELADO';
+        mapStamp.className = 'map-stamp cancelado active';
+      } else {
+        mapStamp.className = 'map-stamp hidden';
+      }
 
       if (order.status === 'pending') {
         document.getElementById('waiting-overlay').classList.remove('hidden');
