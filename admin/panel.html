@@ -730,14 +730,16 @@
       loadSecurityCodes();
       
       // Suscribirse a cambios en tiempo real
-      supabase.channel('admin-logs')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
-          addLog(`Nueva órden recibida #${payload.new.id.slice(0,5)}`);
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
-          addLog(`Usuario ${payload.new.name} actualizó perfil`);
-        })
-        .subscribe();
+      if (store._sb) {
+        store._sb.channel('admin-logs')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+            addLog(`Nueva órden recibida #${payload.new.id.slice(0,5)}`);
+          })
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
+            addLog(`Usuario ${payload.new.name} actualizó perfil`);
+          })
+          .subscribe();
+      }
 
       // Listar usuarios "conectados" (presencia simplificada)
       const listDiv = document.getElementById('connected-broadcaster-list');
