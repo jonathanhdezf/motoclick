@@ -957,13 +957,12 @@
               addLog(`⚙️ Perfil actualizado: ${payload.new.name || 'Usuario'}`, 'info');
               loadUsers();
             })
-            // 🚨 REALTIME CASH CODES
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'cash_verification_codes' }, payload => {
               addLog(`🔑 Código generado para: ${payload.new.client_name || 'Nuevo Cliente'}`, 'info');
               loadSecurityCodes();
             })
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'cash_verification_codes' }, payload => {
-              if (payload.new.is_used && !payload.old.is_used) {
+              if (payload.new.is_used) {
                 addLog(`✅ Código USADO por: ${payload.new.client_name || 'Cliente'}`, 'success');
               }
               loadSecurityCodes();
@@ -974,8 +973,62 @@
               loadUsers();
             })
             .subscribe();
+
+          // --- BROADCASTER (PRESENCE) ---
+          const broadcaster = store._sb.channel('broadcaster', {
+            config: { presence: { key: 'admin' } }
+          });
+
+          broadcaster
+            .on('presence', { event: 'sync' }, () => {
+              const state = broadcaster.presenceState();
+              updateBroadcasterUI(state);
+            })
+            .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+              addLog(`🛰️ Unidad conectada: ${newPresences[0].name || 'Usuario'}`, 'info');
+            })
+            .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+              addLog(`📡 Unidad desconectada: ${leftPresences[0].name || 'Usuario'}`, 'warning');
+            })
+            .subscribe();
         }
       } catch(e) { console.warn('Realtime channel failed to initialize', e); }
+    }
+
+    function updateBroadcasterUI(state) {
+      const container = document.getElementById('connected-broadcaster-list');
+      if (!container) return;
+
+      const users = [];
+      Object.keys(state).forEach(key => {
+        state[key].forEach(presence => {
+          if (presence.role !== 'admin') { // Don't list other admins
+            users.push(presence);
+          }
+        });
+      });
+
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-center text-muted fs-sm p-1-5">No hay unidades conectadas</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(u => `
+        <div class="list-item animate-fade-in">
+          <div class="flex gap-1">
+            <div class="u-selfie-box" style="width: 30px; height: 30px; background: ${u.role === 'driver' ? '#a855f7' : '#3b82f6'};">
+              <i class="fas ${u.role === 'driver' ? 'fa-motorcycle' : 'fa-user'}"></i>
+            </div>
+            <div class="flex-col">
+              <span class="fs-sm fw-700">${u.name}</span>
+              <span class="fs-xs text-muted uppercase">${u.role}</span>
+            </div>
+          </div>
+          <button class="action-btn" onclick="sendBroadcast('${u.id}', '${u.name}')" title="Enviar Mensaje">
+            <i class="fas fa-paper-plane" style="font-size: 12px;"></i>
+          </button>
+        </div>
+      `).join('');
     }
 
     async function sendBroadcast(userId, name) {
