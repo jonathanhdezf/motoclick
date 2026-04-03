@@ -515,6 +515,23 @@ class MotoClickStore {
     return data || [];
   }
 
+  async deleteUser(userId) {
+    if (this._useFallback) {
+      let users = JSON.parse(localStorage.getItem('motoclick_users') || '[]');
+      users = users.filter(u => u.id !== userId);
+      localStorage.setItem('motoclick_users', JSON.stringify(users));
+      return { success: true };
+    }
+    const { error } = await this._sb.from('users').delete().eq('id', userId);
+    return { success: !error, error };
+  }
+
+  async updateUser(userId, data) {
+    if (this._useFallback) return this._fb_updateUser(userId, data);
+    const { error } = await this._sb.from('users').update(data).eq('id', userId);
+    return { success: !error, error };
+  }
+
   async getDashboardStats() {
     if (this._useFallback) return { totalUsers: 0, pendingVerifications: 0 };
     const [{ count: totalUsers }, pendingResp] = await Promise.all([
