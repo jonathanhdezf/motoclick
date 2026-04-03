@@ -103,6 +103,7 @@ class MotoClickStore {
       // Joined fields
       clientIsVerified:  row.client?.is_verified,
       clientPhoto:       row.client?.profile_photo_url,
+      driverIsVerified:  row.driver?.is_verified,
     };
   }
 
@@ -242,7 +243,7 @@ class MotoClickStore {
   async getOrderById(id) {
     if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
     const { data, error } = await this._sb.from('orders')
-      .select('*, client:client_id(is_verified, profile_photo_url)')
+      .select('*, client:client_id(is_verified, profile_photo_url), driver:driver_id(is_verified)')
       .eq('id', id)
       .maybeSingle();
     if (error) console.error('[Store] getOrderById Error:', error);

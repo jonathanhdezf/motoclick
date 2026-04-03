@@ -6,6 +6,7 @@
   <meta name="description" content="MotoClick — Rastrea tu mandado en tiempo real.">
   <title>MotoClick — Rastreo en Vivo</title>
   <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
   <style>
     .tracking-layout {
       display: grid;
@@ -68,8 +69,9 @@
       flex-shrink: 0;
     }
     .driver-info { flex: 1; }
-    .driver-name { font-weight: 600; font-size: 1rem; }
+    .driver-name { font-weight: 600; font-size: 1rem; display: flex; align-items: center; }
     .driver-label { font-size: 0.8rem; color: var(--text-muted); }
+    .verified-badge { color: #22c55e; margin-left: 6px; font-size: 0.85rem; }
 
     .waiting-overlay {
       position: absolute;
@@ -215,12 +217,16 @@
         document.getElementById('waiting-overlay').classList.add('hidden');
         if (order.driverName) {
           document.getElementById('driver-section').classList.remove('hidden');
+          const verifiedIcon = order.driverIsVerified
+             ? `<i class="fas fa-check-circle verified-badge" title="Repartidor Verificado ✅"></i>`
+             : '';
+
           document.getElementById('driver-card').innerHTML = `
             <div class="driver-avatar" style="overflow: hidden;">
               ${order.driverPhoto ? `<img src="${order.driverPhoto}" style="width: 100%; height: 100%; object-fit: cover;">` : '🏍️'}
             </div>
             <div class="driver-info">
-              <div class="driver-name">${order.driverName}</div>
+              <div class="driver-name">${order.driverName} ${verifiedIcon}</div>
               <div class="driver-label">Repartidor asignado</div>
             </div>
             <span class="badge badge-active">${getStatusLabel(order.status)}</span>
