@@ -12,8 +12,7 @@ CREATE TABLE IF NOT EXISTS public.catalogo_maestro (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Tabla: orders (Asegurar campos críticos para Mandados e Identidad)
--- Si estas columnas no existen, la creación de pedidos seguirá fallando.
+-- 2. Tabla: orders (Campos Críticos de Mandados y ASIGNACIÓN DE REPARTIDOR)
 ALTER TABLE public.orders 
 ADD COLUMN IF NOT EXISTS subtotal_compra NUMERIC(10, 2) DEFAULT 0.00,
 ADD COLUMN IF NOT EXISTS nombre_comercio_local VARCHAR(255),
@@ -34,6 +33,10 @@ ADD COLUMN IF NOT EXISTS route_distance_text TEXT,
 ADD COLUMN IF NOT EXISTS special_services JSONB,
 ADD COLUMN IF NOT EXISTS payment_method TEXT,
 ADD COLUMN IF NOT EXISTS estado_ticket VARCHAR(50) DEFAULT 'pendiente', 
+ADD COLUMN IF NOT EXISTS driver_name VARCHAR(255),
+ADD COLUMN IF NOT EXISTS driver_photo TEXT,
+ADD COLUMN IF NOT EXISTS driver_location JSONB,
+ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMP WITH TIME ZONE,
 ADD COLUMN IF NOT EXISTS cancel_reason TEXT,
 ADD COLUMN IF NOT EXISTS cancelled_by TEXT;
 

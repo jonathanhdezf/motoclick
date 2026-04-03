@@ -134,6 +134,7 @@ class MotoClickStore {
     if (obj.deliveredAt !== undefined)      r.delivered_at        = obj.deliveredAt;
     if (obj.cancelReason !== undefined)     r.cancel_reason       = obj.cancelReason;
     if (obj.cancelledBy !== undefined)      r.cancelled_by        = obj.cancelledBy;
+    if (obj.acceptedAt !== undefined)       r.accepted_at         = obj.acceptedAt;
     return r;
   }
 
