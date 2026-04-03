@@ -842,12 +842,31 @@
       
       try {
         if (store._sb) {
-          store._sb.channel('admin-logs')
+          // --- LOGS EN TIEMPO REAL ---
+          store._sb.channel('realtime-audit')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
-              addLog(`Nueva órden recibida #${payload.new.id.slice(0,5)}`);
+              addLog(`🆕 Nueva orden recibida #${payload.new.id.slice(0,5)}`, 'success');
+              loadStats();
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
+              const status = payload.new.status;
+              const emoji = status === 'entregado' ? '✅' : status === 'cancelado' ? '❌' : '🔄';
+              addLog(`${emoji} Orden #${payload.new.id.slice(0,5)} cambió a: ${status}`, 'info');
+              loadStats();
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, payload => {
+              addLog(`👤 Nuevo usuario registrado: ${payload.new.name || 'Sin nombre'}`, 'success');
+              loadStats();
+              loadUsers();
             })
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
-              addLog(`Usuario ${payload.new.name} actualizó perfil`);
+              addLog(`⚙️ Perfil actualizado: ${payload.new.name || 'Usuario'}`, 'info');
+              loadUsers();
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'users' }, payload => {
+              addLog(`🗑️ Usuario eliminado del sistema`, 'warning');
+              loadStats();
+              loadUsers();
             })
             .subscribe();
         }
