@@ -6,7 +6,7 @@
   <title>MotoClick | Panel de Administración Premium</title>
   <link rel="icon" href="../assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -1101,11 +1101,18 @@
       if (!container) return;
 
       try {
-        // Consultamos órdenes y códigos para crear un feed unificado
-        const [{ data: orders }, codes] = await Promise.all([
-          store._sb.from('orders').select('*').order('created_at', { ascending: false }).limit(50),
-          store.getAllCashCodes()
-        ]);
+        // Consultamos órdenes y códigos para crear un feed unificado de forma resiliente
+        let orders = [];
+        let codes = [];
+        
+        try {
+          const { data } = await store._sb.from('orders').select('*').order('created_at', { ascending: false }).limit(50);
+          orders = data || [];
+        } catch(e) { console.warn('Audit: Error loading orders', e); }
+
+        try {
+          codes = await store.getAllCashCodes() || [];
+        } catch(e) { console.warn('Audit: Error loading codes', e); }
 
         const events = [];
         
