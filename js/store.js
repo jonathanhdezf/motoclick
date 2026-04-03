@@ -327,7 +327,7 @@ class MotoClickStore {
       status: 'accepted',
       driver_id: driver.id,
       driver_name: driver.name,
-      driver_photo: driver.photo || null,
+      driver_photo: driver.profile_photo_url || driver.photo || null,
       accepted_at: new Date().toISOString(),
     }).eq('id', orderId).select().single();
     if (error) return null;
