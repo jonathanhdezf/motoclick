@@ -330,7 +330,7 @@
             <div class="stat-card">
               <div class="stat-icon icon-blue"><i class="fas fa-shopping-bag"></i></div>
               <div class="fs-xs text-muted uppercase ls-1">Órdenes Mes</div>
-              <div class="stat-value">128</div>
+              <div id="stat-monthly-orders" class="stat-value">--</div>
             </div>
             <div class="stat-card">
               <div class="stat-icon icon-green"><i class="fas fa-users-viewfinder"></i></div>
@@ -344,8 +344,8 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon icon-purple"><i class="fas fa-bolt"></i></div>
-              <div class="fs-xs text-muted uppercase">Respuesta</div>
-              <div class="stat-value">4.2m</div>
+              <div class="fs-xs text-muted uppercase">Órdenes Activas</div>
+              <div id="stat-active-orders" class="stat-value">--</div>
             </div>
           </div>
 
@@ -591,9 +591,32 @@
 
     // --- Data Loaders ---
     async function loadStats() {
-      const stats = await store.getDashboardStats();
+      // Usuarios totales
+      const stats = await store.getDashboardStats ? await store.getDashboardStats() : {};
       document.getElementById('stat-total-users').innerText = stats.totalUsers || 0;
       document.getElementById('stat-pending-verif').innerText = stats.pendingVerifications || 0;
+
+      // Órdenes del mes actual
+      try {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const { data: monthOrders } = await store._sb.from('orders')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', firstDay);
+        const { count: monthCount } = await store._sb.from('orders')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', firstDay);
+        document.getElementById('stat-monthly-orders').innerText = monthCount ?? 0;
+
+        // Órdenes activas (no terminadas)
+        const { count: activeCount } = await store._sb.from('orders')
+          .select('*', { count: 'exact', head: true })
+          .not('status', 'in', '("entregado","cancelado")');
+        document.getElementById('stat-active-orders').innerText = activeCount ?? 0;
+      } catch(e) {
+        document.getElementById('stat-monthly-orders').innerText = '0';
+        document.getElementById('stat-active-orders').innerText = '0';
+      }
     }
 
     async function loadUsers() {
