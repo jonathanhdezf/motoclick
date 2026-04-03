@@ -656,15 +656,16 @@
           return;
        }
        
-       // Update final BI and order status
-       const finalTotal = ticketItems.reduce((acc, curr) => acc + curr.precio_unitario, 0);
-       
        try {
-          // Trigger handled the subtotal real-time update in DB, we just update status here if needed
-          await sbClient.from('orders').update({
+          // Intentar actualizar el estado en la base de datos
+          const { error: updateError } = await sbClient.from('orders').update({
              estado_ticket: 'consolidado'
           }).eq('id', orderId);
           
+          // Si hay un error en la DB, lanzarlo para que lo capture el catch
+          if (updateError) throw updateError;
+          
+          // Solo si la DB confirmó, mostramos el éxito
           showToast('Compra registrada exitosamente', 'success');
           
           // Cleanup scanner
@@ -677,6 +678,7 @@
           }, 1500);
           
        } catch (error) {
+          console.error('Finalize error details:', error);
           showToast('Hubo un problema al finalizar', 'error');
        }
     }
