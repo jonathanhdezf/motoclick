@@ -341,8 +341,22 @@ class MotoClickStore {
     if (this._useFallback) return this._fb_updateOrderStatus(orderId, status);
     const upd = { status };
     if (status === 'entregado') upd.delivered_at = new Date().toISOString();
-    const { data, error } = await this._sb.from('orders').update(upd).eq('id', orderId).select().single();
-    if (error) return null;
+    
+    let { data, error } = await this._sb.from('orders').update(upd).eq('id', orderId).select().single();
+    
+    // Si falla por falta de columna de delivered_at (PGRST204), reintentar sin guardarla
+    if (error && (error.code === 'PGRST105' || error.code === 'PGRST204' || error.message?.includes('column'))) {
+      console.warn('[Store] updateOrderStatus: Esquema desactualizado. Reintentando solo con estado.');
+      const fallbackPayload = { status };
+      const retry = await this._sb.from('orders').update(fallbackPayload).eq('id', orderId).select().single();
+      data = retry.data;
+      error = retry.error;
+    }
+    
+    if (error) {
+      console.error('[Store] Error al actualizar estado:', error);
+      return null;
+    }
     return this._fromDB(data);
   }
 
