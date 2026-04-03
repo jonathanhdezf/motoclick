@@ -341,8 +341,8 @@
       const currentIdx = getStatusIndex(status);
 
       tracker.innerHTML = steps.map((s, i) => {
-        const labels = { pending: 'Pendiente', accepted: 'Aceptado', en_camino: 'En camino', recolectado: 'Recolectado', entregado: 'Entregado' };
-        const icons = { pending: '⏳', accepted: '✅', en_camino: '🏍️', recolectado: '📦', entregado: '🎉' };
+        const labels = { pending: 'Pendiente', accepted: 'Aceptado', armando_pedido: 'Comprando', en_camino: 'En camino', recolectado: 'Recolectado', entregado: 'Entregado' };
+        const icons = { pending: '⏳', accepted: '✅', armando_pedido: '🛒', en_camino: '🏍️', recolectado: '📦', entregado: '🎉' };
         let cls = '';
         if (i < currentIdx) cls = 'completed';
         else if (i === currentIdx) cls = 'active';

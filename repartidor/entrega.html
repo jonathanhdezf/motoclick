@@ -472,17 +472,16 @@
           orderTerminalState = true;
         }
 
-        renderStatus(order.status);
-        renderDetails(order);
-        
-        // Ensure coordinates are numbers for Google Maps
-        if (order.pickupCoords) order.pickupCoords = order.pickupCoords.map(Number);
-        if (order.deliveryCoords) order.deliveryCoords = order.deliveryCoords.map(Number);
-        
-        renderMap(order);
-        renderActions(order);
+        // Independent rendering blocks to prevent cascade failures
+        try { renderStatus(order.status); } catch(e) { console.warn('RenderStatus failed:', e); }
+        try { renderDetails(order); } catch(e) { console.warn('RenderDetails failed:', e); }
+        try { renderMap(order); } catch(e) { console.warn('RenderMap failed:', e); }
+        try { renderActions(order); } catch(e) { console.warn('RenderActions failed:', e); }
         
         if (order.status === 'entregado') {
+          const duration = tripDuration(order.acceptedAt, order.deliveredAt);
+          const durationEl = document.getElementById('completed-duration');
+          if (durationEl && duration) durationEl.textContent = `⏱️ Duración del viaje: ${duration}`;
           document.getElementById('completed-overlay').classList.remove('hidden');
         }
       } catch (err) {
@@ -496,8 +495,8 @@
       const currentIdx = getStatusIndex(status);
 
       tracker.innerHTML = steps.map((s, i) => {
-        const labels = { pending: 'Pendiente', accepted: 'Aceptado', en_camino: 'En camino', recolectado: 'Recolectado', entregado: 'Entregado' };
-        const icons = { pending: '⏳', accepted: '✅', en_camino: '🏍️', recolectado: '📦', entregado: '🎉' };
+        const labels = { pending: 'Pendiente', accepted: 'Aceptado', armando_pedido: 'Comprando', en_camino: 'En camino', recolectado: 'Recolectado', entregado: 'Entregado' };
+        const icons = { pending: '⏳', accepted: '✅', armando_pedido: '🛒', en_camino: '🏍️', recolectado: '📦', entregado: '🎉' };
         let cls = '';
         if (i < currentIdx) cls = 'completed';
         else if (i === currentIdx) cls = 'active';
@@ -609,6 +608,10 @@
 
     function renderMap(order) {
       if (typeof google === 'undefined') return;
+
+      // Ensure coordinates are numbers for Google Maps API
+      if (order.pickupCoords) order.pickupCoords = order.pickupCoords.map(Number);
+      if (order.deliveryCoords) order.deliveryCoords = order.deliveryCoords.map(Number);
       if (!map) {
         const center = order.pickupCoords
           ? { lat: order.pickupCoords[0], lng: order.pickupCoords[1] }
@@ -715,6 +718,7 @@
         pending: { label: '✅ Aceptar Mandado', status: 'accepted', cls: 'btn-primary' },
         assigned: { label: '🏍️ En Camino', status: 'en_camino', cls: 'btn-primary' },
         accepted: { label: '🏍️ En Camino', status: 'en_camino', cls: 'btn-primary' },
+        armando_pedido: { label: '🏍️ En Camino', status: 'en_camino', cls: 'btn-primary' },
         en_camino: { label: '📦 Recolectado', status: 'recolectado', cls: 'btn-primary' },
         recolectado: { label: '🎉 Entregado', status: 'entregado', cls: 'btn-success' }
       };

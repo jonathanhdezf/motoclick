@@ -227,12 +227,13 @@ function getPaymentBadgeClass(method) {
 const STATUS_LABELS = {
   pending: '⏳ Pendiente',
   accepted: '✅ Aceptado',
+  armando_pedido: '🛒 Comprando',
   en_camino: '🏍️ En camino',
   recolectado: '📦 Recolectado',
   entregado: '🎉 Entregado'
 };
 
-const STATUS_ORDER = ['pending', 'accepted', 'en_camino', 'recolectado', 'entregado'];
+const STATUS_ORDER = ['pending', 'accepted', 'armando_pedido', 'en_camino', 'recolectado', 'entregado'];
 
 function getStatusLabel(status) {
   return STATUS_LABELS[status] || status;
