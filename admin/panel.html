@@ -286,6 +286,9 @@
     .u-w-full-rounded { width: 100%; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
     .u-rounded-12 { border-radius: 12px; }
     .u-flex-col { flex-direction: column; }
+    .u-text-gray { color: #666; font-weight: 600; }
+    .u-mb-10 { margin-bottom: 10px; }
+    .u-audit-id { font-weight: 800; color: #333; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -489,7 +492,7 @@
     <div class="cert-header">
       <img src="../assets/logo.png" class="cert-logo" alt="MotoClick Logo">
       <h1 class="m-0 uppercase ls-2">Certificado de Verificación</h1>
-      <p style="color: #666; font-weight: 600;">Central de Operaciones de Seguridad MotoClick</p>
+      <p class="u-text-gray">Central de Operaciones de Seguridad MotoClick</p>
     </div>
 
     <div class="cert-grid">
@@ -511,12 +514,12 @@
     </div>
 
     <div class="cert-id-container">
-      <div class="cert-label" style="margin-bottom: 10px;">Documento de Identificación Oficial (INE/ID)</div>
+      <div class="cert-label u-mb-10">Documento de Identificación Oficial (INE/ID)</div>
       <img id="cert-id-img" src="" class="cert-id-img-full">
     </div>
 
     <div class="cert-footer">
-      <div style="font-weight: 800; color: #333; margin-bottom: 10px;">ID AUDIT: MOTOCLICK-SEC-PRO</div>
+      <div class="u-audit-id">ID AUDIT: MOTOCLICK-SEC-PRO</div>
       Este documento certifica que el titular ha completado exitosamente los protocolos de verificación biométrica e identidad de la plataforma MotoClick. Este folio es válido para fines informativos y de vinculación operativa.
       <br><br>
       <strong>Generado el: <span id="cert-date">--</span></strong>
