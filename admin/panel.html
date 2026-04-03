@@ -539,7 +539,8 @@
       tbody.innerHTML = users.map(u => {
         const badgeClass = u.role === 'client' ? 'badge-client' : 'badge-driver';
         const roleName = u.role === 'client' ? 'Cliente' : 'Driver';
-        const pinText = u.pin ? `****${u.pin.slice(-2)}` : `<span class="text-muted">SMS Only</span>`;
+        const safePin = u.pin ? String(u.pin).slice(-2) : '';
+        const pinText = u.pin ? `****${safePin}` : `<span class="text-muted">SMS Only</span>`;
         return `
           <tr>
             <td class="u-fw-600">${u.name || 'Sin nombre'} <br><small class="u-c-muted">${u.phone}</small></td>
@@ -724,23 +725,23 @@
     }
 
     async function initDashboard() {
-      loadStats();
-      loadUsers();
-      loadVerifications();
-      loadSecurityCodes();
+      try { await loadStats(); } catch(e) { console.error('Failed to load stats', e); }
+      try { await loadUsers(); } catch(e) { console.error('Failed to load users', e); }
+      try { await loadVerifications(); } catch(e) { console.error('Failed to load verifications', e); }
+      try { await loadSecurityCodes(); } catch(e) { console.error('Failed to load security codes', e); }
       
-      // Suscribirse a cambios en tiempo real
-      if (store._sb) {
-        store._sb.channel('admin-logs')
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
-            addLog(`Nueva órden recibida #${payload.new.id.slice(0,5)}`);
-          })
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
-            addLog(`Usuario ${payload.new.name} actualizó perfil`);
-          })
-          .subscribe();
-      }
-
+      try {
+        if (store._sb) {
+          store._sb.channel('admin-logs')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+              addLog(`Nueva órden recibida #${payload.new.id.slice(0,5)}`);
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
+              addLog(`Usuario ${payload.new.name} actualizó perfil`);
+            })
+            .subscribe();
+        }
+      } catch(e) { console.warn('Realtime channel failed to initialize', e); }
     }
 
     async function sendBroadcast(userId, name) {
