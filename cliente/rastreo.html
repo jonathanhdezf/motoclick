@@ -109,8 +109,10 @@
         <img src="../assets/logo.png" alt="MotoClick Logo" class="brand-logo">
       </a>
       <div class="navbar-actions">
-        <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" title="Editar Perfil"></span>
-        <a href="nuevo-pedido.html" class="btn btn-sm btn-secondary">+ Nuevo Mandado</a>
+        <div class="user-control-group" style="display: flex; align-items: center; gap: 15px;">
+           <a href="nuevo-pedido.html" class="btn btn-sm btn-secondary" style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase;">+ Nuevo Mandado</a>
+           <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" title="Editar Perfil" style="font-weight: 700; font-size: 14px;"></span>
+        </div>
       </div>
     </nav>
 
@@ -160,7 +162,7 @@
     const user = requireAuth('client');
     if (user) {
       const g = document.getElementById('user-greeting');
-      if (g) g.innerHTML = `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
+      if (g) g.innerHTML = `Hola, <span id="navbar-user-name" style="color: var(--accent);">${user.name}</span> <i class="fas fa-chevron-down" style="font-size: 10px; opacity: 0.5; margin-left: 5px;"></i>`;
     }
 
     const params = new URLSearchParams(window.location.search);
