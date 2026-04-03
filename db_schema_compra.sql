@@ -82,10 +82,13 @@ ALTER TABLE public.users ADD COLUMN IF NOT EXISTS verification_notes TEXT;
 CREATE TABLE IF NOT EXISTS public.cash_verification_codes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code TEXT UNIQUE NOT NULL,
+    client_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    client_name TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     is_used BOOLEAN DEFAULT FALSE,
     generated_by TEXT, 
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    used_at TIMESTAMP WITH TIME ZONE
 );
 
 -- ==============================================================================

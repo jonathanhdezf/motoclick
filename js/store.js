@@ -666,13 +666,13 @@ class MotoClickStore {
     return { success: !error, error };
   }
 
-  async saveSecurityCode(code, clientName) {
+  async saveSecurityCode(code, clientName, clientId = null) {
     if (this._useFallback) return { success: true };
     const { error } = await this._sb.from('cash_verification_codes').insert({
       code: code,
-      generated_by: 'Admin',
-      // Indb schema has this as 'client_name'? Wait, generated_by is text. We'll store clientName there or if db has client_name, we use client_name. Let's use generated_by for clientName if needed, or add client_name.
-      // Wait, earlier we saw admin panel code map 'c.client_name'. So it's 'client_name'.
+      client_id: clientId,
+      client_name: clientName,
+      generated_by: 'Admin Central',
       is_active: true
     });
     return { success: !error, error };
