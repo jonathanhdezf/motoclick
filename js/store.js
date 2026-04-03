@@ -505,7 +505,7 @@ class MotoClickStore {
   }
 
   // ── Cash Verification Dynamic System ──
-  async verifyCashCode(code) {
+  async verifyCashCode(code, currentUserId = null) {
     if (this._useFallback) return { success: code === "MOTO-EFEC-2026" };
     
     try {
@@ -518,8 +518,14 @@ class MotoClickStore {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Optional: Expiration check (Done by policy if desired, or here)
-        return { success: true, codeData: data[0] };
+        const codeData = data[0];
+        
+        // 🛡️ SECURITY: Verify if code is assigned to THIS user
+        if (codeData.client_id && currentUserId && codeData.client_id !== currentUserId) {
+           return { success: false, message: 'Este código no está asignado a tu cuenta.' };
+        }
+
+        return { success: true, codeData: codeData };
       }
       return { success: false, message: 'Código inválido o ya utilizado' };
     } catch (err) {

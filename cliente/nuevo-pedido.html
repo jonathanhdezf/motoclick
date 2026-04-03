@@ -1569,7 +1569,8 @@
       if (!codeInput) return;
 
       showToast('Verificando código...', 'info');
-      const result = await store.verifyCashCode(codeInput);
+      const currentUser = store.getCurrentUser();
+      const result = await store.verifyCashCode(codeInput, currentUser ? currentUser.id : null);
       
       if (result.success) {
         // Unlock Cash
