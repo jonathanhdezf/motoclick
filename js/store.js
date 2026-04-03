@@ -522,13 +522,19 @@ class MotoClickStore {
       localStorage.setItem('motoclick_users', JSON.stringify(users));
       return { success: true };
     }
-    const { error } = await this._sb.from('users').delete().eq('id', userId);
+    const { data, error } = await this._sb.from('users').delete().eq('id', userId).select();
+    if (!error && (!data || data.length === 0)) {
+       return { success: false, error: { message: "Bloqueo de Seguridad en Supabase (RLS Activo). Se debe correr el script SQL de permisos." } };
+    }
     return { success: !error, error };
   }
 
-  async updateUser(userId, data) {
-    if (this._useFallback) return this._fb_updateUser(userId, data);
-    const { error } = await this._sb.from('users').update(data).eq('id', userId);
+  async updateUser(userId, data_payload) {
+    if (this._useFallback) return this._fb_updateUser(userId, data_payload);
+    const { data, error } = await this._sb.from('users').update(data_payload).eq('id', userId).select();
+    if (!error && (!data || data.length === 0)) {
+       return { success: false, error: { message: "Permisos Denegados en Servidor (RLS Activo). Ejecute el script SQL para habilitar edición." } };
+    }
     return { success: !error, error };
   }
 

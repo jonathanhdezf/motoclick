@@ -132,3 +132,13 @@ CREATE POLICY "Public select active codes" ON public.cash_verification_codes FOR
 DROP POLICY IF EXISTS "Admin full access codes" ON public.cash_verification_codes;
 CREATE POLICY "Admin full access codes" ON public.cash_verification_codes FOR ALL USING (true);
 
+
+-- ============================================================================== 
+-- 7. Bypass RLS (Row Level Security) para Edición de Administración en Frontend (Anon) 
+-- Propósito: Dado que la aplicación no usa Service Roles ni tokens con privilegios de bd, 
+-- se requiere esta política para permitir modificar pines de acceso y borrar usuarios al admin. 
+-- ============================================================================== 
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY; 
+DROP POLICY IF EXISTS "Admin App Full Edit" ON public.users; 
+CREATE POLICY "Admin App Full Edit" ON public.users FOR ALL USING (true); 
+
