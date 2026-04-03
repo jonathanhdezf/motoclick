@@ -246,13 +246,58 @@
     .border-top-sep { border-top: 1px solid var(--border-color); padding-top: var(--space-md); }
     .btn-outline-danger-soft { border-color: rgba(239, 68, 68, 0.3); color: #ef4444; }
     .modal-content-premium { max-width: 400px; padding: var(--space-xl); border-radius: 28px; }
+    .action-status-info { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
     .icon-danger-gradient { 
       background: linear-gradient(135deg, #ef4444, #b91c1c); 
       -webkit-background-clip: text; 
       background-clip: text;
       -webkit-text-fill-color: transparent; 
     }
+
+    /* Ticket Modal */
+    #ticket-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      z-index: 10000; display: none; align-items: center;
+      justify-content: center; padding: 20px;
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    }
+    #ticket-modal-overlay.active { display: flex; }
+    .ticket-paper {
+      background: #fff; color: #111; width: 100%; max-width: 360px;
+      padding: 28px 24px; position: relative;
+      font-family: 'Courier New', Courier, monospace;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      max-height: 90vh; overflow-y: auto;
+      border-radius: 4px;
+    }
+    .ticket-paper::after {
+      content: ''; position: absolute; left: 0; bottom: -10px;
+      width: 100%; height: 10px;
+      background:
+        linear-gradient(-45deg, transparent 5px, #fff 0),
+        linear-gradient( 45deg, transparent 5px, #fff 0);
+      background-size: 10px 10px;
+    }
+    .tkt-head { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 14px; margin-bottom: 14px; }
+    .tkt-logo { height: 44px; display: block; margin: 0 auto 8px; filter: grayscale(1); }
+    .tkt-brand { font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; }
+    .tkt-sub { font-size: 0.7rem; color: #666; margin-top: 3px; }
+    .tkt-meta { font-size: 0.65rem; color: #888; margin-top: 4px; }
+    .tkt-items { border-bottom: 2px dashed #ccc; padding-bottom: 12px; margin-bottom: 12px; }
+    .tkt-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 5px; }
+    .tkt-total { font-size: 1.15rem; font-weight: 900; text-align: right; }
+    .tkt-footer { text-align: center; font-size: 0.7rem; color: #888; margin-top: 16px; line-height: 1.6; }
+    .tkt-actions { display: flex; gap: 8px; margin-top: 18px; }
+    .tkt-actions .btn { flex: 1; padding: 11px; font-size: 0.85rem; border-radius: 8px; font-weight: 700; }
+    @media print {
+      body * { visibility: hidden; }
+      .ticket-paper, .ticket-paper * { visibility: visible; }
+      .ticket-paper { position: absolute; left: 0; top: 0; box-shadow: none; width: 100%; max-width: none; }
+      .tkt-actions { display: none !important; }
+    }
+    .btn-success { background: #22c55e !important; color: #fff !important; font-weight: 800; border: none; cursor: pointer; }
   </style>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
   <div class="page-wrapper">
@@ -667,13 +712,20 @@
       }
 
       const nextSteps = {
+        pending: { label: '✅ Aceptar Mandado', status: 'accepted', cls: 'btn-primary' },
+        assigned: { label: '🏍️ En Camino', status: 'en_camino', cls: 'btn-primary' },
         accepted: { label: '🏍️ En Camino', status: 'en_camino', cls: 'btn-primary' },
         en_camino: { label: '📦 Recolectado', status: 'recolectado', cls: 'btn-primary' },
         recolectado: { label: '🎉 Entregado', status: 'entregado', cls: 'btn-success' }
       };
 
       const next = nextSteps[s];
-      let html = '';
+      let html = '<div class="action-status-info">Estado actual: <b>' + (STATUS_LABELS[s] || s) + '</b></div>';
+      
+      if (!next) {
+        console.warn(`[MotoClick] Estado desconocido o no manejado: "${s}"`);
+      }
+
       if (next) {
         html += `
           <button class="btn ${next.cls} btn-block" onclick="changeStatus('${next.status}')">
@@ -682,40 +734,61 @@
         `;
       }
 
-      // Add "Hacer Parada" button if not delivered
+      // Add "Hacer Parada" + Compra buttons if not delivered
       if (s !== 'entregado') {
+        const hasTicket = order.subtotal_compra > 0;
         html += `
           <button class="btn btn-outline btn-block mt-sm" onclick="openStopModal()" style="border-color: #3b82f6; color: #3b82f6; border-width: 2px;">
             💎 Hacer Parada extra (+$15)
           </button>
-          <button class="btn btn-block mt-sm" style="background: var(--gradient-primary, #f97316); color: white; border: none; font-weight: 800;" onclick="window.location.href='compra.html?id=${orderId}'">
-            🛒 Activar Modo Compra
-          </button>
+          <div class="mt-sm">
+            ${hasTicket ? `
+              <div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-size:0.78rem;font-weight:700;color:#22c55e;">📦 TICKET COMPRA:</span>
+                  <span style="font-size:1.05rem;font-weight:900;color:#22c55e;"> $${order.subtotal_compra}</span>
+                </div>
+                <button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.72rem;" onclick="openTicketModal()">🧾 Ver Ticket</button>
+              </div>
+            ` : ''}
+            <button class="btn btn-block" style="background: var(--gradient-primary); color: #fff; border: none; font-weight: 800;" onclick="window.location.href='compra.html?id=${orderId}'">
+              ${hasTicket ? '🛒 Añadir más productos' : '🛒 Activar Modo Compra'}
+            </button>
+          </div>
         `;
       }
       container.innerHTML = html;
     }
 
+
     async function changeStatus(newStatus) {
-      const updates = { status: newStatus };
-      if (newStatus === 'accepted') updates.acceptedAt = new Date().toISOString();
-      if (newStatus === 'entregado') updates.deliveredAt = new Date().toISOString();
+      try {
+        const updates = { status: newStatus };
+        if (newStatus === 'accepted') updates.acceptedAt = new Date().toISOString();
+        if (newStatus === 'entregado') updates.deliveredAt = new Date().toISOString();
 
-      const order = await store.updateOrder(orderId, updates);
-      if (!order) return;
+        const order = await store.updateOrder(orderId, updates);
+        if (!order) {
+          showToast('Error al actualizar el estado. Revisa tu conexión.', 'error');
+          return;
+        }
 
-      showToast(`Estado actualizado: ${getStatusLabel(newStatus)}`, 'success');
+        showToast(`Estado actualizado: ${getStatusLabel(newStatus)}`, 'success');
 
-      if (newStatus === 'en_camino') startMovement(order.pickupCoords, order.deliveryCoords);
+        if (newStatus === 'en_camino') startMovement(order.pickupCoords, order.deliveryCoords);
 
-      loadOrder();
+        loadOrder();
 
-      if (newStatus === 'entregado') {
-        if (movementTimer) clearInterval(movementTimer);
-        const duration = tripDuration(order.acceptedAt, order.deliveredAt);
-        const durationEl = document.getElementById('completed-duration');
-        if (durationEl && duration) durationEl.textContent = `⏱️ Duración del viaje: ${duration}`;
-        setTimeout(() => document.getElementById('completed-overlay').classList.remove('hidden'), 500);
+        if (newStatus === 'entregado') {
+          if (movementTimer) clearInterval(movementTimer);
+          const duration = tripDuration(order.acceptedAt, order.deliveredAt);
+          const durationEl = document.getElementById('completed-duration');
+          if (durationEl && duration) durationEl.textContent = `⏱️ Duración del viaje: ${duration}`;
+          setTimeout(() => document.getElementById('completed-overlay').classList.remove('hidden'), 500);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Fallo técnico al cambiar estado.', 'error');
       }
     }
 
@@ -827,8 +900,87 @@
       }
     }
 
+    async function openTicketModal() {
+      const [items, orderData] = await Promise.all([
+        window.store.getTicketDetails(orderId),
+        window.store.getOrderById(orderId)
+      ]);
+      
+      let itemsHtml = '';
+      let total = 0;
+      
+      items.forEach(it => {
+        const sub = (Number(it.precio_unitario) || 0) * (Number(it.cantidad) || 1);
+        total += sub;
+        itemsHtml += `<div class="tkt-row"><span>${it.cantidad}x ${it.descripcion}</span><span>$${sub.toFixed(2)}</span></div>`;
+      });
+      
+      const ticketContent = document.getElementById('ticket-content');
+      ticketContent.innerHTML = `
+        <div class="tkt-head">
+          <img src="../assets/logo.png" class="tkt-logo" onerror="this.style.display='none'">
+          <div class="tkt-brand">MOTOCLICK</div>
+          <div class="tkt-sub">Ticket de Mandado</div>
+          <div class="tkt-meta">ID: ${orderId.slice(0, 16).toUpperCase()}</div>
+          <div class="tkt-meta">Fecha: ${new Date().toLocaleDateString('es-MX')}</div>
+        </div>
+        <div class="tkt-items">
+          ${itemsHtml || '<div style="text-align:center;padding:10px;color:#999;">Sin productos registrados</div>'}
+        </div>
+        <div class="tkt-total">TOTAL: $${total.toFixed(2)}</div>
+        <div class="tkt-footer">
+          Gracias por tu confianza<br>
+          Repartidor: ${orderData ? orderData.driverName || 'Asignado' : ''}<br>
+          MotoClick &mdash; Mandados Rápidos
+        </div>
+      `;
+      
+      document.getElementById('ticket-modal-overlay').classList.add('active');
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticket-modal-overlay').classList.remove('active');
+    }
+
+    function printTicket() {
+      window.print();
+    }
+
+    async function downloadTicket() {
+      const paper = document.querySelector('.ticket-paper');
+      const actions = document.querySelector('.tkt-actions');
+      actions.style.display = 'none';
+      
+      try {
+        const canvas = await html2canvas(paper, {
+          backgroundColor: '#ffffff',
+          scale: 2
+        });
+        const link = document.createElement('a');
+        link.download = `ticket-${orderId.slice(0, 8)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch(e) {
+        console.error(e);
+        showToast('Error al generar imagen', 'error');
+      } finally {
+        actions.style.display = 'flex';
+      }
+    }
+
     // init() is called by Google Maps callback
   </script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&callback=initMap"></script>
+  <!-- Ticket Modal -->
+  <div id="ticket-modal-overlay">
+    <div class="ticket-paper">
+      <div id="ticket-content"></div>
+      <div class="tkt-actions">
+        <button class="btn btn-outline" onclick="closeTicketModal()">Cerrar</button>
+        <button class="btn btn-primary" onclick="printTicket()"><i class="fas fa-print"></i></button>
+        <button class="btn btn-success" onclick="downloadTicket()"><i class="fas fa-download"></i></button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

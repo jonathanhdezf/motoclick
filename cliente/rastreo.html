@@ -128,7 +128,64 @@
         grid-template-columns: 1fr 380px;
       }
     }
+
+    /* Ticket Modal Styles */
+    #ticket-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      z-index: 10000; display: none; align-items: center;
+      justify-content: center; padding: 20px;
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    }
+    #ticket-modal-overlay.active { display: flex; }
+    .ticket-paper {
+      background: #fff; color: #111; width: 100%; max-width: 360px;
+      padding: 28px 24px; position: relative;
+      font-family: 'Courier New', Courier, monospace;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      max-height: 90vh; overflow-y: auto;
+      border-radius: 4px;
+    }
+    .ticket-paper::after {
+      content: ''; position: absolute; left: 0; bottom: -10px;
+      width: 100%; height: 10px;
+      background:
+        linear-gradient(-45deg, transparent 5px, #fff 0),
+        linear-gradient( 45deg, transparent 5px, #fff 0);
+      background-size: 10px 10px;
+    }
+    .tkt-head { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 14px; margin-bottom: 14px; }
+    .tkt-logo { height: 44px; display: block; margin: 0 auto 8px; filter: grayscale(1); }
+    .tkt-brand { font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; }
+    .tkt-sub { font-size: 0.7rem; color: #666; margin-top: 3px; }
+    .tkt-meta { font-size: 0.65rem; color: #888; margin-top: 4px; }
+    .tkt-items { border-bottom: 2px dashed #ccc; padding-bottom: 12px; margin-bottom: 12px; }
+    .tkt-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 5px; }
+    .tkt-total { font-size: 1.15rem; font-weight: 900; text-align: right; }
+    .tkt-footer { text-align: center; font-size: 0.7rem; color: #888; margin-top: 16px; line-height: 1.6; }
+    .tkt-actions { display: flex; gap: 8px; margin-top: 18px; }
+    .tkt-actions .btn { flex: 1; padding: 11px; font-size: 0.85rem; border-radius: 8px; font-weight: 700; }
+    @media print {
+      body * { visibility: hidden; }
+      .ticket-paper, .ticket-paper * { visibility: visible; }
+      .ticket-paper { position: absolute; left: 0; top: 0; box-shadow: none; width: 100%; max-width: none; }
+      .tkt-actions { display: none !important; }
+    }
+    .btn-success { background: #22c55e !important; color: #fff !important; font-weight: 800; border: none; cursor: pointer; }
+    
+    /* Navbar Utilities */
+    .nav-user-controls { display: flex; align-items: center; gap: 15px; }
+    .btn-new-order-lite { 
+      background: rgba(34, 197, 94, 0.1); 
+      border: 1px solid var(--accent); 
+      color: var(--accent); 
+      padding: 5px 12px; 
+      font-size: 11px; 
+      font-weight: 800; 
+      text-transform: uppercase; 
+    }
+    .nav-greeting { font-weight: 700; font-size: 14px; }
   </style>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
   <div class="page-wrapper">
@@ -138,9 +195,9 @@
         <img src="../assets/logo.png" alt="MotoClick Logo" class="brand-logo">
       </a>
       <div class="navbar-actions">
-        <div class="user-control-group" style="display: flex; align-items: center; gap: 15px;">
-           <a href="nuevo-pedido.html" class="btn btn-sm btn-secondary" style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase;">+ Nuevo Mandado</a>
-           <span class="user-greeting" id="user-greeting" onclick="openProfileModal()" title="Editar Perfil" style="font-weight: 700; font-size: 14px;"></span>
+        <div class="user-control-group nav-user-controls">
+           <a href="nuevo-pedido.html" class="btn btn-sm btn-secondary btn-new-order-lite">+ Nuevo Mandado</a>
+           <span class="user-greeting nav-greeting" id="user-greeting" onclick="openProfileModal()" title="Editar Perfil"></span>
         </div>
       </div>
     </nav>
@@ -348,10 +405,21 @@
         ` : ''}
         <div class="order-summary-row" style="background: rgba(34, 197, 94, 0.05); padding: 14px; border-radius: 12px; border: 1px dashed rgba(34, 197, 94, 0.3); margin: 15px 0;">
           <span class="order-summary-icon">💰</span>
-          <div class="order-summary-content">
-            <div class="order-summary-label">Total del Mandado</div>
-            <div class="order-summary-value">
-              <strong style="color: #22c55e; font-size: 1.25rem;">$${Number(order.estimatedPriceMin) || 0} - $${Number(order.estimatedPriceMax) || 0}</strong>
+          <div class="order-summary-content" style="width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <div class="order-summary-label">Total del Mandado</div>
+                <div class="order-summary-value">
+                  <strong style="color: #22c55e; font-size: 1.25rem;">$${Number(order.estimatedPriceMin) || 0} - $${Number(order.estimatedPriceMax) || 0}</strong>
+                </div>
+              </div>
+              ${order.subtotal_compra > 0 ? `
+                <div style="text-align: right;">
+                  <div style="font-size: 0.7rem; color: #666; font-weight: 700; text-transform: uppercase;">Ticket Compra</div>
+                  <div style="color: #22c55e; font-weight: 900; font-size: 1.1rem;">$${order.subtotal_compra}</div>
+                  <button class="btn btn-sm btn-outline" style="margin-top: 4px; padding: 2px 8px; font-size: 0.65rem;" onclick="openTicketModal()">🧾 Ver Ticket</button>
+                </div>
+              ` : ''}
             </div>
             ${order.stops && order.stops.length > 0 ? `
               <div style="font-size: 0.8rem; color: #22c55e; margin-top: 6px; font-weight: 500; display: flex; align-items: center; gap: 5px;">
@@ -473,8 +541,86 @@
       }
     }
 
+    async function openTicketModal() {
+      const [items, orderData] = await Promise.all([
+        window.store.getTicketDetails(orderId),
+        window.store.getOrderById(orderId)
+      ]);
+      
+      let itemsHtml = '';
+      let total = 0;
+      
+      items.forEach(it => {
+        const sub = (Number(it.precio_unitario) || 0) * (Number(it.cantidad) || 1);
+        total += sub;
+        itemsHtml += `<div class="tkt-row"><span>${it.cantidad}x ${it.descripcion}</span><span>$${sub.toFixed(2)}</span></div>`;
+      });
+      
+      document.getElementById('ticket-content').innerHTML = `
+        <div class="tkt-head">
+          <img src="../assets/logo.png" class="tkt-logo" onerror="this.style.display='none'">
+          <div class="tkt-brand">MOTOCLICK</div>
+          <div class="tkt-sub">Ticket de Mandado</div>
+          <div class="tkt-meta">ID: ${orderId.slice(0, 16).toUpperCase()}</div>
+          <div class="tkt-meta">Fecha: ${new Date().toLocaleDateString('es-MX')}</div>
+        </div>
+        <div class="tkt-items">
+          ${itemsHtml || '<div style="text-align:center;padding:10px;color:#999;">Sin productos registrados</div>'}
+        </div>
+        <div class="tkt-total">TOTAL: $${total.toFixed(2)}</div>
+        <div class="tkt-footer">
+          Gracias por tu confianza<br>
+          Repartidor: ${orderData ? orderData.driverName || 'Asignado' : ''}<br>
+          MotoClick &mdash; Mandados Rápidos
+        </div>
+      `;
+      
+      document.getElementById('ticket-modal-overlay').classList.add('active');
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticket-modal-overlay').classList.remove('active');
+    }
+
+    function printTicket() {
+      window.print();
+    }
+
+    async function downloadTicket() {
+      const paper = document.querySelector('.ticket-paper');
+      const actions = document.querySelector('.tkt-actions');
+      actions.style.display = 'none';
+      
+      try {
+        const canvas = await html2canvas(paper, {
+          backgroundColor: '#ffffff',
+          scale: 2
+        });
+        const link = document.createElement('a');
+        link.download = `ticket-${orderId.slice(0, 8)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch(e) {
+        console.error(e);
+        showToast('Error al generar imagen', 'error');
+      } finally {
+        actions.style.display = 'flex';
+      }
+    }
+
     // init() is called by the Google Maps callback
   </script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&callback=initMap"></script>
+  <!-- Ticket Modal -->
+  <div id="ticket-modal-overlay">
+    <div class="ticket-paper">
+      <div id="ticket-content"></div>
+      <div class="tkt-actions">
+        <button class="btn btn-outline" onclick="closeTicketModal()">Cerrar</button>
+        <button class="btn btn-primary" onclick="printTicket()"><i class="fas fa-print"></i></button>
+        <button class="btn btn-success" onclick="downloadTicket()"><i class="fas fa-download"></i></button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

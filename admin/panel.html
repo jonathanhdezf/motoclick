@@ -98,6 +98,20 @@
       padding: 1rem; border-radius: 20px; position: relative; overflow: hidden;
       min-width: 0; word-wrap: break-word;
     }
+
+    /* Utilitarios de Diseño */
+    .pos-relative { position: relative; }
+    .search-results-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+      max-height: 200px; overflow-y: auto; border: 1px solid var(--border);
+      border-radius: 12px; margin-top: 5px;
+    }
+    .scroll-v-60vh { max-height: 60vh; overflow-y: auto; }
+    .modal-logout-custom { max-width: 400px; text-align: center; padding: 2.5rem; }
+    .gap-sm-12 { gap: 12px; }
+    .scroll-y { overflow-y: auto; }
+    .flex-col { display: flex; flex-direction: column; }
+    .gap-1 { gap: 1rem; }
     .stat-icon {
       width: 40px; height: 40px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
@@ -458,10 +472,10 @@
               </div>
               
               <div class="stats-grid u-grid-2">
-                <div class="form-group" style="position: relative;">
+                <div class="form-group pos-relative">
                   <label class="nav-label">Buscar / Seleccionar Cliente</label>
                   <input type="text" id="security-client-search" class="form-input-premium" placeholder="Nombre o Teléfono..." oninput="searchUsersForCode(this.value)">
-                  <div id="search-results-dropdown" class="card-glass hidden" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 100; max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; margin-top: 5px;"></div>
+                  <div id="search-results-dropdown" class="card-glass hidden search-results-dropdown"></div>
                   <input type="hidden" id="selected-client-id">
                   <input type="hidden" id="selected-client-name">
                 </div>
@@ -499,7 +513,7 @@
             </div>
             <div class="p-1-5">
               <p class="fs-sm text-muted mb-1-5">Registro consolidado de toda la actividad crítica en la plataforma (Últimos 100 eventos).</p>
-              <div id="global-audit-list" class="flex-col gap-1" style="max-height: 60vh; overflow-y: auto;">
+              <div id="global-audit-list" class="flex-col gap-1 scroll-v-60vh">
                 <div class="text-center p-2 text-muted">Consultando base de datos...</div>
               </div>
             </div>
@@ -590,14 +604,14 @@
 
   <!-- Logout Confirmation Modal -->
   <div id="logout-modal" class="modal-overlay hidden">
-    <div class="modal-content u-modal-config animate-fade-in" style="max-width: 400px; text-align: center; padding: 2.5rem;">
+    <div class="modal-content u-modal-config animate-fade-in modal-logout-custom">
       <div class="u-logout-icon-box mb-2">
          <i class="fas fa-sign-out-alt fa-2x"></i>
       </div>
       <h3 class="mb-1">¿Cerrar Sesión?</h3>
       <p class="fs-sm text-muted mb-2">Estás a punto de abandonar el panel de administración. Deberás ingresar tus credenciales nuevamente para acceder.</p>
       
-      <div class="modal-actions" style="gap: 12px;">
+      <div class="modal-actions gap-sm-12">
         <button class="action-btn u-flex-1 u-rounded-12" onclick="closeLogoutModal()">Cancelar</button>
         <button class="action-btn active btn-warn u-flex-1 u-rounded-12" onclick="confirmLogout()">Abandonar</button>
       </div>

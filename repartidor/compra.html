@@ -656,14 +656,18 @@
           return;
        }
        
-       try {
-          // Intentar actualizar el estado en la base de datos
-          const { error: updateError } = await sbClient.from('orders').update({
-             estado_ticket: 'consolidado'
-          }).eq('id', orderId);
-          
-          // Si hay un error en la DB, lanzarlo para que lo capture el catch
-          if (updateError) throw updateError;
+        try {
+           // Calcular subtotal de todos los artículos escaneados
+           const subtotal = ticketItems.reduce((acc, curr) => acc + (curr.precio_unitario * (curr.cantidad || 1)), 0);
+           
+           // Intentar actualizar el estado y el subtotal en la base de datos
+           const { error: updateError } = await sbClient.from('orders').update({
+              estado_ticket: 'consolidado',
+              subtotal_compra: subtotal
+           }).eq('id', orderId);
+           
+           // Si hay un error en la DB, lanzarlo para que lo capture el catch
+           if (updateError) throw updateError;
           
           // Solo si la DB confirmó, mostramos el éxito
           showToast('Compra registrada exitosamente', 'success');

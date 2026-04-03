@@ -97,6 +97,7 @@ class MotoClickStore {
       acceptedAt:        row.accepted_at,
       deliveredAt:       row.delivered_at,
       createdAt:         row.created_at,
+      subtotal_compra:   row.subtotal_compra || 0,
       updatedAt:         row.updated_at,
       cancelReason:      row.cancel_reason,
       cancelledBy:       row.cancelled_by,
@@ -135,6 +136,7 @@ class MotoClickStore {
     if (obj.cancelReason !== undefined)     r.cancel_reason       = obj.cancelReason;
     if (obj.cancelledBy !== undefined)      r.cancelled_by        = obj.cancelledBy;
     if (obj.acceptedAt !== undefined)       r.accepted_at         = obj.acceptedAt;
+    if (obj.subtotal_compra !== undefined)  r.subtotal_compra     = obj.subtotal_compra;
     return r;
   }
 
@@ -275,6 +277,16 @@ class MotoClickStore {
     return (data || []).map(r => this._fromDB(r));
   }
 
+  async getTicketDetails(orderId) {
+    if (this._useFallback) return [];
+    const { data, error } = await this._sb.from('ticket_detalle')
+      .select('*')
+      .eq('id_orden', orderId)
+      .order('creado_en', { ascending: true });
+    if (error) { console.error('[Store] getTicketDetails Error:', error); return []; }
+    return data || [];
+  }
+
   async getPendingOrders() {
     if (this._useFallback) return this._fb_getOrders().filter(o => o.status === 'pending');
     const { data, error } = await this._sb.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: true });
@@ -362,8 +374,31 @@ class MotoClickStore {
 
   async updateOrder(orderId, updates) {
     if (this._useFallback) return this._fb_updateOrder(orderId, updates);
-    const { data, error } = await this._sb.from('orders').update(this._toDB(updates)).eq('id', orderId).select().single();
-    if (error) return null;
+    
+    let { data, error } = await this._sb.from('orders')
+      .update(this._toDB(updates))
+      .eq('id', orderId)
+      .select()
+      .single();
+    
+    // Si falla por columnas nuevas (ej. subtotal_compra, delivered_at), intentar limpiar y reintentar
+    if (error && (error.code === 'PGRST105' || error.code === 'PGRST204' || error.message?.includes('column'))) {
+      console.warn('[Store] updateOrder: Reintentando con payload mínimo por error de esquema.');
+      const minimalPayload = { status: updates.status };
+      const retry = await this._sb.from('orders')
+        .update(minimalPayload)
+        .eq('id', orderId)
+        .select()
+        .single();
+      
+      data = retry.data;
+      error = retry.error;
+    }
+    
+    if (error) {
+      console.error('[Store] updateOrder Final Error:', error);
+      return null;
+    }
     return this._fromDB(data);
   }
 
