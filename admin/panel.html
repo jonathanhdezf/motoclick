@@ -816,10 +816,12 @@
     .action-btn { 
       background: var(--glass); border: 1px solid var(--border); color: white;
       width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+      display: inline-flex; align-items: center; justify-content: center;
     }
     .action-btn:hover { background: var(--accent); }
     .action-btn.active { background: var(--accent); }
-    .action-btn.btn-warn:hover { background: #ef4444; }
+    .action-btn.btn-warn { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+    .action-btn.btn-warn:hover { background: #ef4444; color: white; }
     .text-center { text-align: center; }
     .text-warn { color: #f59e0b; }
     .animate-fade-in { animation: fadeIn 0.4s ease-out; }
