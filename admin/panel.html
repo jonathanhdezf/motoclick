@@ -957,6 +957,17 @@
               addLog(`⚙️ Perfil actualizado: ${payload.new.name || 'Usuario'}`, 'info');
               loadUsers();
             })
+            // 🚨 REALTIME CASH CODES
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'cash_verification_codes' }, payload => {
+              addLog(`🔑 Código generado para: ${payload.new.client_name || 'Nuevo Cliente'}`, 'info');
+              loadSecurityCodes();
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'cash_verification_codes' }, payload => {
+              if (payload.new.is_used && !payload.old.is_used) {
+                addLog(`✅ Código USADO por: ${payload.new.client_name || 'Cliente'}`, 'success');
+              }
+              loadSecurityCodes();
+            })
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'users' }, payload => {
               addLog(`🗑️ Usuario eliminado del sistema`, 'warning');
               loadStats();
