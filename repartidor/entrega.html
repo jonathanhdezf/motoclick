@@ -94,17 +94,20 @@
       border-radius: var(--radius-md);
     }
     .client-avatar {
-      width: 44px;
-      height: 44px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       background: var(--info-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
+      font-size: 1.5rem;
       flex-shrink: 0;
-      border: 1px solid rgba(59, 130, 246, 0.2);
+      border: 2px solid var(--accent);
+      overflow: hidden;
     }
+    .client-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .verified-badge { color: #22c55e; margin-left: 4px; }
     .user-greeting { cursor: pointer; }
     .section-title-md { margin-bottom: var(--space-md); font-size: 1rem; }
     .section-title-sm { margin-bottom: var(--space-sm); font-size: 1rem; }
@@ -237,6 +240,17 @@
       30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
       40%, 60% { transform: translate3d(4px, 0, 0); }
     }
+
+    /* Utility Classes to eliminate inline styles */
+    .border-top-sep { border-top: 1px solid var(--border-color); padding-top: var(--space-md); }
+    .btn-outline-danger-soft { border-color: rgba(239, 68, 68, 0.3); color: #ef4444; }
+    .modal-content-premium { max-width: 400px; padding: var(--space-xl); border-radius: 28px; }
+    .icon-danger-gradient { 
+      background: linear-gradient(135deg, #ef4444, #b91c1c); 
+      -webkit-background-clip: text; 
+      background-clip: text;
+      -webkit-text-fill-color: transparent; 
+    }
   </style>
 </head>
 <body>
@@ -284,8 +298,8 @@
             <div class="card-glass">
               <h3 class="section-title-md">⚡ Actualizar Estado</h3>
               <div class="status-btn-group" id="status-actions"></div>
-              <div class="mt-lg" style="border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
-                <button class="btn btn-outline btn-block text-danger" style="border-color: rgba(239, 68, 68, 0.3);" onclick="openCancelModal()">
+              <div class="mt-lg border-top-sep">
+                <button class="btn btn-outline btn-block btn-outline-danger-soft" onclick="openCancelModal()">
                   🚫 Cancelar Mandado
                 </button>
               </div>
@@ -308,9 +322,9 @@
 
     <!-- Cancellation Modal -->
     <div class="modal-overlay hidden" id="cancel-modal">
-      <div class="modal-content animate-fade-in-up card-glass" style="max-width: 400px; padding: var(--space-xl);">
+      <div class="modal-content animate-fade-in-up card-glass modal-content-premium">
         <div class="stop-modal-header">
-          <div class="stop-modal-icon" style="background: linear-gradient(135deg, #ef4444, #b91c1c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🚫</div>
+          <div class="stop-modal-icon icon-danger-gradient">🚫</div>
           <div class="stop-modal-title">¿Cancelar este mandado?</div>
           <p class="stop-modal-subtitle">Por favor, indica el motivo de la cancelación para que el administrador esté enterado.</p>
         </div>
@@ -433,10 +447,20 @@
     }
 
     function renderDetails(order) {
+      const avatarContent = order.clientPhoto
+        ? `<img src="${order.clientPhoto}" alt="Foto ${order.clientName}">`
+        : '👤';
+      
+      const verifiedIcon = order.clientIsVerified
+        ? `<i class="fas fa-check-circle verified-badge" title="Cliente Verificado ✅"></i>`
+        : '';
+
       document.getElementById('client-info').innerHTML = `
-        <div class="client-avatar">👤</div>
+        <div class="client-avatar">${avatarContent}</div>
         <div style="flex: 1;">
-          <div style="font-weight: 600;">${order.clientName || 'Cliente'}</div>
+          <div style="font-weight: 600; display: flex; align-items: center;">
+             ${order.clientName || 'Cliente'} ${verifiedIcon}
+          </div>
           <div style="font-size: 0.85rem; color: var(--text-muted);">📞 ${order.clientPhone || 'No disponible'}</div>
         </div>
       `;

@@ -186,19 +186,87 @@
 
     /* Utility Classes to eliminate inline styles */
     .flex { display: flex; align-items: center; }
+    .flex-col { display: flex; flex-direction: column; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
     .gap-1 { gap: 1rem; }
     .m-0 { margin: 0 !important; }
     .mt-1 { margin-top: 4px; }
+    .mt-2 { margin-top: 2rem; }
+    .mb-1 { margin-bottom: 1rem; }
+    .mb-1-5 { margin-bottom: 1.5rem; }
+    .p-1-5 { padding: 1.5rem; }
+    .text-center { text-align: center; }
     .fs-xs { font-size: 11px !important; }
     .fs-sm { font-size: 13px !important; }
+    .fs-lg { font-size: 1.25rem; }
+    .fw-700 { font-weight: 700; }
     .fw-800 { font-weight: 800; }
     .uppercase { text-transform: uppercase; }
     .ls-1 { letter-spacing: 0.5px; }
+    .ls-2 { letter-spacing: 2px; }
     .text-muted { color: #94a3b8; }
+    .text-accent { color: var(--accent); }
+    .text-blue { color: #3b82f6; }
+    .text-yellow { color: #eab308; }
+    .text-purple { color: #a855f7; }
+    
+    .app-container { display: flex; min-height: 100vh; }
+    .stat-value { font-size: clamp(20px, 5vw, 28px); font-weight: 800; margin-top: 4px; }
+    .icon-blue { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .icon-green { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .icon-yellow { background: rgba(234,179,8,0.15); color: #eab308; }
+    .icon-purple { background: rgba(168,85,247,0.15); color: #a855f7; }
+    .badge-green { background: rgba(34,197,94,0.1); color: #22c55e; }
+    
+    .cert-audit-status { margin-top: 10px; font-weight: 800; color: #22c55e; }
+
+    .form-input-premium {
+      width: 100%; border: 1px solid var(--border); background: var(--glass);
+      color: white; padding: 12px; border-radius: 10px; font-family: inherit;
+    }
+    .btn-action-primary {
+      width: 100%; background: var(--accent); color: white;
+      height: 45px; border-radius: 10px; border: none; cursor: pointer;
+      font-weight: 700; transition: 0.2s;
+    }
+    .btn-action-primary:hover { filter: brightness(1.1); }
+    
+    .list-item {
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    
+    /* Utility classes for dynamic templates */
+    .u-fw-500 { font-weight: 500; }
+    .u-fw-600 { font-weight: 600; }
+    .u-c-muted { color: #64748b; }
+    .u-c-green { color: #22c55e; }
+    .u-fs-sm { font-size: 0.8rem; }
+    .u-flex-gap-2 { display: flex; gap: 5px; }
+    .u-flex-gap-8 { display: flex; gap: 8px; }
+    .u-ls-1 { letter-spacing: 1px; }
+    .u-img-cover { width: 100%; height: 100%; object-fit: cover; }
+    .u-id-box { 
+      width: 50px; height: 35px; background: rgba(255,255,255,0.05); 
+      border-radius: 6px; display: flex; align-items: center; justify-content: center; 
+      border: 1px solid var(--border); overflow: hidden; 
+    }
+    .u-selfie-box { 
+      width: 35px; height: 35px; background: var(--accent); border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; 
+      border: 1px solid rgba(255,255,255,0.1); overflow: hidden; 
+    }
+    .u-manual-box {
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+      padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;
+    }
+    .u-manual-title { margin-bottom: 0.5rem; color: #3b82f6; }
+    .u-grid-2 { grid-template-columns: 1fr 1fr; }
+    .u-flex-1 { flex: 1; }
   </style>
 </head>
 <body>
-  <div style="display: flex; min-height: 100vh;">
+  <div class="app-container">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="brand-area">
@@ -255,24 +323,24 @@
         <section id="dashboard-tab" class="dashboard-tab animate-fade-in">
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(59,130,246,0.15); color: #3b82f6;"><i class="fas fa-shopping-bag"></i></div>
+              <div class="stat-icon icon-blue"><i class="fas fa-shopping-bag"></i></div>
               <div class="fs-xs text-muted uppercase ls-1">Órdenes Mes</div>
-              <div class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">128</div>
+              <div class="stat-value">128</div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(34,197,94,0.15); color: #22c55e;"><i class="fas fa-users-viewfinder"></i></div>
+              <div class="stat-icon icon-green"><i class="fas fa-users-viewfinder"></i></div>
               <div class="fs-xs text-muted uppercase">Usuarios</div>
-              <div id="stat-total-users" class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">--</div>
+              <div id="stat-total-users" class="stat-value">--</div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(234,179,8,0.15); color: #eab308;"><i class="fas fa-shield-check"></i></div>
+              <div class="stat-icon icon-yellow"><i class="fas fa-shield-check"></i></div>
               <div class="fs-xs text-muted uppercase">Verif. Pend.</div>
-              <div id="stat-pending-verif" class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">--</div>
+              <div id="stat-pending-verif" class="stat-value">--</div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;"><i class="fas fa-bolt"></i></div>
+              <div class="stat-icon icon-purple"><i class="fas fa-bolt"></i></div>
               <div class="fs-xs text-muted uppercase">Respuesta</div>
-              <div class="fw-800 mt-1" style="font-size: clamp(20px, 5vw, 28px);">4.2m</div>
+              <div class="stat-value">4.2m</div>
             </div>
           </div>
 
@@ -280,7 +348,7 @@
             <div class="panel-card">
               <div class="panel-header">
                 <h3 class="m-0">🚨 Actividad Realtime</h3>
-                <div class="badge" style="background: rgba(34,197,94,0.1); color: #22c55e;">Live Feed</div>
+                <div class="badge badge-green">Live Feed</div>
               </div>
               <div class="logs-container" id="realtime-logs">
                 <div class="log-entry">
@@ -294,8 +362,8 @@
               <div class="panel-header">
                 <h3 class="m-0">🛰️ Broadcaster</h3>
               </div>
-              <div style="padding: 1.5rem;">
-                <p class="fs-xs text-muted" style="margin-bottom: 1rem;">Envía notificaciones instantáneas a todos los repartidores y clientes conectados en este momento.</p>
+              <div class="p-1-5">
+                <p class="fs-xs text-muted mb-1">Envía notificaciones instantáneas a todos los repartidores y clientes conectados en este momento.</p>
                 <div id="connected-broadcaster-list">
                   <div class="text-center text-muted fs-sm">Cargando unidades...</div>
                 </div>
@@ -354,26 +422,26 @@
             <div class="panel-header">
               <h3 class="m-0">🔑 Códigos de Verificación de Pago</h3>
             </div>
-            <div style="padding: 1.5rem;">
-              <div style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
-                <h4 style="margin-bottom: 0.5rem; color: #3b82f6;">Manual de Uso</h4>
+            <div class="p-1-5">
+              <div class="u-manual-box">
+                <h4 class="u-manual-title">Manual de Uso</h4>
                 <p class="fs-sm text-muted">Cuando un cliente solicita pagar en efectivo, debe proporcionarte su nombre. Genera un código único aquí y dáselo. El repartidor solo podrá ver el pedido si el cliente ingresa este código exacto.</p>
               </div>
               
-              <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="stats-grid u-grid-2">
                 <div class="form-group">
                   <label class="nav-label">Nombre del Cliente</label>
-                  <input type="text" id="security-client-name" class="cert-value" style="width: 100%; border: 1px solid var(--border); background: var(--glass); color: white; padding: 12px; border-radius: 10px;" placeholder="Ej. Juan Pérez">
+                  <input type="text" id="security-client-name" class="form-input-premium" placeholder="Ej. Juan Pérez">
                 </div>
                 <div class="form-group">
                   <label class="nav-label">Acción</label>
-                  <button class="action-btn" onclick="generatePaymentCode()" style="width: 100%; background: var(--accent); color: white; height: 45px; border-radius: 10px;">
+                  <button class="btn-action-primary" onclick="generatePaymentCode()">
                     <i class="fas fa-plus"></i> Generar Código Único
                   </button>
                 </div>
               </div>
 
-              <div class="table-responsive" style="margin-top: 2rem;">
+              <div class="table-responsive mt-2">
                 <table class="premium-table">
                   <thead>
                     <tr>
@@ -397,12 +465,12 @@
   <div id="printable-certificate">
     <div class="cert-header">
       <img src="../assets/logo.png" class="cert-logo" alt="MotoClick Logo">
-      <h2 style="margin:0; text-transform: uppercase; letter-spacing: 2px;">Certificado de Calidad e Identidad</h2>
+      <h2 class="m-0 uppercase ls-2">Certificado de Calidad e Identidad</h2>
     </div>
     <div class="cert-grid">
       <div class="cert-photo-box">
         <img id="cert-photo" class="cert-photo-img" src="" alt="Foto Driver">
-        <div style="margin-top: 10px; font-weight: 800; color: #22c55e;">AUDITADO</div>
+        <div class="cert-audit-status">AUDITADO</div>
       </div>
       <div class="cert-info">
         <div class="cert-label">Nombre del Repartidor</div>
@@ -422,12 +490,12 @@
   <!-- PIN Modal -->
   <div id="pin-modal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin-bottom: 1rem;">🔑 Cambiar PIN</h3>
-      <p id="pin-modal-user" class="fs-sm text-muted" style="margin-bottom: 1.5rem;"></p>
-      <input type="password" id="new-pin-input" class="cert-value" style="width:100%; border: 1px solid var(--border); background: var(--glass); color: white; padding: 12px; border-radius: 12px;" placeholder="Nuevo PIN (4-6 dígitos)" maxlength="6">
+      <h3 class="mb-1">🔑 Cambiar PIN</h3>
+      <p id="pin-modal-user" class="fs-sm text-muted mb-1-5"></p>
+      <input type="password" id="new-pin-input" class="form-input-premium" placeholder="Nuevo PIN (4-6 dígitos)" maxlength="6">
       <div class="modal-actions">
-        <button class="action-btn" style="flex:1" onclick="closePinModal()">Cancelar</button>
-        <button class="action-btn active" style="flex:1" id="save-pin-btn">Guardar</button>
+        <button class="action-btn u-flex-1" onclick="closePinModal()">Cancelar</button>
+        <button class="action-btn active u-flex-1" id="save-pin-btn">Guardar</button>
       </div>
     </div>
   </div>
@@ -473,11 +541,11 @@
         const pinText = u.pin ? `****${u.pin.slice(-2)}` : `<span class="text-muted">SMS Only</span>`;
         return `
           <tr>
-            <td style="font-weight: 600;">${u.name || 'Sin nombre'} <br><small style="color:#64748b;">${u.phone}</small></td>
+            <td class="u-fw-600">${u.name || 'Sin nombre'} <br><small class="u-c-muted">${u.phone}</small></td>
             <td><span class="badge ${badgeClass}">${roleName}</span></td>
             <td><code class="code-badge">${pinText}</code></td>
             <td>
-              <div style="display: flex; gap: 5px;">
+              <div class="u-flex-gap-2">
                 <button class="action-btn" onclick="openPinModal('${u.id}', '${escapeHTML(u.name || '')}')" title="🔑 Cambiar PIN">
                   <i class="fas fa-key"></i>
                 </button>
@@ -504,26 +572,26 @@
       tbody.innerHTML = data.map(u => `
         <tr>
           <td>
-            <div style="font-weight: 600;">${u.name}</div>
-            <div style="font-size: 0.8rem; color: #94a3b8;">${u.phone}</div>
+            <div class="u-fw-600">${u.name}</div>
+            <div class="u-fs-sm text-muted">${u.phone}</div>
           </td>
-          <td style="font-weight: 500; color: #22c55e;">${u.full_name || 'N/A'}</td>
+          <td class="u-fw-500 u-c-green">${u.full_name || 'N/A'}</td>
           <td>
-            <div style="display: flex; gap: 8px;">
+            <div class="u-flex-gap-8">
                <a href="${u.id_photo_url || '#'}" target="_blank" rel="noopener" title="Ver ID Oficial">
-                  <div style="width: 50px; height: 35px; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); overflow: hidden;">
-                      ${u.id_photo_url ? `<img src="${u.id_photo_url}" style="width:100%; height:100%; object-fit: cover;">` : '<i class="fas fa-id-card"></i>'}
+                  <div class="u-id-box">
+                      ${u.id_photo_url ? `<img src="${u.id_photo_url}" class="u-img-cover">` : '<i class="fas fa-id-card"></i>'}
                   </div>
               </a>
               <a href="${u.profile_photo_url || '#'}" target="_blank" rel="noopener" title="Ver Selfie">
-                  <div style="width: 35px; height: 35px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
-                      ${u.profile_photo_url ? `<img src="${u.profile_photo_url}" style="width:100%; height:100%; object-fit: cover;">` : '<i class="fas fa-user"></i>'}
+                  <div class="u-selfie-box">
+                      ${u.profile_photo_url ? `<img src="${u.profile_photo_url}" class="u-img-cover">` : '<i class="fas fa-user"></i>'}
                   </div>
               </a>
             </div>
           </td>
           <td>
-            <div style="display: flex; gap: 5px;">
+            <div class="u-flex-gap-2">
               <button class="action-btn active" onclick="approveIdentity('${u.id}')" title="Aprobar Identidad">
                 <i class="fas fa-check"></i>
               </button>
@@ -542,8 +610,8 @@
       const codes = await store.getSecurityCodes();
       tbody.innerHTML = codes.map(c => `
         <tr>
-          <td><code class="code-badge" style="letter-spacing: 1px;">${c.code}</code></td>
-          <td style="font-weight: 500;">${c.client_name}</td>
+          <td><code class="code-badge u-ls-1">${c.code}</code></td>
+          <td class="u-fw-500">${c.client_name}</td>
           <td class="text-muted"><small>${new Date(c.created_at).toLocaleString()}</small></td>
           <td>
             <button class="action-btn btn-warn" onclick="deleteCode('${c.id}')"><i class="fas fa-trash-alt"></i></button>

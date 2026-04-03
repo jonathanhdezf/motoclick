@@ -100,6 +100,9 @@ class MotoClickStore {
       updatedAt:         row.updated_at,
       cancelReason:      row.cancel_reason,
       cancelledBy:       row.cancelled_by,
+      // Joined fields
+      clientIsVerified:  row.client?.is_verified,
+      clientPhoto:       row.client?.profile_photo_url,
     };
   }
 
@@ -238,7 +241,10 @@ class MotoClickStore {
 
   async getOrderById(id) {
     if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
-    const { data, error } = await this._sb.from('orders').select('*').eq('id', id).maybeSingle();
+    const { data, error } = await this._sb.from('orders')
+      .select('*, client:client_id(is_verified, profile_photo_url)')
+      .eq('id', id)
+      .maybeSingle();
     if (error) console.error('[Store] getOrderById Error:', error);
     return this._fromDB(data);
   }

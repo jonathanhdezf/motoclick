@@ -292,6 +292,7 @@
     }
 
     /* Utility Helpers */
+    .flex-center { display: flex; justify-content: center; align-items: center; }
     .fs-xs { font-size: 0.75rem; }
     .mt-sm { margin-top: var(--space-sm); }
     .italic { font-style: italic; }
@@ -858,10 +859,11 @@
                             <p class="fs-xs text-muted m-0">Toca para abrir cámara frontal y tomar selfie</p>
                             <input type="file" id="selfie-photo-input" 
                                    accept="image/*" 
-                                   capture="user" 
                                    class="hidden" 
                                    onchange="previewFile(this, 'selfie-preview-img')">
-                            <center><img id="selfie-preview-img" class="id-preview selfie-preview"></center>
+                            <div class="flex-center">
+                                <img id="selfie-preview-img" class="id-preview selfie-preview">
+                            </div>
                         </div>
                         <p class="fs-xs text-muted mt-xs"><i class="fas fa-info-circle"></i> Solo capturas directas de cámara para seguridad.</p>
                     </div>

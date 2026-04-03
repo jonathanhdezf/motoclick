@@ -246,6 +246,8 @@
     
     /* Toast override for visibility */
     .toast-container { z-index: 99999 !important; }
+    .text-danger { color: #ef4444 !important; }
+    .btn-danger { background: #ef4444 !important; border-color: #ef4444 !important; }
   </style>
 </head>
 <body>
@@ -711,12 +713,12 @@
   <!-- Cancellation Modal -->
   <div class="high-contrast-modal" id="cancel-order-modal">
     <div class="modal-card">
-      <h3 class="modal-title-item" style="color: #ef4444;">🚫 Cancelar este pedido</h3>
+      <h3 class="modal-title-item text-danger">🚫 Cancelar este pedido</h3>
       <p class="modal-subtitle-comercio">Indica el motivo para que el administrador esté enterado:</p>
       <textarea id="cancel-reason-text" class="input-huge" placeholder="Ej. El local está cerrado, producto agotado..."></textarea>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeCancelModal()">Volver</button>
-        <button class="btn btn-primary" style="background: #ef4444; border-color: #ef4444;" onclick="confirmCancellation()">Confirmar</button>
+        <button class="btn btn-primary btn-danger" onclick="confirmCancellation()">Confirmar</button>
       </div>
     </div>
   </div>
