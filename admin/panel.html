@@ -135,25 +135,36 @@
 
     /* Print Styles */
     @media print {
+      @page { size: letter; margin: 0; }
       body * { visibility: hidden; }
       #printable-certificate, #printable-certificate * { visibility: visible; }
-      #printable-certificate { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+      #printable-certificate { 
+        position: fixed; left: 0; top: 0; 
+        width: 8.5in; height: 11in; 
+        padding: 1in; background: white !important; 
+        display: flex !important; flex-direction: column;
+        color: #1a1a1a !important;
+      }
     }
 
     #printable-certificate {
-      background: white; color: #0f172a; padding: 40px; font-family: 'Inter', sans-serif;
-      border: 10px double #cbd5e1; display: none; line-height: 1.6;
+      background: white; color: #1a1a1a; padding: 40px; font-family: 'Inter', sans-serif;
+      border: 15px double #eee; display: none; line-height: 1.6;
+      box-shadow: inset 0 0 0 1px #ccc;
     }
-    .cert-header { text-align: center; border-bottom: 2px solid var(--accent); margin-bottom: 30px; padding-bottom: 20px; }
-    .cert-logo { height: 60px; margin-bottom: 10px; }
-    .cert-grid { display: flex; gap: 30px; margin-bottom: 30px; align-items: start; }
-    .cert-photo-box { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; background: #f8fafc; }
-    .cert-photo-img { width: 100%; border-radius: 6px; }
-    .cert-info { flex: 2; }
-    .cert-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-    .cert-value { font-size: 16px; font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
-    .cert-badge { display: inline-block; padding: 4px 12px; background: #22c55e; color: white; border-radius: 20px; font-size: 12px; font-weight: 800; }
-    .cert-footer { margin-top: 50px; border-top: 1px dashed #cbd5e1; padding-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; }
+    .cert-header { text-align: center; border-bottom: 3px solid #22c55e; margin-bottom: 40px; padding-bottom: 20px; }
+    .cert-logo { height: 80px; margin-bottom: 15px; }
+    .cert-grid { display: grid; grid-template-columns: 200px 1fr; gap: 40px; margin-bottom: 40px; }
+    .cert-photo-box { border: 2px solid #eee; border-radius: 12px; padding: 10px; text-align: center; background: #fafafa; }
+    .cert-photo-img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+    .cert-info { display: flex; flex-direction: column; gap: 20px; }
+    .cert-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; border-left: 4px solid #22c55e; padding-left: 10px; }
+    .cert-value { font-size: 20px; font-weight: 700; color: #000; margin-bottom: 5px; }
+    .cert-badge { display: inline-block; padding: 8px 20px; background: #22c55e; color: white; border-radius: 4px; font-size: 14px; font-weight: 900; width: fit-content; text-transform: uppercase; }
+    .cert-footer { margin-top: auto; border-top: 2px dashed #eee; padding-top: 30px; font-size: 12px; color: #999; text-align: center; }
+    .cert-audit-status { margin-top: 15px; font-size: 18px; font-weight: 900; color: #22c55e; text-transform: uppercase; }
+    .cert-id-container { margin-top: 20px; }
+    .cert-id-img-full { width: 100%; height: 260px; object-fit: contain; background: #f0f0f0; border-radius: 8px; border: 1px solid #ddd; }
 
     /* Fix Toast Visibility in Admin */
     .toast-container { z-index: 9999 !important; }
@@ -473,33 +484,42 @@
     </main>
   </div>
 
-  <!-- Identidad Certificate (Imprimible) -->
+  <!-- Identidad Certificate (Imprimible - Letter Size Optimized) -->
   <div id="printable-certificate">
     <div class="cert-header">
       <img src="../assets/logo.png" class="cert-logo" alt="MotoClick Logo">
-      <h2 class="m-0 uppercase ls-2">Certificado de Calidad e Identidad</h2>
+      <h1 class="m-0 uppercase ls-2">Certificado de Verificación</h1>
+      <p style="color: #666; font-weight: 600;">Central de Operaciones de Seguridad MotoClick</p>
     </div>
+
     <div class="cert-grid">
       <div class="cert-photo-box">
         <img id="cert-photo" class="cert-photo-img" src="" alt="Foto Driver">
         <div class="cert-audit-status">AUDITADO</div>
       </div>
       <div class="cert-info">
-        <div class="cert-label">Nombre del Repartidor</div>
-        <div id="cert-name" class="cert-value">--</div>
-        <div class="cert-label">Documento Identidad</div>
-        <div id="cert-id" class="cert-value">--</div>
-        <div class="cert-label">Identificación Oficial</div>
-        <div class="u-id-box" style="width: 100%; height: 150px; margin-bottom: 15px;">
-            <img id="cert-id-img" src="" class="u-img-cover" style="object-fit: contain; background: #eee;">
+        <div>
+          <div class="cert-label">Nombre del Repartidor</div>
+          <div id="cert-name" class="cert-value">--</div>
         </div>
-        <div class="cert-label">Estado de Verificación</div>
-        <div class="cert-badge">ACTIVO / VERIFICADO</div>
+        <div>
+          <div class="cert-label">Número de Registro Identidad</div>
+          <div id="cert-id" class="cert-value">--</div>
+        </div>
+        <div class="cert-badge">Filiación Activa y Verificada</div>
       </div>
     </div>
+
+    <div class="cert-id-container">
+      <div class="cert-label" style="margin-bottom: 10px;">Documento de Identificación Oficial (INE/ID)</div>
+      <img id="cert-id-img" src="" class="cert-id-img-full">
+    </div>
+
     <div class="cert-footer">
-      Este documento certifica que el driver ha pasado los protocolos de seguridad de MotoClick.
-      <br>Generado automáticamente por la Central de Operaciones.
+      <div style="font-weight: 800; color: #333; margin-bottom: 10px;">ID AUDIT: MOTOCLICK-SEC-PRO</div>
+      Este documento certifica que el titular ha completado exitosamente los protocolos de verificación biométrica e identidad de la plataforma MotoClick. Este folio es válido para fines informativos y de vinculación operativa.
+      <br><br>
+      <strong>Generado el: <span id="cert-date">--</span></strong>
     </div>
   </div>
 
@@ -909,11 +929,12 @@
     function printIdentityReport(userId, name, fullName, idPhoto, profilePhoto) {
       document.getElementById('cert-name').innerText = fullName || name;
       document.getElementById('cert-id').innerText = userId;
+      document.getElementById('cert-date').innerText = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
       document.getElementById('cert-photo').src = profilePhoto || '../assets/default-avatar.png';
       document.getElementById('cert-id-img').src = idPhoto || '';
       
       const cert = document.getElementById('printable-certificate');
-      cert.style.display = 'block';
+      cert.style.display = 'flex';
       window.print();
       cert.style.display = 'none';
     }
