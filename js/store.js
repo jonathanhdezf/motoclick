@@ -668,13 +668,17 @@ class MotoClickStore {
 
   async saveSecurityCode(code, clientName, clientId = null) {
     if (this._useFallback) return { success: true };
-    const { error } = await this._sb.from('cash_verification_codes').insert({
+    const payload = {
       code: code,
-      client_id: clientId,
       client_name: clientName,
       generated_by: 'Admin Central',
       is_active: true
-    });
+    };
+    
+    // Solo enviar client_id si realmente existe para evitar error 400 de llave foránea
+    if (clientId && clientId.trim()) payload.client_id = clientId;
+
+    const { error } = await this._sb.from('cash_verification_codes').insert(payload);
     return { success: !error, error };
   }
 
