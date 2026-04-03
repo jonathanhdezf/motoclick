@@ -707,7 +707,7 @@ window.saveProfileChanges = async function() {
     
     // Update UI name if present in navbar
     const userNameEl = document.getElementById('navbar-user-name');
-    if (userNameEl) {
+    if (userNameEl && result.user) {
       userNameEl.textContent = result.user.name;
     }
   } else {

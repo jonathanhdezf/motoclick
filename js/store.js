@@ -222,8 +222,7 @@ class MotoClickStore {
     const { data, error } = await this._sb.from('users')
       .update(updates).eq('id', id).select().single();
     if (error) return { success: false, error: error.message };
-    const cur = this.getCurrentUser();
-    if (cur && cur.id === id) this.setCurrentUser(data);
+    this.setCurrentUser(data);
     return { success: true, user: data };
   }
 
@@ -591,14 +590,18 @@ class MotoClickStore {
     if (this._useFallback) return this._fb_updateUser(userId, data_payload);
     
     // Attempt real DB write
-    await this._sb.from('users').update(data_payload).eq('id', userId);
+    const { data, error } = await this._sb.from('users').update(data_payload).eq('id', userId).select().single();
     
+    if (!error) {
+      this.setCurrentUser(data);
+    }
+
     // Force Frontend Overrides (Optimistic Bypass)
     const updatedDocs = JSON.parse(localStorage.getItem('mc_admin_updates') || '{}');
     updatedDocs[userId] = { ...(updatedDocs[userId] || {}), ...data_payload };
     localStorage.setItem('mc_admin_updates', JSON.stringify(updatedDocs));
     
-    return { success: true };
+    return { success: !error, user: data, error: error?.message };
   }
 
   async getDashboardStats() {
