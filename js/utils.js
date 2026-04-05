@@ -715,3 +715,29 @@ window.saveProfileChanges = async function() {
     showToast(result?.error || 'Error al actualizar el perfil', 'error');
   }
 }
+
+/* ── Vertical Scroll Progress ── */
+(function initScrollProgress() {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('scrollProgress')) return;
+    const container = document.createElement('div');
+    container.className = 'scroll-progress-container';
+    
+    // Auto-detect role based on path for color coding
+    if (window.location.pathname.includes('/repartidor/')) {
+      container.classList.add('driver-mode');
+    }
+
+    const bar = document.createElement('div');
+    bar.className = 'scroll-progress-bar';
+    bar.id = 'scrollProgress';
+    container.appendChild(bar);
+    document.body.appendChild(container);
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      bar.style.height = scrolled + '%';
+    }, { passive: true });
+  });
+})();

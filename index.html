@@ -784,29 +784,7 @@
       font-weight: 500;
     }
 
-    /* ── Scroll Progress Sidebar ── */
-    .scroll-progress-container {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 4px;
-      height: 100vh;
-      background: rgba(255,255,255,0.03);
-      z-index: 10001; /* Above navbar and promo */
-      pointer-events: none;
-    }
-    .scroll-progress-bar {
-      width: 100%;
-      height: 0%;
-      background: var(--gradient-primary);
-      box-shadow: var(--shadow-glow);
-      transition: height 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-      border-bottom-left-radius: 4px;
-      border-bottom-right-radius: 4px;
-    }
-    @media (max-width: 768px) {
-      .scroll-progress-container { width: 3px; }
-    }
+
 
     /* ====================================================
        SCROLL ANIMATIONS — MotoClick Landing
@@ -970,10 +948,7 @@
       </div>
     </div>
 
-    <!-- Scroll Progress Sidebar -->
-    <div class="scroll-progress-container">
-      <div class="scroll-progress-bar" id="scrollProgress"></div>
-    </div>
+
 
     <!-- News Ticker -->
     <div class="news-ticker">
@@ -1705,16 +1680,7 @@
         });
       }, 1500);
 
-      /* 6. ── Vertical Scroll Progress ── */
-      const progressBar = document.getElementById('scrollProgress');
-      if (progressBar) {
-        window.addEventListener('scroll', () => {
-          const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-          const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-          const scrolled = (winScroll / height) * 100;
-          progressBar.style.height = scrolled + "%";
-        }, { passive: true });
-      }
+
 
     })();
   </script>
