@@ -256,7 +256,7 @@ class MotoClickStore {
   }
 
   async getOrderById(id) {
-    if (this._useFallback || (id && id.startsWith('mc_'))) {
+    if (this._useFallback) {
       return this._fb_getOrders().find(o => o.id === id) || null;
     }
     const { data, error } = await this._sb.from('orders')
