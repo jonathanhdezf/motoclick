@@ -1769,6 +1769,13 @@
       transform: translateY(-50%) translateX(0);
     }
     
+    @media (min-width: 1025px) {
+      .floating-nav { 
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transform: translateY(-50%) translateX(0) !important;
+      }
+    }
     @media (max-width: 1024px) {
       .floating-nav { 
         right: 10px; 
@@ -1802,19 +1809,31 @@
       const navContainer = document.querySelector('.floating-nav');
       let hideTimeout = null;
       
-      const showNav = () => {
+      const isMobile = () => window.innerWidth <= 1024;
+
+      const syncVisibility = () => {
         if (!navContainer) return;
+        if (!isMobile()) {
+          navContainer.classList.remove('nav-hidden');
+          if (hideTimeout) clearTimeout(hideTimeout);
+        }
+      };
+
+      const showNav = () => {
+        if (!navContainer || !isMobile()) {
+          syncVisibility();
+          return;
+        }
+
         navContainer.classList.remove('nav-hidden');
-        
-        // Hide after 2 seconds of inactivity
         if (hideTimeout) clearTimeout(hideTimeout);
         hideTimeout = setTimeout(() => {
-          navContainer.classList.add('nav-hidden');
-        }, 2000);
+          if (isMobile()) navContainer.classList.add('nav-hidden');
+        }, 3000);
       };
 
       const updateNav = () => {
-        showNav(); // Show it because we are scrolling
+        showNav();
         let current = '';
         sections.forEach(id => {
           const el = document.getElementById(id);
@@ -1826,7 +1845,7 @@
           }
         });
 
-        bubbles.forEach((b, i) => {
+        bubbles.forEach((b) => {
           b.classList.remove('active');
           const targetOnClick = b.getAttribute('onclick');
           if (targetOnClick && targetOnClick.includes(current)) {
@@ -1842,11 +1861,13 @@
 
       window.addEventListener('scroll', updateNav, { passive: true });
       window.addEventListener('load', updateNav);
+      window.addEventListener('resize', () => {
+        syncVisibility();
+        updateNav();
+      });
       
-      // Initialize hidden after load
-      setTimeout(() => {
-        if (navContainer) navContainer.classList.add('nav-hidden');
-      }, 3000);
+      // Force initial sync
+      syncVisibility();
     })();
   </script>
 </body>
