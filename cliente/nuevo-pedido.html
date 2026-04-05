@@ -1165,7 +1165,7 @@
 
     async function renderHistory() {
       const container = document.getElementById('orders-history');
-      const orders = (await store.getOrdersByClient(user.id)).reverse();
+      const orders = await store.getOrdersByClient(user.id);
       if (orders.length === 0) { container.innerHTML = ''; return; }
       container.innerHTML = `
         <h3 style="margin-bottom: var(--space-md); color: var(--text-secondary);">📜 Tus mandados recientes</h3>

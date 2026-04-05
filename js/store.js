@@ -247,14 +247,18 @@ class MotoClickStore {
   // ORDERS
   // ══════════════════════════════════════════════════════════════
   async getOrders() {
-    if (this._useFallback) return this._fb_getOrders();
+    if (this._useFallback) {
+      return this._fb_getOrders().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
     const { data, error } = await this._sb.from('orders').select('*').order('created_at', { ascending: false });
     if (error) console.error('[Store] getOrders Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
 
   async getOrderById(id) {
-    if (this._useFallback) return this._fb_getOrders().find(o => o.id === id) || null;
+    if (this._useFallback || (id && id.startsWith('mc_'))) {
+      return this._fb_getOrders().find(o => o.id === id) || null;
+    }
     const { data, error } = await this._sb.from('orders')
       .select('*, client:users!client_id(is_verified, verification_status, profile_photo_url), driver:users!driver_id(is_verified, verification_status, profile_photo_url)')
       .eq('id', id)
@@ -264,14 +268,22 @@ class MotoClickStore {
   }
 
   async getOrdersByClient(clientId) {
-    if (this._useFallback) return this._fb_getOrders().filter(o => o.clientId === clientId);
+    if (this._useFallback) {
+      return this._fb_getOrders()
+        .filter(o => o.clientId === clientId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
     const { data, error } = await this._sb.from('orders').select('*').eq('client_id', clientId).order('created_at', { ascending: false });
     if (error) console.error('[Store] getOrdersByClient Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
 
   async getOrdersByDriver(driverId) {
-    if (this._useFallback) return this._fb_getOrders().filter(o => o.driverId === driverId);
+    if (this._useFallback) {
+      return this._fb_getOrders()
+        .filter(o => o.driverId === driverId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
     const { data, error } = await this._sb.from('orders').select('*').eq('driver_id', driverId).order('created_at', { ascending: false });
     if (error) console.error('[Store] getOrdersByDriver Error:', error);
     return (data || []).map(r => this._fromDB(r));

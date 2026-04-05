@@ -6,7 +6,7 @@
   <meta name="description" content="MotoClick — Rastrea tu mandado en tiempo real.">
   <title>MotoClick — Rastreo en Vivo</title>
   <link rel="stylesheet" href="../styles/main.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     .tracking-layout {
       display: grid;
@@ -403,30 +403,37 @@
             </div>
           </div>
         ` : ''}
-        <div class="order-summary-row" style="background: rgba(34, 197, 94, 0.05); padding: 14px; border-radius: 12px; border: 1px dashed rgba(34, 197, 94, 0.3); margin: 15px 0;">
-          <span class="order-summary-icon">💰</span>
+        <div class="order-summary-row" style="background: rgba(34, 197, 94, 0.05); padding: 16px; border-radius: 12px; border: 2px solid rgba(34, 197, 94, 0.2); margin: 15px 0;">
+          <span class="order-summary-icon">💳</span>
           <div class="order-summary-content" style="width: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <div class="order-summary-label">Total del Mandado</div>
-                <div class="order-summary-value">
-                  <strong style="color: #22c55e; font-size: 1.25rem;">$${Number(order.estimatedPriceMin) || 0} - $${Number(order.estimatedPriceMax) || 0}</strong>
-                </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Desglose de Gastos -->
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #555;">
+                <span>Servicio de Mandado:</span>
+                <span style="font-weight: 600;">$${Number(order.estimatedPriceMin) || 0} - $${Number(order.estimatedPriceMax) || 0}</span>
               </div>
+              
               ${order.subtotal_compra > 0 ? `
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #555; padding-top: 4px; border-top: 1px dashed rgba(0,0,0,0.1);">
+                  <span>Ticket de Compra:</span>
                 <div style="text-align: right;">
-                  <div style="font-size: 0.7rem; color: #666; font-weight: 700; text-transform: uppercase;">Ticket Compra</div>
-                  <div style="color: #22c55e; font-weight: 900; font-size: 1.1rem;">$${order.subtotal_compra}</div>
-                  <button class="btn btn-sm btn-outline" style="margin-top: 4px; padding: 2px 8px; font-size: 0.65rem;" onclick="openTicketModal()">🧾 Ver Ticket</button>
+                    <span style="font-weight: 600; color: #22c55e;">$${(Number(order.subtotal_compra) || 0).toFixed(2)}</span>
+                    <button class="btn btn-sm btn-outline" style="margin-top: 2px; display: block; width: 100%; border-radius: 6px; padding: 2px 8px; font-size: 0.65rem;" onclick="openTicketModal()">🧾 Ver Detalle</button>
+                  </div>
                 </div>
               ` : ''}
-            </div>
-            ${order.stops && order.stops.length > 0 ? `
-              <div style="font-size: 0.8rem; color: #22c55e; margin-top: 6px; font-weight: 500; display: flex; align-items: center; gap: 5px;">
-                <span>📍 Paradas extra:</span>
-                <span class="badge badge-success" style="padding: 2px 8px; font-size: 0.7rem;">+ $${order.stops.length * 15}</span>
+
+              <!-- TOTAL FINAL -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 2px solid rgba(34, 197, 94, 0.2);">
+                <span style="font-weight: 900; color: #166534; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Total a Pagar</span>
+                <div style="text-align: right;">
+                   <strong style="color: #15803d; font-size: 1.35rem; display: block; line-height: 1.1;">
+                     $${((Number(order.estimatedPriceMin) || 0) + (Number(order.subtotal_compra) || 0)).toFixed(0)} - $${((Number(order.estimatedPriceMax) || 0) + (Number(order.subtotal_compra) || 0)).toFixed(0)}
+                   </strong>
+                   <span style="font-size: 0.6rem; color: #666; font-weight: 500;">*Sujeto a cambios por extras</span>
+                </div>
               </div>
-            ` : ''}
+            </div>
           </div>
         </div>
         <div class="order-summary-row">

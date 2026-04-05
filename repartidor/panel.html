@@ -460,7 +460,7 @@
            // Local timezone adjustment approximation
            const objDate = new Date(d);
            return objDate.toISOString().split('T')[0] === targetDate || objDate.toLocaleDateString('en-CA') === targetDate;
-        }).reverse();
+        });
         
         // Sum Totals
         let sumEarnings = 0;

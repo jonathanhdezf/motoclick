@@ -589,16 +589,33 @@
             <div class="info-row-value">${getPaymentLabel(order.paymentMethod)}</div>
           </div>
         </div>
-        <div class="info-row" style="background: rgba(34, 197, 94, 0.05); border-radius: 8px; border: 1px dashed rgba(34, 197, 94, 0.2);">
+        <div class="info-row" style="background: rgba(34, 197, 94, 0.05); padding: 16px; border-radius: 12px; border: 2px solid rgba(34, 197, 94, 0.2); margin: 15px 0;">
           <span class="info-row-icon">💰</span>
-          <div class="info-row-content">
-            <div class="info-row-label">Costo Total (Aprox)</div>
-            <div class="info-row-value"><strong style="color: #22c55e; font-size: 1.2rem;">$${Number(order.estimatedPriceMin) || 0} - $${Number(order.estimatedPriceMax) || 0}</strong></div>
-            ${order.stops && order.stops.length > 0 ? `
-              <div style="font-size: 0.75rem; color: #22c55e; margin-top: 4px; font-weight: 600;">
-                ✓ Incluye $${order.stops.length * 15} por ${order.stops.length} parada(s) extra
+          <div class="info-row-content" style="width: 100%;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Desglose de Cobro -->
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #555;">
+                <span>Servicio MotoClick:</span>
+                <span style="font-weight: 600;">$${Number(order.estimatedPriceMin) || 0} - $${Number(order.estimatedPriceMax) || 0}</span>
               </div>
-            ` : ''}
+              
+              ${order.subtotal_compra > 0 ? `
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #555; padding-top: 4px; border-top: 1px dashed rgba(0,0,0,0.1);">
+                   <span>Artículos / Ticket:</span>
+                   <span style="font-weight: 600; color: #22c55e;">$${Number(order.subtotal_compra).toFixed(2)}</span>
+                </div>
+              ` : ''}
+
+              <!-- TOTAL A COBRAR -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 10px; border-top: 2px solid rgba(34, 197, 94, 0.2);">
+                <span style="font-weight: 900; color: #166534; font-size: 0.9rem; text-transform: uppercase;">Total a Cobrar</span>
+                <div style="text-align: right;">
+                   <strong style="color: #15803d; font-size: 1.35rem; display: block; line-height: 1.1;">
+                     $${((Number(order.estimatedPriceMin) || 0) + (Number(order.subtotal_compra) || 0)).toFixed(0)} - $${((Number(order.estimatedPriceMax) || 0) + (Number(order.subtotal_compra) || 0)).toFixed(0)}
+                   </strong>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       `;
