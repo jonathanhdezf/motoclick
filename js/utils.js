@@ -716,14 +716,16 @@ window.saveProfileChanges = async function() {
   }
 }
 
-/* ── Vertical Scroll Progress ── */
+/* ── Vertical Scroll Progress (Global Injector) ── */
 (function initScrollProgress() {
   document.addEventListener('DOMContentLoaded', () => {
+    // Only inject if it doesn't exist yet
     if (document.getElementById('scrollProgress')) return;
+
     const container = document.createElement('div');
     container.className = 'scroll-progress-container';
     
-    // Auto-detect role based on path for color coding
+    // Role-based coloring: Blue for drivers, Green for default
     if (window.location.pathname.includes('/repartidor/')) {
       container.classList.add('driver-mode');
     }
@@ -733,11 +735,16 @@ window.saveProfileChanges = async function() {
     bar.id = 'scrollProgress';
     container.appendChild(bar);
     document.body.appendChild(container);
-    window.addEventListener('scroll', () => {
+
+    const updateBar = () => {
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
       bar.style.height = scrolled + '%';
-    }, { passive: true });
+    };
+
+    window.addEventListener('scroll', updateBar, { passive: true });
+    window.addEventListener('resize', updateBar);
+    updateBar();
   });
 })();
