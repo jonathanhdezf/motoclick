@@ -185,6 +185,9 @@
       50% { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
     }
     .alert-activation-card.hidden { display: none; }
+    .alert-icon-lg { font-size: 2rem; }
+    .alert-title-mini { margin-bottom: 4px; color: #fff; }
+    .alert-text-mini { font-size: 0.85rem; }
     body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
   </style>
 </head>
@@ -229,10 +232,10 @@
 
         <!-- Alert Activation (Senior Fix for Android) -->
         <div id="alert-activation-banner" class="alert-activation-card hidden">
-          <div style="font-size: 2rem;">🔔</div>
+          <div class="alert-icon-lg">🔔</div>
           <div>
-            <h3 style="margin-bottom: 4px; color: #fff;">Activar Alertas Críticas</h3>
-            <p class="text-secondary" style="font-size: 0.85rem;">Para escuchar los nuevos mandados en Android, necesitamos tu permiso explícito.</p>
+            <h3 class="alert-title-mini">Activar Alertas Críticas</h3>
+            <p class="text-secondary alert-text-mini">Para escuchar los nuevos mandados en Android, necesitamos tu permiso explícito.</p>
           </div>
           <button class="btn btn-primary btn-block" onclick="enableCriticalAlerts()">
             🚀 ACTIVAR SONIDO Y NOTIFICACIONES
