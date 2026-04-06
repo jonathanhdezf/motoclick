@@ -388,7 +388,8 @@
 
       // Check for audio suspension (Android Senior Fix)
       setTimeout(() => {
-        if (!globalAudioCtx || globalAudioCtx.state === 'suspended') {
+        const alreadyActivated = localStorage.getItem('motoclick_alerts_activated');
+        if (!alreadyActivated && (!globalAudioCtx || globalAudioCtx.state === 'suspended')) {
             const banner = document.getElementById('alert-activation-banner');
             if (banner) banner.classList.remove('hidden');
         }
@@ -409,7 +410,8 @@
             playNotificationSound('success');
         }
         
-        // 3. Hide banner
+        // 3. Hide banner & Save state
+        localStorage.setItem('motoclick_alerts_activated', 'true');
         const banner = document.getElementById('alert-activation-banner');
         if (banner) banner.classList.add('hidden');
         
