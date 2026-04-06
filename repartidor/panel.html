@@ -167,6 +167,24 @@
     .form-group-col { flex: 1; }
     .modal-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
     .btn-bg-danger { background: #ef4444; border-color: #ef4444; }
+    .alert-activation-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.15));
+      border: 2px dashed #3b82f6;
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin-bottom: var(--space-xl);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      align-items: center;
+      animation: pulseAlert 2s infinite ease-in-out;
+    }
+    @keyframes pulseAlert {
+      0%, 100% { border-color: rgba(59, 130, 246, 0.4); }
+      50% { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+    }
+    .alert-activation-card.hidden { display: none; }
     body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
   </style>
 </head>
@@ -207,6 +225,18 @@
             <span class="online-dot"></span>
             En línea
           </div>
+        </div>
+
+        <!-- Alert Activation (Senior Fix for Android) -->
+        <div id="alert-activation-banner" class="alert-activation-card hidden">
+          <div style="font-size: 2rem;">🔔</div>
+          <div>
+            <h3 style="margin-bottom: 4px; color: #fff;">Activar Alertas Críticas</h3>
+            <p class="text-secondary" style="font-size: 0.85rem;">Para escuchar los nuevos mandados en Android, necesitamos tu permiso explícito.</p>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="enableCriticalAlerts()">
+            🚀 ACTIVAR SONIDO Y NOTIFICACIONES
+          </button>
         </div>
 
         <!-- Orders List -->
@@ -352,6 +382,36 @@
            renderHistory();
         }
       }, 10000);
+
+      // Check for audio suspension (Android Senior Fix)
+      setTimeout(() => {
+        if (!globalAudioCtx || globalAudioCtx.state === 'suspended') {
+            const banner = document.getElementById('alert-activation-banner');
+            if (banner) banner.classList.remove('hidden');
+        }
+      }, 1500);
+    }
+
+    async function enableCriticalAlerts() {
+        // 1. Request Notifications (User Gesture)
+        if ("Notification" in window) {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                showToast('¡Notificaciones activadas! 🔔', 'success');
+            }
+        }
+        
+        // 2. Unlock AudioContext (User Gesture)
+        if (typeof playNotificationSound === 'function') {
+            playNotificationSound('success');
+        }
+        
+        // 3. Hide banner
+        const banner = document.getElementById('alert-activation-banner');
+        if (banner) banner.classList.add('hidden');
+        
+        // 4. Test Notification
+        showSystemNotification('✅ Alertas Activadas', 'Recibirás un sonido fuerte cuando llegue un nuevo mandado.', 'success');
     }
     
     let wakeLock = null;
