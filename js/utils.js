@@ -325,15 +325,30 @@ function generateRoute(start, end, steps = 20) {
 }
 
 // ── Audio beep for notifications ──
+// ── Audio helpers for notifications ──
+let globalAudioCtx = null;
+
 function playNotificationSound(type = 'info') {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
     
-    const ctx = new AudioContext();
+    if (!globalAudioCtx) {
+      globalAudioCtx = new AudioContext();
+    }
+    const ctx = globalAudioCtx;
+    
+    // Resume context if suspended (common browser policy)
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(err => console.warn('Audio resume failed:', err));
+    }
+
     const masterGain = ctx.createGain();
     masterGain.connect(ctx.destination);
-    masterGain.gain.setValueAtTime(0.15, ctx.currentTime); // Subtle volume
+    
+    // Higher volume for critical driver alerts
+    const volume = (type === 'new_order' || type === 'error' || type === 'warning') ? 0.75 : 0.3;
+    masterGain.gain.setValueAtTime(volume, ctx.currentTime);
 
     const playTone = (freq, startTime, duration, waveType = 'sine') => {
       const osc = ctx.createOscillator();
@@ -343,7 +358,7 @@ function playNotificationSound(type = 'info') {
       osc.type = waveType;
       osc.frequency.setValueAtTime(freq, startTime);
       g.gain.setValueAtTime(0, startTime);
-      g.gain.linearRampToValueAtTime(1, startTime + 0.02);
+      g.gain.linearRampToValueAtTime(1, startTime + 0.05);
       g.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
       osc.start(startTime);
       osc.stop(startTime + duration);
@@ -354,27 +369,34 @@ function playNotificationSound(type = 'info') {
       playTone(523.25, ctx.currentTime, 0.4); 
       playTone(659.25, ctx.currentTime + 0.1, 0.5);
     } else if (type === 'error') {
-      // Soft minor warning (F4 -> C4)
-      playTone(349.23, ctx.currentTime, 0.4, 'triangle');
-      playTone(261.63, ctx.currentTime + 0.15, 0.6, 'triangle');
+      // Urgent falling alert (F4 -> C4)
+      playTone(349.23, ctx.currentTime, 0.5, 'triangle');
+      playTone(261.63, ctx.currentTime + 0.2, 0.7, 'triangle');
     } else if (type === 'warning') {
-      // Alert double beep
-      playTone(440, ctx.currentTime, 0.15, 'sine');
-      playTone(440, ctx.currentTime + 0.2, 0.15, 'sine');
+      // Persistent alert beep
+      playTone(440, ctx.currentTime, 0.15);
+      playTone(440, ctx.currentTime + 0.2, 0.15);
     } else if (type === 'new_order') {
-      // High-energy rising chime (G4 -> C5 -> E5 -> G5)
-      playTone(392.00, ctx.currentTime, 0.2); 
-      playTone(523.25, ctx.currentTime + 0.15, 0.2);
-      playTone(659.25, ctx.currentTime + 0.3, 0.2);
-      playTone(783.99, ctx.currentTime + 0.45, 0.4);
+      // Very distinctive rising "Delivery siren" (G4 -> C5 -> E5 -> G5)
+      playTone(392.00, ctx.currentTime, 0.25); 
+      playTone(523.25, ctx.currentTime + 0.2, 0.25);
+      playTone(659.25, ctx.currentTime + 0.4, 0.25);
+      playTone(783.99, ctx.currentTime + 0.6, 0.6);
     } else {
       // Clean info pop
       playTone(587.33, ctx.currentTime, 0.3);
     }
   } catch (e) {
-    // Ignored: Audio policy or context failed
+    console.error('MotoClick Audio Engine Error:', e);
   }
 }
+
+// Global click event to unlock sound early
+document.addEventListener('click', () => {
+  if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+    globalAudioCtx.resume();
+  }
+}, { once: true });
 
 // ── Profile Modal ──
 function openProfileModal() {
