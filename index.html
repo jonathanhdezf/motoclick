@@ -200,6 +200,28 @@
     .playstore-badge-placeholder i { font-size: 1.6rem; color: #3DDC84; }
     .playstore-badge-text span { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
     .playstore-badge-text b { display: block; font-size: 1rem; line-height: 1.1; }
+    
+    .install-btn {
+      margin-top: 1.5rem;
+      padding: 14px 28px;
+      font-size: 1rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00e65b, #00c853);
+      color: #000;
+      font-weight: 800;
+      box-shadow: 0 10px 20px rgba(0, 230, 91, 0.2);
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+    .install-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 230, 91, 0.4);
+    }
+    .install-btn i { font-size: 1.2rem; }
 
 
 
@@ -1194,6 +1216,10 @@
             <b>Google Play</b>
           </div>
         </div>
+        <!-- PWA Install Button -->
+        <button id="installApp" class="install-btn">
+          <i class="fas fa-download"></i> INSTALAR APP AHORA
+        </button>
       </div>
     </section>
 
@@ -1681,7 +1707,29 @@
         });
       }, 1500);
 
+      /* ── PWA Installation Logic ── */
+      let deferredPrompt;
+      const installBtn = document.getElementById('installApp');
 
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn) installBtn.style.display = 'inline-flex';
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener('click', (e) => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+              if (choiceResult.outcome === 'accepted') {
+                installBtn.style.display = 'none';
+              }
+              deferredPrompt = null;
+            });
+          }
+        });
+      }
 
     })();
   </script>
