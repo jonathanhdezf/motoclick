@@ -29,6 +29,21 @@
       border-bottom: 1px solid var(--border-color);
     }
     .info-row:last-child { border-bottom: none; }
+    .info-row.clickable {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin: 0 -var(--space-md);
+      width: calc(100% + (var(--space-md) * 2));
+    }
+    .info-row.clickable:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .info-row.clickable:active {
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(0.98);
+    }
     .info-row-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
     .info-row-content { flex: 1; }
     .info-row-label {
@@ -540,17 +555,23 @@
             <div class="info-row-value">${order.description}</div>
           </div>
         </div>
-        <div class="info-row">
+        <div class="info-row clickable" onclick="openDirections(${order.pickupCoords[0]}, ${order.pickupCoords[1]})" title="Ver ruta en Google Maps">
           <span class="info-row-icon">📍</span>
           <div class="info-row-content">
-            <div class="info-row-label">Recolección</div>
+            <div class="info-row-label" style="display: flex; justify-content: space-between; align-items: center;">
+              Recolección
+              <span style="font-size: 0.65rem; color: #3b82f6; font-weight: 800;">🛰️ ABRIR MAPAS</span>
+            </div>
             <div class="info-row-value">${order.pickupAddress}</div>
           </div>
         </div>
-        <div class="info-row">
+        <div class="info-row clickable" onclick="openDirections(${order.deliveryCoords[0]}, ${order.deliveryCoords[1]})" title="Ver ruta en Google Maps">
           <span class="info-row-icon">🏠</span>
           <div class="info-row-content">
-            <div class="info-row-label">Entrega</div>
+            <div class="info-row-label" style="display: flex; justify-content: space-between; align-items: center;">
+              Entrega
+              <span style="font-size: 0.65rem; color: #3b82f6; font-weight: 800;">🛰️ ABRIR MAPAS</span>
+            </div>
             <div class="info-row-value">${order.deliveryAddress}</div>
           </div>
         </div>
@@ -987,6 +1008,15 @@
       } finally {
         actions.style.display = 'flex';
       }
+    }
+
+    function openDirections(lat, lng) {
+      if (!lat || !lng) {
+        showToast('Coordenadas no disponibles.', 'error');
+        return;
+      }
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      window.open(url, '_blank');
     }
 
     // init() is called by Google Maps callback
