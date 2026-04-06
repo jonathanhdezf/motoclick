@@ -339,12 +339,9 @@
         });
       }
 
-      // Listen for new orders
       store.on('new_order', (order) => {
-        playNotificationSound();
-        showToast(`🆕 Mandado de ${order.clientName}`, 'warning');
-        showSystemNotification('📦 Nuevo Mandado MotoClick', `${order.clientName}: ${order.description.substring(0, 40)}...`);
-        // Optimistic refresh
+        showToast(`🆕 Mandado de ${order.clientName}`, 'warning', 3500, true); 
+        showSystemNotification('📦 Nuevo Mandado MotoClick', `${order.clientName}: ${order.description.substring(0, 40)}...`, 'new_order');
         loadOrders(true);
       });
 
@@ -391,8 +388,9 @@
       }
 
       countBadge.textContent = pending.length;
-
-      if (pending.length > previousCount && previousCount > 0) playNotificationSound();
+      if (pending.length > previousCount && previousCount > 0) {
+        showSystemNotification('📦 Nuevos Mandados', `Hay ${pending.length} mandados disponibles`, 'new_order');
+      }
       previousCount = pending.length;
 
       if (pending.length === 0) {

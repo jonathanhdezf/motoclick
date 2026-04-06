@@ -29,7 +29,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ── Toast Notifications ──
-function showToast(message, type = 'info', duration = 3500) {
+function showToast(message, type = 'info', duration = 3500, silent = false) {
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');
@@ -50,9 +50,15 @@ function showToast(message, type = 'info', duration = 3500) {
   toast.innerHTML = `
     <span class="toast-icon">${icons[type] || icons.info}</span>
     <span class="toast-message">${message}</span>
+    <div class="toast-progress-bar">
+      <div class="toast-progress-fill" style="animation-duration: ${duration}ms"></div>
+    </div>
   `;
 
   container.appendChild(toast);
+  
+  // Premium Sound Support
+  if (!silent) playNotificationSound(type);
 
   setTimeout(() => {
     toast.classList.add('toast-exit');
@@ -86,18 +92,21 @@ if (window.store && window.store._sb) {
     }).subscribe();
 }
 
-function showSystemNotification(title, body) {
+function showSystemNotification(title, body, type = 'info') {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   
   const options = {
     body: body,
     icon: '/assets/logo_motoclick_app.png',
     badge: '/assets/logo_motoclick_app.png',
-    vibrate: [200, 100, 200],
+    vibrate: [300, 100, 300, 100, 400], // Stronger vibration for impact
     tag: 'motoclick-notification',
-    requireInteraction: true, // Persist until user clicks
+    requireInteraction: true,
     silent: false
   };
+
+  // Play sound locally even if system notification sound is muted by OS
+  playNotificationSound(type);
 
   try {
     // Better background support: try to use Service Worker API
@@ -316,21 +325,54 @@ function generateRoute(start, end, steps = 20) {
 }
 
 // ── Audio beep for notifications ──
-function playNotificationSound() {
+function playNotificationSound(type = 'info') {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    oscillator.frequency.value = 880;
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.5);
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    
+    const ctx = new AudioContext();
+    const masterGain = ctx.createGain();
+    masterGain.connect(ctx.destination);
+    masterGain.gain.setValueAtTime(0.15, ctx.currentTime); // Subtle volume
+
+    const playTone = (freq, startTime, duration, waveType = 'sine') => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.type = waveType;
+      osc.frequency.setValueAtTime(freq, startTime);
+      g.gain.setValueAtTime(0, startTime);
+      g.gain.linearRampToValueAtTime(1, startTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    if (type === 'success') {
+      // High-end double chime (C5 -> E5)
+      playTone(523.25, ctx.currentTime, 0.4); 
+      playTone(659.25, ctx.currentTime + 0.1, 0.5);
+    } else if (type === 'error') {
+      // Soft minor warning (F4 -> C4)
+      playTone(349.23, ctx.currentTime, 0.4, 'triangle');
+      playTone(261.63, ctx.currentTime + 0.15, 0.6, 'triangle');
+    } else if (type === 'warning') {
+      // Alert double beep
+      playTone(440, ctx.currentTime, 0.15, 'sine');
+      playTone(440, ctx.currentTime + 0.2, 0.15, 'sine');
+    } else if (type === 'new_order') {
+      // High-energy rising chime (G4 -> C5 -> E5 -> G5)
+      playTone(392.00, ctx.currentTime, 0.2); 
+      playTone(523.25, ctx.currentTime + 0.15, 0.2);
+      playTone(659.25, ctx.currentTime + 0.3, 0.2);
+      playTone(783.99, ctx.currentTime + 0.45, 0.4);
+    } else {
+      // Clean info pop
+      playTone(587.33, ctx.currentTime, 0.3);
+    }
   } catch (e) {
-    // Silently fail if audio API not available
+    // Ignored: Audio policy or context failed
   }
 }
 

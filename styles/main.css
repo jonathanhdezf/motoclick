@@ -1910,3 +1910,4 @@ h3 { font-size: 1.2rem;  letter-spacing: -0.01em; font-weight: 600; }
 @media (min-width: 769px) {
   .trust-dots { display: none; }
 }
+@keyframes toastSlideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } .toast { position: relative; overflow: hidden; animation: toastSlideIn var(--duration-normal) var(--ease-out); } .toast-progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background: rgba(255, 255, 255, 0.05); } .toast-progress-fill { height: 100%; width: 100%; background: var(--color-primary, #f97316); transform-origin: left; animation: toastProgress linear forwards; } .toast-success .toast-progress-fill { background: #22c55e; } .toast-error .toast-progress-fill { background: #ef4444; } .toast-warning .toast-progress-fill { background: #f59e0b; } @keyframes toastProgress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
