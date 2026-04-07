@@ -155,6 +155,22 @@
     .menu-card .arrow { color: #00E65B; font-size: 0.9rem; }
     .menu-action-wrapper { margin-top: 1.5rem; }
 
+    .promo-price { margin-top: var(--space-md); font-size: 0.75rem; color: var(--text-muted); opacity: 0.8; }
+    
+    .promo-contest-desc {
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 10px;
+    }
+    
+    .promo-app-hint {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
     .menu-footer { margin-top: 2.5rem; color: var(--text-muted); font-size: 0.8rem; }
 
     @media (max-width: 768px) {
@@ -1364,21 +1380,26 @@
     </footer>
   </div>
 
-  <!-- Promo Match Modal -->
+  <!-- Promo Mario Modal -->
   <div class="promo-overlay" id="promoPopup">
     <div class="promo-modal">
       <button class="promo-close" id="closePromo" aria-label="Cerrar">&times;</button>
-      <img src="./assets/america_vs_santos_promo.png" alt="Comida para el partido América vs Santos" class="promo-image">
+      <img src="./assets/mario_promo.jpg" alt="Super Mario Galaxy MotoClick Promo" class="promo-image">
       <div class="promo-content">
-        <div class="promo-badge">¡Hoy Sábado - 9:00 PM! ⚽</div>
-        <h2 class="promo-title">AMÉRICA vs <span>SANTOS</span></h2>
+        <div class="promo-badge">¡Dinámica Galaxy! 🛸⭐</div>
+        <h2 class="promo-title">SUPER <span>MARIO</span> GALAXY</h2>
         <p class="promo-desc">
-          ¿Listo para el partido? MotoClick te lleva la botana, alitas y bebidas frías directo a tu casa hoy mismo a las 9 PM. ¡Nosotros corremos, tú disfruta!
+          El estreno de #SuperMarioGalaxy nos tiene muy emocionados, ¡especialmente por el color verde! 😍 Queremos saber qué cosas locas has pedido a domicilio. 🦖 ¿Cuál es el objeto más grande o extraño que MotoClick te ha traído?
         </p>
-        <a href="https://wa.me/522331072438?text=Hola! Quiero pedir botana para el partido América vs Santos de HOY ⚽🦅😇" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block btn-lg promo-cta-btn">
-          <i class="fab fa-whatsapp"></i> Pedir Botana Ahora
+        <p class="promo-desc promo-contest-desc">
+          La respuesta más creativa se ganará un <strong>¡Pedido GRATIS de hasta $200!*</strong> 🛵💨 (Aplican términos y condiciones).
+        </p>
+        <a href="https://wa.me/522331072438?text=Hola! Mi respuesta creativa para ganar el pedido gratis es: " target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block btn-lg promo-cta-btn">
+          <i class="fab fa-whatsapp"></i> Enviar mi Anécdota
         </a>
-        <span class="promo-price">En zona centro desde <strong>$40 pesos</strong> el mandado</span>
+        <span class="promo-price promo-app-hint">
+          👇 Si no has pedido nada raro aún, ¡Aprovecha nuestra App!
+        </span>
       </div>
     </div>
   </div>
