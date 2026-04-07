@@ -1066,6 +1066,20 @@
         transition: none !important;
       }
     }
+
+    /* ── Alliance & Partner Styles ── */
+    .alliance-item-partner { cursor: pointer !important; }
+    .alliance-logo-img { width: auto; object-fit: contain; transition: transform 0.3s ease; }
+    .alliance-item-partner:hover .alliance-logo-img { transform: scale(1.05); }
+    .partner-modal-container { padding: 2.5rem 2rem !important; max-width: 450px !important; }
+    .partner-modal-logo { width: auto; object-fit: contain; margin-bottom: 1.5rem; }
+    .partner-modal-textarea { width: 100%; min-height: 120px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.9rem; resize: vertical; }
+    .partner-modal-textarea:focus { outline: none; border-color: #00e65b; background: rgba(255,255,255,0.08); }
+    .partner-modal-btn-confirm { width: 100%; padding: 16px; border-radius: 12px; background: #00e65b; border: none; color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; }
+    .partner-modal-btn-confirm:hover { background: #00c853; transform: translateY(-2px); }
+    .partner-modal-btn-cancel { width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .partner-modal-btn-cancel:hover { background: rgba(255,255,255,0.1); }
+    .partner-modal-overlay { display: flex !important; align-items: center; justify-content: center; }
   </style>
 </head>
 <body>
@@ -1419,8 +1433,8 @@
           <span class="alliance-name">Farmacia Juquilita</span>
           <span class="alliance-type">Salud y Medicinas</span>
         </div>
-        <div class="alliance-item sa-stagger sa-d3" onclick="openSuperAhorroModal()" style="cursor: pointer;">
-          <img src="assets/superahorroblanco.png" alt="Super Ahorro" class="alliance-logo" style="height: 50px; width: auto; margin-bottom: 1rem; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));">
+        <div class="alliance-item sa-stagger sa-d3 alliance-item-partner" onclick="openSuperAhorroModal()">
+          <img src="assets/superahorroblanco.png" alt="Super Ahorro" title="Hacer pedido en Super Ahorro" class="alliance-logo alliance-logo-img" style="height: 150px; filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));">
           <span class="alliance-name">Super Ahorro</span>
           <span class="alliance-type">Supermercado</span>
         </div>
@@ -1429,18 +1443,18 @@
           <span class="alliance-name">Dulzura Local</span>
           <span class="alliance-type">Repostería y Pasteles</span>
         </div>
-        <div class="alliance-item sa-stagger sa-d5" onclick="openOrtunoModal()" style="cursor: pointer;">
-          <img src="assets/ortunoblanco.png" alt="Ortuño Ferroelectrica" class="alliance-logo" style="height: 150px; width: auto; margin-bottom: 1rem; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));">
+        <div class="alliance-item sa-stagger sa-d5 alliance-item-partner" onclick="openOrtunoModal()">
+          <img src="assets/ortunoblanco.png" alt="Ortuño Ferroeléctrica" title="Hacer pedido en Ortuño" class="alliance-logo alliance-logo-img" style="height: 150px; filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));">
           <span class="alliance-name">Ortuño</span>
           <span class="alliance-type">Ferroeléctrica y Ferretería</span>
         </div>
-        <div class="alliance-item sa-stagger sa-d6" onclick="openSterenModal()" style="cursor: pointer;">
-          <img src="assets/sterenblanco.png" alt="Steren Mexico" class="alliance-logo" style="height: 150px; width: auto; margin-bottom: 1rem; object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
+        <div class="alliance-item sa-stagger sa-d6 alliance-item-partner" onclick="openSterenModal()">
+          <img src="assets/sterenblanco.png" alt="Steren México" title="Hacer pedido en Steren" class="alliance-logo alliance-logo-img" style="height: 150px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
           <span class="alliance-name">Steren México</span>
           <span class="alliance-type">Soluciones en Electrónica</span>
         </div>
-        <div class="alliance-item sa-stagger sa-d1" onclick="openDonaFideModal()" style="cursor: pointer;">
-          <img src="assets/donafideblanco.png" alt="Doña Fide" class="alliance-logo" style="height: 150px; width: auto; margin-bottom: 1rem; object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
+        <div class="alliance-item sa-stagger sa-d1 alliance-item-partner" onclick="openDonaFideModal()">
+          <img src="assets/donafideblanco.png" alt="Doña Fide" title="Hacer pedido en Doña Fide" class="alliance-logo alliance-logo-img" style="height: 150px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
           <span class="alliance-name">Doña Fide</span>
           <span class="alliance-type">Antojitos Mexicanos</span>
         </div>
@@ -2118,24 +2132,24 @@
     })();
   </script>
   <!-- Super Ahorro Order Modal -->
-  <div class="mobile-menu-overlay" id="super-ahorro-modal" style="display: flex; align-items: center; justify-content: center;">
-    <div class="mobile-menu-container animate-fade-in-up" style="padding: 2.5rem 2rem; max-width: 450px;">
+  <div class="mobile-menu-overlay partner-modal-overlay" id="super-ahorro-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
       <button class="menu-close" onclick="closeSuperAhorroModal()">&times;</button>
       <div class="menu-content">
-        <img src="assets/superahorroblanco.png" class="menu-logo" style="height: 60px; margin-bottom: 1.5rem;">
+        <img src="assets/superahorroblanco.png" alt="Super Ahorro" title="Logo Super Ahorro" class="menu-logo partner-modal-logo" style="height: 60px;">
         <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Súper Ahorro</h3>
         <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Escribe tu lista de productos abajo y un repartidor irá por ellos.</p>
         
         <div style="margin-bottom: 1.5rem; text-align: left;">
           <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">Lista de Mandado</label>
-          <textarea id="super-ahorro-textarea" style="width: 100%; min-height: 120px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.9rem; resize: vertical;" placeholder="Ej: 1L de leche, 1kg de huevo, Jabón de trastes Zest..."></textarea>
+          <textarea id="super-ahorro-textarea" class="partner-modal-textarea" placeholder="Ej: 1L de leche, 1kg de huevo, Jabón de trastes Zest..."></textarea>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button onclick="sendSuperAhorroWhatsApp()" style="width: 100%; padding: 16px; border-radius: 12px; background: #00e65b; border: none; color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s;">
+          <button onclick="sendSuperAhorroWhatsApp()" class="partner-modal-btn-confirm">
             <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
           </button>
-          <button onclick="closeSuperAhorroModal()" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer;">
+          <button onclick="closeSuperAhorroModal()" class="partner-modal-btn-cancel">
             Regresar
           </button>
         </div>
@@ -2144,24 +2158,24 @@
   </div>
 
   <!-- Steren Order Modal -->
-  <div class="mobile-menu-overlay" id="steren-modal" style="display: flex; align-items: center; justify-content: center;">
-    <div class="mobile-menu-container animate-fade-in-up" style="padding: 2.5rem 2rem; max-width: 450px;">
+  <div class="mobile-menu-overlay partner-modal-overlay" id="steren-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
       <button class="menu-close" onclick="closeSterenModal()">&times;</button>
       <div class="menu-content">
-        <img src="assets/sterenblanco.png" class="menu-logo" style="height: 220px; margin-bottom: 1.5rem; filter: brightness(1.2);">
+        <img src="assets/sterenblanco.png" alt="Steren México" title="Logo Steren" class="menu-logo partner-modal-logo" style="height: 220px; filter: brightness(1.2);">
         <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Steren México</h3>
         <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Escribe los electrónicos o componentes que necesitas y nosotros vamos por ellos.</p>
         
         <div style="margin-bottom: 1.5rem; text-align: left;">
           <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">Lo que necesitas de Steren</label>
-          <textarea id="steren-textarea" style="width: 100%; min-height: 120px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.9rem; resize: vertical;" placeholder="Ej: Cable HDMI de 3 metros, Batería 9V, Audífonos Bluetooth..."></textarea>
+          <textarea id="steren-textarea" class="partner-modal-textarea" placeholder="Ej: Cable HDMI de 3 metros, Batería 9V, Audífonos Bluetooth..."></textarea>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button onclick="sendSterenWhatsApp()" style="width: 100%; padding: 16px; border-radius: 12px; background: #00e65b; border: none; color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s;">
+          <button onclick="sendSterenWhatsApp()" class="partner-modal-btn-confirm">
             <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
           </button>
-          <button onclick="closeSterenModal()" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer;">
+          <button onclick="closeSterenModal()" class="partner-modal-btn-cancel">
             Regresar
           </button>
         </div>
@@ -2170,24 +2184,24 @@
   </div>
 
   <!-- Ortuño Order Modal -->
-  <div class="mobile-menu-overlay" id="ortuno-modal" style="display: flex; align-items: center; justify-content: center;">
-    <div class="mobile-menu-container animate-fade-in-up" style="padding: 2.5rem 2rem; max-width: 450px;">
+  <div class="mobile-menu-overlay partner-modal-overlay" id="ortuno-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
       <button class="menu-close" onclick="closeOrtunoModal()">&times;</button>
       <div class="menu-content">
-        <img src="assets/ortunoblanco.png" class="menu-logo" style="height: 180px; margin-bottom: 1.5rem;">
+        <img src="assets/ortunoblanco.png" alt="Ortuño Ferroeléctrica" title="Logo Ortuño" class="menu-logo partner-modal-logo" style="height: 180px;">
         <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Ferroeléctrica Ortuño</h3>
         <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">¿Buscas herramientas o material eléctrico? Nosotros lo llevamos.</p>
         
         <div style="margin-bottom: 1.5rem; text-align: left;">
           <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">Material o Herramienta</label>
-          <textarea id="ortuno-textarea" style="width: 100%; min-height: 120px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.9rem; resize: vertical;" placeholder="Ej: 5 metros de cable #12, Cinta de aislar, Un martillo, Focos..."></textarea>
+          <textarea id="ortuno-textarea" class="partner-modal-textarea" placeholder="Ej: 5 metros de cable #12, Cinta de aislar, Un martillo, Focos..."></textarea>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button onclick="sendOrtunoWhatsApp()" style="width: 100%; padding: 16px; border-radius: 12px; background: #00e65b; border: none; color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s;">
+          <button onclick="sendOrtunoWhatsApp()" class="partner-modal-btn-confirm">
             <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
           </button>
-          <button onclick="closeOrtunoModal()" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer;">
+          <button onclick="closeOrtunoModal()" class="partner-modal-btn-cancel">
             Regresar
           </button>
         </div>
@@ -2196,24 +2210,24 @@
   </div>
 
   <!-- Doña Fide Order Modal -->
-  <div class="mobile-menu-overlay" id="donafide-modal" style="display: flex; align-items: center; justify-content: center;">
-    <div class="mobile-menu-container animate-fade-in-up" style="padding: 2.5rem 2rem; max-width: 450px;">
+  <div class="mobile-menu-overlay partner-modal-overlay" id="donafide-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
       <button class="menu-close" onclick="closeDonaFideModal()">&times;</button>
       <div class="menu-content">
-        <img src="assets/donafideblanco.png" class="menu-logo" style="height: 150px; margin-bottom: 1.5rem;">
+        <img src="assets/donafideblanco.png" alt="Doña Fide" title="Logo Doña Fide" class="menu-logo partner-modal-logo" style="height: 150px;">
         <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Doña Fide</h3>
         <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">¿Se te antojó algo de Doña Fide? Nosotros vamos por ello.</p>
         
         <div style="margin-bottom: 1.5rem; text-align: left;">
           <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">Tu Pedido</label>
-          <textarea id="donafide-textarea" style="width: 100%; min-height: 120px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.9rem; resize: vertical;" placeholder="Ej: 3 tacos de pastor, 1 torta, 1 agua de horchata..."></textarea>
+          <textarea id="donafide-textarea" class="partner-modal-textarea" placeholder="Ej: 3 tacos de pastor, 1 torta, 1 agua de horchata..."></textarea>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button onclick="sendDonaFideWhatsApp()" style="width: 100%; padding: 16px; border-radius: 12px; background: #00e65b; border: none; color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s;">
+          <button onclick="sendDonaFideWhatsApp()" class="partner-modal-btn-confirm">
             <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
           </button>
-          <button onclick="closeDonaFideModal()" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer;">
+          <button onclick="closeDonaFideModal()" class="partner-modal-btn-cancel">
             Regresar
           </button>
         </div>
