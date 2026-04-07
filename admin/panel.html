@@ -1183,7 +1183,13 @@
             </div>
             <div class="flex-col">
               <span class="fs-sm fw-700">${u.name}</span>
-              <span class="fs-xs text-muted uppercase">${u.role}</span>
+              <div class="flex gap-1" style="gap: 5px;">
+                <span class="fs-xs text-muted uppercase" style="font-weight: 800;">${u.role}</span>
+                <span class="fs-xs" style="color: ${u.deviceColor || '#94a3b8'}; opacity: 0.8; display: flex; align-items: center; gap: 4px;">
+                  <i class="fas ${u.deviceIcon || 'fa-question-circle'}" style="font-size: 10px;"></i>
+                  ${(u.device || 'web').toUpperCase()}
+                </span>
+              </div>
             </div>
           </div>
           <button class="action-btn" onclick="sendBroadcast('${u.id}', '${u.name}')" title="Enviar Mensaje">

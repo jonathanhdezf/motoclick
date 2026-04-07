@@ -22,6 +22,7 @@ class MotoClickStore {
       this._sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
       this._useFallback = false;
       this._subscribeRealtime();
+      this._initPresence();
     } else {
       console.warn('[MotoClick] Supabase no disponible — usando localStorage.');
       this._useFallback = true;
@@ -234,6 +235,7 @@ class MotoClickStore {
   setCurrentUser(user) {
     this._currentUser = user;
     localStorage.setItem('motoclick_current_user', JSON.stringify(user));
+    if (user && !this._useFallback) this._initPresence();
   }
 
   getCurrentUser() { return this._currentUser; }
@@ -790,10 +792,45 @@ class MotoClickStore {
     return { success: !error, error };
   }
 
-  async deleteUser(userId) {
-    if (this._useFallback) return { success: true };
-    const { error } = await this._sb.from('users').delete().eq('id', userId);
-    return { success: !error, error };
+  // ── Presence System ──
+  _getDeviceInfo() {
+    const ua = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+      return { type: 'tablet', icon: 'fa-tablet-alt', color: '#a855f7' };
+    }
+    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+      return { type: 'mobile', icon: 'fa-mobile-alt', color: '#22c55e' };
+    }
+    return { type: 'desktop', icon: 'fa-desktop', color: '#3b82f6' };
+  }
+
+  async _initPresence() {
+    if (this._useFallback || !this._sb || !this._currentUser) return;
+    
+    try {
+      const device = this._getDeviceInfo();
+      const channel = this._sb.channel('broadcaster');
+      
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          // Sync logical state if needed
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await channel.track({
+              id: this._currentUser.id,
+              name: this._currentUser.name,
+              role: this._currentUser.role,
+              device: device.type,
+              deviceIcon: device.icon,
+              deviceColor: device.color,
+              online_at: new Date().toISOString(),
+            });
+          }
+        });
+    } catch (e) {
+      console.warn('[Store] Presence error:', e);
+    }
   }
 }
 
