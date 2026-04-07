@@ -190,6 +190,9 @@
     .alert-icon-lg { font-size: 2rem; }
     .alert-title-mini { margin-bottom: 4px; color: #fff; }
     .alert-text-mini { font-size: 0.85rem; }
+    .report-link-footer { text-align: center; margin-top: 4rem; padding-bottom: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; }
+    .report-link { color: #00e65b; text-decoration: none; font-size: 0.85rem; font-weight: 700; opacity: 0.8; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .report-link:hover { opacity: 1; transform: translateY(-2px); }
     body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
   </style>
 </head>
@@ -279,6 +282,12 @@
           <div class="history-list" id="history-list">
             <!-- Cargando... -->
           </div>
+        </div>
+
+        <div class="report-link-footer">
+          <a href="https://wa.me/522331072438?text=Hola%20MotoClick!%20Tengo%20un%20problema%20en%20el%20Panel%20de%20Repartidor%20y%20quiero%20reportarlo." target="_blank" rel="noopener noreferrer" class="report-link">
+            <i class="fas fa-bug"></i> ¿Algo no funciona bien? Repórtalo aquí
+          </a>
         </div>
       </div>
     </div>

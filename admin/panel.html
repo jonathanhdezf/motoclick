@@ -204,7 +204,9 @@
     }
 
     /* Layout Components */
-    .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border); }
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem; }
+    .report-admin-link { color: var(--accent) !important; font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; opacity: 0.8; transition: all 0.2s; }
+    .report-admin-link:hover { opacity: 1; background: rgba(34, 197, 94, 0.1); }
     .logout-link { color: #ef4444 !important; }
     .top-bar-left { display: flex; align-items: center; gap: 1rem; }
     .top-bar-right { display: flex; align-items: center; gap: 1.5rem; }
@@ -340,6 +342,9 @@
       </nav>
 
       <div class="sidebar-footer">
+        <a href="https://wa.me/522331072438?text=Hola%20MotoClick!%20Tengo%20un%20error%20en%20el%20Panel%20de%20Admin%20y%20quiero%20reportarlo." target="_blank" rel="noopener noreferrer" class="report-admin-link">
+          <i class="fas fa-bug"></i> Reportar Falla
+        </a>
         <a href="#" class="nav-link logout-link" onclick="logoutAdmin()">
           <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
         </a>

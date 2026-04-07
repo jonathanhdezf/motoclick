@@ -524,6 +524,9 @@
     .id-preview { width: 100%; height: 140px; object-fit: contain; border-radius: 12px; margin-top: 10px; display: none; background: rgba(0,0,0,0.2); }
     .selfie-preview { height: 160px; object-fit: cover; border-radius: 50% !important; width: 160px; margin: 10px auto; }
     
+    .report-link-footer { text-align: center; margin-top: 3rem; padding-bottom: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; }
+    .report-link { color: #00e65b !important; text-decoration: none; font-size: 0.85rem; font-weight: 700; opacity: 0.8; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .report-link:hover { opacity: 1; transform: translateY(-2px); text-decoration: underline !important; }
     body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
     
     /* Autocomplete dropdown style fix */
@@ -769,6 +772,12 @@
 
         <!-- Recent Orders -->
         <div class="orders-history" id="orders-history"></div>
+
+        <div class="report-link-footer">
+          <a href="https://wa.me/522331072438?text=Hola%20MotoClick!%20Tengo%20un%20problema%20en%20el%20Portal%20de%20Pedidos%20y%20quiero%20reportarlo." target="_blank" rel="noopener noreferrer" class="report-link">
+            <i class="fas fa-bug"></i> ¿Algo no funciona bien? Repórtalo aquí
+          </a>
+        </div>
       </div>
     </div>
 

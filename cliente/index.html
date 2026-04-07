@@ -55,6 +55,9 @@
     .modal-actions { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
     .btn-whatsapp { background: #25D366; border-color: #25D366; color: white; }
     .auth-logo { height: 120px; width: auto; margin: 0 auto var(--space-lg); display: block; filter: drop-shadow(0 0 12px rgba(0,230,91,0.2)); }
+    .report-link-wrapper { text-align: center; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; }
+    .report-link { color: #00e65b; text-decoration: none; font-size: 0.85rem; font-weight: 700; opacity: 0.8; transition: opacity 0.2s; }
+    .report-link:hover { opacity: 1; text-decoration: underline; }
     body { opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
   </style>
   <script>document.addEventListener("DOMContentLoaded", () => { setTimeout(() => { document.body.style.visibility='visible'; document.body.style.opacity='1'; }, 100); });</script>
@@ -133,6 +136,9 @@
               Crear Cuenta
             </button>
           </form>
+        </div>
+        <div class="report-link-wrapper">
+          <a href="https://wa.me/522331072438?text=Hola%20MotoClick!%20Tengo%20un%20problema%20en%20el%20portal%20de%20cliente%20y%20quiero%20reportarlo." target="_blank" rel="noopener noreferrer" class="report-link">¿Problemas para entrar? Reportar aquí</a>
         </div>
       </div>
     </div>

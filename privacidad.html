@@ -109,6 +109,27 @@
       color: var(--text-muted);
       margin: 0;
     }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .report-link {
+      color: #00e65b;
+      text-decoration: none;
+      font-weight: 700;
+      transition: opacity 0.2s ease;
+    }
+    .report-link:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
+    .footer-sep { margin: 0 4px; opacity: 0.3; }
   </style>
 </head>
 <body>
@@ -210,7 +231,10 @@
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
-        <p class="footer-copy">&copy; 2026 MotoClick &mdash; Todos los derechos reservados. Teziutlán, Puebla.</p>
+        <p class="footer-copy">
+          &copy; 2026 MotoClick Teziutlán. <span class="footer-sep">|</span> 
+          ¿Encontraste un problema? <a href="https://wa.me/522331072438?text=Hola%20MotoClick!%20Encontr%C3%A9%20un%20error%20en%20privacidad.html%20y%20quiero%20reportarlo." target="_blank" rel="noopener noreferrer" class="report-link">Repórtalo aquí</a>
+        </p>
       </div>
     </footer>
   </div>
