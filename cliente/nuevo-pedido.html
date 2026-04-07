@@ -1544,6 +1544,14 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       init();
+
+      store.on('notification', (payload) => {
+        const isTarget = !payload.userId || payload.userId === 'all' || payload.userId === user.id;
+        if (isTarget) {
+          showToast(`📢 ADM: ${payload.message}`, 'info', 15000); 
+          if (typeof playNotificationSound === 'function') playNotificationSound('success');
+        }
+      });
     });
 
     function handleLogout() {

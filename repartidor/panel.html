@@ -389,6 +389,14 @@
         loadOrders(true);
       });
 
+      store.on('notification', (payload) => {
+        const isTarget = !payload.userId || payload.userId === 'all' || payload.userId === user.id;
+        if (isTarget) {
+          showToast(`📢 ADM: ${payload.message}`, 'info', 15000); // 15s display
+          if (typeof playNotificationSound === 'function') playNotificationSound('success');
+        }
+      });
+
       // Poll as fallback (reduced to 10s to not overload)
       setInterval(() => {
         if (document.visibilityState === 'visible') {

@@ -44,6 +44,9 @@ class MotoClickStore {
           this._emit('location_update', { orderId: order.id, location: order.driverLocation });
         }
       })
+      .on('broadcast', { event: 'admin_notification' }, (payload) => {
+        this._emit('notification', payload.payload);
+      })
       .subscribe();
   }
 
@@ -707,12 +710,16 @@ class MotoClickStore {
       return { success: true };
     }
     // We emit via realtime, clients should listen to 'notification'
-    await this._sb.channel('admin-logs').send({
+    await this._sb.channel('orders-rt').send({
       type: 'broadcast',
-      event: 'notification',
+      event: 'admin_notification',
       payload: { userId, message }
     });
     return { success: true };
+  }
+
+  async sendGlobalNotification(message) {
+    return this.sendNotification('all', message);
   }
 
   async deleteSecurityCode(id) {

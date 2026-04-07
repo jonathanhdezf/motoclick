@@ -409,6 +409,9 @@
             <div class="panel-card">
               <div class="panel-header">
                 <h3 class="m-0">🛰️ Broadcaster</h3>
+                <button class="btn btn-sm btn-primary" onclick="sendGlobalBroadcast()" style="padding: 4px 10px; font-size: 0.75rem; background: #3b82f6; border-color: #3b82f6;">
+                  <i class="fas fa-bullhorn"></i> Comunicado Global
+                </button>
               </div>
               <div class="p-1-5">
                 <p class="fs-xs text-muted mb-1">Envía notificaciones instantáneas a todos los repartidores y clientes conectados en este momento.</p>
@@ -685,6 +688,18 @@
     }
 
     // Interceptar botón "Atrás" del móvil
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
+      
+      store.on('notification', (payload) => {
+        const isTarget = !payload.userId || payload.userId === 'all' || payload.userId === user.id;
+        if (isTarget) {
+          showToast(`📢 ADM: ${payload.message}`, 'info', 15000); 
+          if (typeof playNotificationSound === 'function') playNotificationSound('success');
+        }
+      });
+    });
+
     window.addEventListener('popstate', (e) => {
       const sidebar = document.getElementById('sidebar');
       if (window.innerWidth <= 1024 && sidebar.style.transform === 'translateX(0px)') {
@@ -1153,6 +1168,14 @@
               addLog(`📡 Unidad desconectada: ${leftPresences[0].name || 'Usuario'}`, 'warning');
             })
             .subscribe();
+
+          store.on('notification', (payload) => {
+            if (payload.userId === 'all') {
+               addLog(`📢 Comunicado Global Enviado: ${payload.message}`, 'success');
+            } else {
+               addLog(`💬 Notificación enviada a ${payload.userId.slice(0,8)}: ${payload.message}`, 'info');
+            }
+          });
         }
       } catch(e) { console.warn('Realtime channel failed to initialize', e); }
     }
@@ -1203,10 +1226,20 @@
       const msg = prompt(`Enviar notificación privada a ${name}:`);
       if (!msg) return;
       
-      const { error } = await store.sendNotification(userId, msg);
-      if (!error) {
+      const { success } = await store.sendNotification(userId, msg);
+      if (success) {
         showToast('Notificación enviada', 'success');
-        addLog(`Broadcast enviado a ${name}: ${msg}`, 'info');
+      }
+    }
+
+    async function sendGlobalBroadcast() {
+      const msg = prompt("Escribe el comunicado para TODOS los usuarios conectados:");
+      if (!msg) return;
+      
+      showToast('Enviando comunicado global...', 'info');
+      const { success } = await store.sendGlobalNotification(msg);
+      if (success) {
+        showToast('Comunicado enviado exitosamente 📢', 'success');
       }
     }
 
