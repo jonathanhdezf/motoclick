@@ -317,6 +317,54 @@
       margin-right: 8px;
     }
 
+    /* ── Trust Carousel Desktop Support ── */
+    .trust-grid {
+      display: flex !important;
+      overflow-x: auto !important;
+      scroll-snap-type: x mandatory !important;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      gap: 24px !important;
+      padding: var(--space-xl) 10px var(--space-2xl) !important;
+      scrollbar-width: none;
+    }
+    .trust-grid::-webkit-scrollbar { display: none; }
+    
+    .trust-card {
+      flex: 0 0 calc(100% - 20px) !important;
+      scroll-snap-align: center;
+      min-width: 0;
+    }
+    
+    @media (min-width: 769px) {
+      .trust-card {
+        flex: 0 0 calc(33.333% - 16px) !important;
+        scroll-snap-align: start;
+        padding: var(--space-2xl) var(--space-lg);
+      }
+    }
+
+    .trust-dots {
+      display: flex !important;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .trust-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .trust-dot.active {
+      background: #00e65b !important;
+      transform: scale(1.4);
+      box-shadow: 0 0 15px rgba(0,230,91,0.4);
+    }
+
 
 
     .footer {
@@ -1574,15 +1622,20 @@
       });
 
       function getCardWidth() {
-        return carousel.clientWidth;
+        const card = carousel.querySelector('.trust-card');
+        // card offsetWidth + gap (20px defined in CSS)
+        return card ? (card.offsetWidth + 20) : carousel.clientWidth;
       }
 
       function scrollToCard(index) {
         currentIndex = (index + CARD_COUNT) % CARD_COUNT;
-        // Only animate on mobile
-        if (window.innerWidth <= 768) {
-          carousel.scrollTo({ left: currentIndex * getCardWidth(), behavior: 'smooth' });
-        }
+        
+        // Dynamic scroll behavior for all devices
+        carousel.scrollTo({ 
+          left: currentIndex * getCardWidth(), 
+          behavior: 'smooth' 
+        });
+        
         updateDots();
       }
 
@@ -1594,8 +1647,8 @@
 
       function startTimer() {
         autoTimer = setInterval(() => {
-          if (window.innerWidth <= 768) scrollToCard(currentIndex + 1);
-        }, 3000);
+          scrollToCard(currentIndex + 1);
+        }, 3500); // Slightly slower for better readability
       }
 
       function resetTimer() {
