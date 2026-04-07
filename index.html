@@ -2291,171 +2291,109 @@
   </div>
 
   <script>
-    /* ── Partner Modals Logic ── */
+    /* ── Partner Modals Logic (Robust History-Based) ── */
 
-    function openSuperAhorroModal() {
-      const modal = document.getElementById('super-ahorro-modal');
+    const partnerModals = [
+      { id: 'super-ahorro-modal', textId: 'super-ahorro-textarea', state: 'super-ahorro' },
+      { id: 'steren-modal', textId: 'steren-textarea', state: 'steren' },
+      { id: 'ortuno-modal', textId: 'ortuno-textarea', state: 'ortuno' },
+      { id: 'donafide-modal', textId: 'donafide-textarea', state: 'donafide' },
+      { id: 'tortaspepe-modal', textId: 'tortaspepe-textarea', state: 'tortaspepe' }
+    ];
+
+    function openPartnerModal(id, state) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
       modal.classList.add('active');
       modal.style.opacity = '1';
       modal.style.pointerEvents = 'all';
-      window.history.pushState({ modal: 'super-ahorro' }, "");
-    }
-    
-    function closeSuperAhorroModal(manual = true) {
-      if (manual) window.history.back();
-      else {
-        const modal = document.getElementById('super-ahorro-modal');
-        modal.classList.remove('active');
-        modal.style.opacity = '0';
-        modal.style.pointerEvents = 'none';
-        document.getElementById('super-ahorro-textarea').value = '';
-      }
+      window.history.pushState({ modal: state }, "");
     }
 
+    function closeAllPartnerModalsVisual() {
+      partnerModals.forEach(m => {
+        const modal = document.getElementById(m.id);
+        if (modal) {
+          modal.classList.remove('active');
+          modal.style.opacity = '0';
+          modal.style.pointerEvents = 'none';
+        }
+        const text = document.getElementById(m.textId);
+        if (text) text.value = '';
+      });
+    }
+
+    // Listener global para cerrar modales con botón "Atrás" del móvil o navegador
+    window.addEventListener('popstate', (event) => {
+      closeAllPartnerModalsVisual();
+    });
+
+    // Helper para botones manuales (X o Regresar)
+    function handleManualModalClose() {
+      window.history.back();
+    }
+
+    /* Individual Logic for each alliance */
+    function openSuperAhorroModal() { openPartnerModal('super-ahorro-modal', 'super-ahorro'); }
+    function closeSuperAhorroModal() { handleManualModalClose(); }
     function sendSuperAhorroWhatsApp() {
       const text = document.getElementById('super-ahorro-textarea').value.trim();
-      if (!text) {
-        alert("Por favor escribe tu lista de productos 🙏");
-        return;
-      }
+      if (!text) { alert("Por favor escribe tu lista de productos 🙏"); return; }
       const phone = "522331072438";
       const message = `👋 Hola MotoClick! Quiero hacer un mandado en Súper Ahorro:\n\n📝 LISTA:\n${text}\n\n📍 Por favor, envíame el presupuesto.`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
-      closeSuperAhorroModal();
+      handleManualModalClose();
     }
 
-    // Steren Mexico Logic
-    function openSterenModal() {
-      const modal = document.getElementById('steren-modal');
-      modal.classList.add('active');
-      modal.style.opacity = '1';
-      modal.style.pointerEvents = 'all';
-      window.history.pushState({ modal: 'steren' }, "");
-    }
-
-    function closeSterenModal(manual = true) {
-      if (manual) window.history.back();
-      else {
-        const modal = document.getElementById('steren-modal');
-        modal.classList.remove('active');
-        modal.style.opacity = '0';
-        modal.style.pointerEvents = 'none';
-        document.getElementById('steren-textarea').value = '';
-      }
-    }
-
+    function openSterenModal() { openPartnerModal('steren-modal', 'steren'); }
+    function closeSterenModal() { handleManualModalClose(); }
     function sendSterenWhatsApp() {
       const text = document.getElementById('steren-textarea').value.trim();
-      if (!text) {
-        alert("Por favor escribe los artículos que necesitas de Steren 🎧🔌");
-        return;
-      }
+      if (!text) { alert("Por favor escribe los artículos que necesitas de Steren 🎧🔌"); return; }
       const phone = "522331072438";
       const message = `⚡ Hola MotoClick! Necesito algunos artículos de Steren México:\n\n🔌 PRODUCTOS:\n${text}\n\n📦 ¿Me pueden apoyar con el servicio?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
-      closeSterenModal();
+      handleManualModalClose();
     }
 
-    // Ortuño Ferroelectrica Logic
-    function openOrtunoModal() {
-      const modal = document.getElementById('ortuno-modal');
-      modal.classList.add('active');
-      modal.style.opacity = '1';
-      modal.style.pointerEvents = 'all';
-      window.history.pushState({ modal: 'ortuno' }, "");
-    }
-
-    function closeOrtunoModal(manual = true) {
-      if (manual) window.history.back();
-      else {
-        const modal = document.getElementById('ortuno-modal');
-        modal.classList.remove('active');
-        modal.style.opacity = '0';
-        modal.style.pointerEvents = 'none';
-        document.getElementById('ortuno-textarea').value = '';
-      }
-    }
-
+    function openOrtunoModal() { openPartnerModal('ortuno-modal', 'ortuno'); }
+    function closeOrtunoModal() { handleManualModalClose(); }
     function sendOrtunoWhatsApp() {
       const text = document.getElementById('ortuno-textarea').value.trim();
-      if (!text) {
-        alert("Por favor dinos qué necesitas de Ortuño 🙏🔧");
-        return;
-      }
+      if (!text) { alert("Por favor dinos qué necesitas de Ortuño 🙏🔧"); return; }
       const phone = "522331072438";
       const message = `⚒️ Hola MotoClick! Necesito apoyo con material de Ortuño Ferroeléctrica:\n\n🛠️ PRODUCTOS:\n${text}\n\n📍 ¿Me envían el presupuesto?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
-      closeOrtunoModal();
+      handleManualModalClose();
     }
 
-    // Doña Fide Logic
-    function openDonaFideModal() {
-      const modal = document.getElementById('donafide-modal');
-      modal.classList.add('active');
-      modal.style.opacity = '1';
-      modal.style.pointerEvents = 'all';
-      window.history.pushState({ modal: 'donafide' }, "");
-    }
-
-    function closeDonaFideModal(manual = true) {
-      if (manual) window.history.back();
-      else {
-        const modal = document.getElementById('donafide-modal');
-        modal.classList.remove('active');
-        modal.style.opacity = '0';
-        modal.style.pointerEvents = 'none';
-        document.getElementById('donafide-textarea').value = '';
-      }
-    }
-
+    function openDonaFideModal() { openPartnerModal('donafide-modal', 'donafide'); }
+    function closeDonaFideModal() { handleManualModalClose(); }
     function sendDonaFideWhatsApp() {
       const text = document.getElementById('donafide-textarea').value.trim();
-      if (!text) {
-        alert("Por favor dinos qué se te antojó de Doña Fide 🌮😋");
-        return;
-      }
+      if (!text) { alert("Por favor dinos qué se te antojó de Doña Fide  taco🌮😋"); return; }
       const phone = "522331072438";
       const message = `🌮 Hola MotoClick! Se me antojó algo de Doña Fide:\n\n📦 MI ORDEN:\n${text}\n\n🛵 ¿Me lo traen calientito?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
-      closeDonaFideModal();
+      handleManualModalClose();
     }
 
-    // Tortas Tío Pepe Logic
-    function openTortasPepeModal() {
-      const modal = document.getElementById('tortaspepe-modal');
-      modal.classList.add('active');
-      modal.style.opacity = '1';
-      modal.style.pointerEvents = 'all';
-      window.history.pushState({ modal: 'tortaspepe' }, "");
-    }
-
-    function closeTortasPepeModal(manual = true) {
-      if (manual) window.history.back();
-      else {
-        const modal = document.getElementById('tortaspepe-modal');
-        modal.classList.remove('active');
-        modal.style.opacity = '0';
-        modal.style.pointerEvents = 'none';
-        document.getElementById('tortaspepe-textarea').value = '';
-      }
-    }
-
+    function openTortasPepeModal() { openPartnerModal('tortaspepe-modal', 'tortaspepe'); }
+    function closeTortasPepeModal() { handleManualModalClose(); }
     function sendTortasPepeWhatsApp() {
       const text = document.getElementById('tortaspepe-textarea').value.trim();
-      if (!text) {
-        alert("¡No olvides escribir lo que vas a pedir de Tío Pepe! 🥪🤤");
-        return;
-      }
+      if (!text) { alert("¡No olvides escribir lo que vas a pedir de Tío Pepe! 🥪🤤"); return; }
       const phone = "522331072438";
       const message = `🥪 Hola MotoClick! Quiero pedir unas Tortas Tío Pepe:\n\n🔥 MI PEDIDO:\n${text}\n\n🛵 ¿Pueden pasar por ellas?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
-      closeTortasPepeModal();
+      handleManualModalClose();
     }
+  </script>
   </script>
 </body>
 </html>
