@@ -1458,10 +1458,10 @@
           <span class="alliance-name">Doña Fide</span>
           <span class="alliance-type">Antojitos Mexicanos</span>
         </div>
-        <div class="alliance-item sa-stagger sa-d2">
-          <i class="fas fa-hamburger alliance-icon"></i>
-          <span class="alliance-name">Burger Station</span>
-          <span class="alliance-type">Fast Food Premium</span>
+        <div class="alliance-item sa-stagger sa-d2 alliance-item-partner" onclick="openMatusTacosModal()">
+          <img src="assets/matustacosblanco.png" alt="Matu's Tacos" title="Hacer pedido en Matu's Tacos" class="alliance-logo alliance-logo-img" style="height: 150px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
+          <span class="alliance-name">Matu's Tacos</span>
+          <span class="alliance-type">Taquería</span>
         </div>
       </div>
     </section>
@@ -2290,6 +2290,32 @@
     </div>
   </div>
 
+  <!-- Matu's Tacos Order Modal -->
+  <div class="mobile-menu-overlay partner-modal-overlay" id="matustacos-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
+      <button class="menu-close" onclick="closeMatusTacosModal()">&times;</button>
+      <div class="menu-content">
+        <img src="assets/matustacosblanco.png" alt="Matu's Tacos" title="Logo Matu's Tacos" class="menu-logo partner-modal-logo" style="height: 150px;">
+        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Matu's Tacos</h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Taquería — Los mejores tacos al pastor y carne asada.</p>
+        
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">¿Qué vas a pedir?</label>
+          <textarea id="matustacos-textarea" class="partner-modal-textarea" placeholder="Ej: 5 Tacos al pastor, Gringa de asada, Agua de Horchata..."></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onclick="sendMatusTacosWhatsApp()" class="partner-modal-btn-confirm">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+          </button>
+          <button onclick="closeMatusTacosModal()" class="partner-modal-btn-cancel">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* ── Partner Modals Logic (Robust History-Based) ── */
 
@@ -2298,7 +2324,8 @@
       { id: 'steren-modal', textId: 'steren-textarea', state: 'steren' },
       { id: 'ortuno-modal', textId: 'ortuno-textarea', state: 'ortuno' },
       { id: 'donafide-modal', textId: 'donafide-textarea', state: 'donafide' },
-      { id: 'tortaspepe-modal', textId: 'tortaspepe-textarea', state: 'tortaspepe' }
+      { id: 'tortaspepe-modal', textId: 'tortaspepe-textarea', state: 'tortaspepe' },
+      { id: 'matustacos-modal', textId: 'matustacos-textarea', state: 'matustacos' }
     ];
 
     function openPartnerModal(id, state) {
@@ -2386,9 +2413,21 @@
     function closeTortasPepeModal() { handleManualModalClose(); }
     function sendTortasPepeWhatsApp() {
       const text = document.getElementById('tortaspepe-textarea').value.trim();
-      if (!text) { alert("¡No olvides escribir lo que vas a pedir de Tío Pepe! 🥪🤤"); return; }
+      if (!text) { alert("¡No olvides escribir lo que vas a pedir de Tío Pepe!  Sandwich🤤"); return; }
       const phone = "522331072438";
       const message = `🥪 Hola MotoClick! Quiero pedir unas Tortas Tío Pepe:\n\n🔥 MI PEDIDO:\n${text}\n\n🛵 ¿Pueden pasar por ellas?`;
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      handleManualModalClose();
+    }
+
+    function openMatusTacosModal() { openPartnerModal('matustacos-modal', 'matustacos'); }
+    function closeMatusTacosModal() { handleManualModalClose(); }
+    function sendMatusTacosWhatsApp() {
+      const text = document.getElementById('matustacos-textarea').value.trim();
+      if (!text) { alert("Dinos qué se te antojó de Matu's Tacos 🌮🔥"); return; }
+      const phone = "522331072438";
+      const message = `🌮 Hola MotoClick! Se me antojaron unos tacos de Matu's Tacos:\n\n🔥 ORDEN:\n${text}\n\n🛵 ¿Me los traen pronto?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       handleManualModalClose();
