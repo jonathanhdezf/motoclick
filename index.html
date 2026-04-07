@@ -1750,26 +1750,55 @@
     const menuClose = document.getElementById('menuClose');
     const menuModal = document.getElementById('menuModal');
 
+    const closeAllActiveModals = () => {
+      // Main menu
+      if (menuModal && menuModal.classList.contains('active')) {
+        menuModal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      // Partner modals
+      ['super-ahorro-modal', 'steren-modal', 'ortuno-modal', 'donafide-modal'].forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal && modal.classList.contains('active')) {
+          modal.classList.remove('active');
+          modal.style.opacity = '0';
+          modal.style.pointerEvents = 'none';
+          const area = modal.querySelector('textarea');
+          if (area) area.value = '';
+        }
+      });
+      // Promo popup
+      const promoPopup = document.getElementById('promoPopup');
+      if (promoPopup && promoPopup.classList.contains('active')) {
+        promoPopup.classList.remove('active');
+      }
+    };
+
+    // Generic Back Button Handler for Modals
+    window.addEventListener('popstate', (event) => {
+      closeAllActiveModals();
+    });
+
     if (menuToggle && menuModal && menuClose) {
       menuToggle.addEventListener('click', () => {
         menuModal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scroll
+        document.body.style.overflow = 'hidden'; 
+        window.history.pushState({ modal: 'menu' }, "");
       });
 
-      const closeMenu = () => {
-        menuModal.classList.remove('active');
-        document.body.style.overflow = '';
-      };
-
-      menuClose.addEventListener('click', closeMenu);
+      menuClose.addEventListener('click', () => window.history.back());
       
-      // Close on clicking outside
       menuModal.addEventListener('click', (e) => {
-        if (e.target === menuModal) closeMenu();
+        if (e.target === menuModal) window.history.back();
       });
 
       menuModal.querySelectorAll('.menu-card').forEach(link => {
-        link.addEventListener('click', closeMenu);
+        link.addEventListener('click', () => {
+          // If navigating to /cliente/ or /repartidor/, we should let the browser handle it
+          // but first clean the active state so back works correctly next time
+          menuModal.classList.remove('active');
+          document.body.style.overflow = '';
+        });
       });
     }
 
@@ -2236,19 +2265,25 @@
   </div>
 
   <script>
+    /* ── Partner Modals Logic ── */
+
     function openSuperAhorroModal() {
       const modal = document.getElementById('super-ahorro-modal');
       modal.classList.add('active');
       modal.style.opacity = '1';
       modal.style.pointerEvents = 'all';
+      window.history.pushState({ modal: 'super-ahorro' }, "");
     }
     
-    function closeSuperAhorroModal() {
-      const modal = document.getElementById('super-ahorro-modal');
-      modal.classList.remove('active');
-      modal.style.opacity = '0';
-      modal.style.pointerEvents = 'none';
-      document.getElementById('super-ahorro-textarea').value = '';
+    function closeSuperAhorroModal(manual = true) {
+      if (manual) window.history.back();
+      else {
+        const modal = document.getElementById('super-ahorro-modal');
+        modal.classList.remove('active');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        document.getElementById('super-ahorro-textarea').value = '';
+      }
     }
 
     function sendSuperAhorroWhatsApp() {
@@ -2270,14 +2305,18 @@
       modal.classList.add('active');
       modal.style.opacity = '1';
       modal.style.pointerEvents = 'all';
+      window.history.pushState({ modal: 'steren' }, "");
     }
 
-    function closeSterenModal() {
-      const modal = document.getElementById('steren-modal');
-      modal.classList.remove('active');
-      modal.style.opacity = '0';
-      modal.style.pointerEvents = 'none';
-      document.getElementById('steren-textarea').value = '';
+    function closeSterenModal(manual = true) {
+      if (manual) window.history.back();
+      else {
+        const modal = document.getElementById('steren-modal');
+        modal.classList.remove('active');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        document.getElementById('steren-textarea').value = '';
+      }
     }
 
     function sendSterenWhatsApp() {
@@ -2299,14 +2338,18 @@
       modal.classList.add('active');
       modal.style.opacity = '1';
       modal.style.pointerEvents = 'all';
+      window.history.pushState({ modal: 'ortuno' }, "");
     }
 
-    function closeOrtunoModal() {
-      const modal = document.getElementById('ortuno-modal');
-      modal.classList.remove('active');
-      modal.style.opacity = '0';
-      modal.style.pointerEvents = 'none';
-      document.getElementById('ortuno-textarea').value = '';
+    function closeOrtunoModal(manual = true) {
+      if (manual) window.history.back();
+      else {
+        const modal = document.getElementById('ortuno-modal');
+        modal.classList.remove('active');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        document.getElementById('ortuno-textarea').value = '';
+      }
     }
 
     function sendOrtunoWhatsApp() {
@@ -2328,24 +2371,28 @@
       modal.classList.add('active');
       modal.style.opacity = '1';
       modal.style.pointerEvents = 'all';
+      window.history.pushState({ modal: 'donafide' }, "");
     }
 
-    function closeDonaFideModal() {
-      const modal = document.getElementById('donafide-modal');
-      modal.classList.remove('active');
-      modal.style.opacity = '0';
-      modal.style.pointerEvents = 'none';
-      document.getElementById('donafide-textarea').value = '';
+    function closeDonaFideModal(manual = true) {
+      if (manual) window.history.back();
+      else {
+        const modal = document.getElementById('donafide-modal');
+        modal.classList.remove('active');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        document.getElementById('donafide-textarea').value = '';
+      }
     }
 
     function sendDonaFideWhatsApp() {
       const text = document.getElementById('donafide-textarea').value.trim();
       if (!text) {
-        alert("Por favor escribe tu antojo de Doña Fide 🌮🥤");
+        alert("Por favor dinos qué se te antojó de Doña Fide 🌮😋");
         return;
       }
       const phone = "522331072438";
-      const message = `🌮 Hola MotoClick! Quiero pedir unos antojitos de Doña Fide:\n\n📝 PEDIDO:\n${text}\n\n🚗 ¿Pueden pasar por ellos?`;
+      const message = `🌮 Hola MotoClick! Se me antojó algo de Doña Fide:\n\n📦 MI ORDEN:\n${text}\n\n🛵 ¿Me lo traen calientito?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       closeDonaFideModal();
