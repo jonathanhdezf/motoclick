@@ -444,9 +444,9 @@
 
         <!-- Verifications Tab -->
         <section id="verifications-tab" class="dashboard-tab hidden">
-          <div class="panel-card">
+          <div class="panel-card mb-2">
             <div class="panel-header">
-              <h3 class="m-0">🛡️ Auditoría de Identidad</h3>
+              <h3 class="m-0">🛡️ Auditoría de Identidad (Pendientes)</h3>
             </div>
             <div class="table-responsive">
               <table class="premium-table">
@@ -459,6 +459,26 @@
                   </tr>
                 </thead>
                 <tbody id="verifications-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="m-0">✅ Usuarios Verificados</h3>
+              <div class="badge badge-green" id="verified-count">0 Cuentas</div>
+            </div>
+            <div class="table-responsive">
+              <table class="premium-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Nombre Real</th>
+                    <th>ID</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="verified-users-tbody"></tbody>
               </table>
             </div>
           </div>
@@ -689,6 +709,10 @@
       };
       document.getElementById('page-title').innerText = titles[tabId];
       if (tabId === 'logs') loadGlobalAuditLogs();
+      if (tabId === 'verifications') {
+        loadVerifications();
+        loadVerifiedUsers();
+      }
       if (window.innerWidth <= 1024) toggleSidebar();
     }
 
@@ -759,7 +783,10 @@
         return;
       }
 
-      tbody.innerHTML = data.map(u => `
+      tbody.innerHTML = data.map(u => {
+        const safeName = (u.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeFullName = (u.full_name || u.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `
         <tr>
           <td>
             <div class="u-fw-600">${u.name}</div>
@@ -782,7 +809,7 @@
           </td>
           <td>
             <div class="u-flex-gap-2">
-              <button class="action-btn" onclick="printIdentityReport('${u.id}', '${u.full_name || u.name}', '${u.full_name || 'N/A'}', '${u.id_photo_url}', '${u.profile_photo_url}')" title="Imprimir Reporte PDF" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+              <button class="action-btn" onclick="printIdentityReport('${u.id}', '${safeName}', '${safeFullName}', '${u.id_photo_url}', '${u.profile_photo_url}')" title="Imprimir Reporte PDF" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">
                 📄
               </button>
               <button class="action-btn active" onclick="approveIdentity('${u.id}')" title="Aprobar Identidad">
@@ -794,7 +821,83 @@
             </div>
           </td>
         </tr>
-      `).join('');
+      `}).join('');
+    }
+
+    async function loadVerifiedUsers() {
+      const tbody = document.getElementById('verified-users-tbody');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Consultando padrón de confianza...</td></tr>';
+      
+      const users = await store.getAllUsers();
+      const verified = users.filter(u => u.verification_status === 'verified' || u.is_verified === true);
+      
+      document.getElementById('verified-count').innerText = `${verified.length} Cuentas`;
+
+      if (verified.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted fs-sm">Aún no hay usuarios verificados oficialmente.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = verified.map(u => {
+        const safeName = (u.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeFullName = (u.full_name || u.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `
+        <tr>
+          <td>
+            <div class="u-fw-600">${u.name}</div>
+            <div class="u-fs-sm text-muted">${u.phone} <span class="badge ${u.role === 'client' ? 'badge-client' : 'badge-driver'} fs-xs">${u.role}</span></div>
+          </td>
+          <td class="u-fw-500 u-c-green">${u.full_name || 'N/A'}</td>
+          <td>
+            <div class="u-flex-gap-8">
+               <a href="${u.id_photo_url || '#'}" target="_blank" rel="noopener" title="Documento ID">
+                  <div class="u-id-box">
+                      <img src="${u.id_photo_url || '../assets/default-id.png'}" class="u-img-cover" onerror="this.src='../assets/default-id.png'">
+                  </div>
+              </a>
+            </div>
+          </td>
+          <td>
+            <div class="u-flex-gap-2">
+              <button class="action-btn" onclick="printIdentityReport('${u.id}', '${safeName}', '${safeFullName}', '${u.id_photo_url}', '${u.profile_photo_url}')" title="📜 PDF Report" style="background: rgba(34, 197, 94, 0.2); color: #22c55e;">
+                📄
+              </button>
+              <button class="action-btn" onclick="openEditModal('${u.id}', '${safeName}', '${u.phone}', '${u.role}', '${u.pin || ''}')" title="✏️ Modificar">
+                ✏️
+              </button>
+              <button class="action-btn btn-warn" onclick="unverifyIdentity('${u.id}', '${safeName}')" title="🚫 Quitar Verificación">
+                🚫
+              </button>
+              <button class="action-btn btn-warn" onclick="deleteUserPermanently('${u.id}', '${safeName}')" title="🗑️ Eliminar">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      `}).join('');
+    }
+
+    async function unverifyIdentity(userId, name) {
+       if (!confirm(`¿Deseas quitar el estatus de VERIFICADO a ${name}? Dejará de tener los beneficios de confianza.`)) return;
+       showToast('Removiendo verificación...', 'info');
+       const { error } = await store.updateUser(userId, { is_verified: false, verification_status: 'rejected' });
+       if (!error) {
+          showToast('Estatus actualizado', 'success');
+          loadVerifiedUsers();
+          loadStats();
+       }
+    }
+
+    async function deleteUserPermanently(userId, name) {
+       if (!confirm(`¿ELIMINAR DEFINITIVAMENTE A ${name}? Esta acción no se puede deshacer.`)) return;
+       showToast('Borrando...', 'warn');
+       const { error } = await store.deleteUser(userId);
+       if (!error) {
+          showToast('Usuario eliminado', 'success');
+          loadVerifiedUsers();
+          loadUsers();
+          loadStats();
+       }
     }
 
     async function loadSecurityCodes() {
@@ -1121,16 +1224,25 @@
     }
 
     function printIdentityReport(userId, name, fullName, idPhoto, profilePhoto) {
-      document.getElementById('cert-name').innerText = fullName || name;
-      document.getElementById('cert-id').innerText = userId;
+      if (!fullName || fullName === 'N/A') fullName = name;
+      
+      document.getElementById('cert-name').innerText = fullName;
+      document.getElementById('cert-id').innerText = userId.slice(0, 18).toUpperCase();
       document.getElementById('cert-date').innerText = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
       document.getElementById('cert-photo').src = profilePhoto || '../assets/default-avatar.png';
-      document.getElementById('cert-id-img').src = idPhoto || '';
+      document.getElementById('cert-id-img').src = idPhoto || '../assets/default-id.png';
       
+      // Asegurarnos de que el reporte sea visible para impresión
       const cert = document.getElementById('printable-certificate');
       cert.style.display = 'flex';
-      window.print();
-      cert.style.display = 'none';
+      
+      showToast('Generando Documento de Auditoría...', 'info');
+      
+      // Pequeño delay para que las imágenes carguen antes de imprimir
+      setTimeout(() => {
+        window.print();
+        cert.style.display = 'none';
+      }, 500);
     }
 
     function escapeHTML(str) {
