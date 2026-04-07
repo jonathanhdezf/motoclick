@@ -1436,12 +1436,12 @@
           <span class="alliance-name">Tortas Tío Pepe</span>
           <span class="alliance-type">Anatómicos y Tortas</span>
         </div>
-        <div class="alliance-item sa-stagger sa-d2">
+        <div class="alliance-item sa-stagger sa-d2 alliance-item-partner" onclick="openFarmaciasAhorroModal()">
           <div class="alliance-logo-box">
-            <i class="fas fa-pills alliance-icon"></i>
+            <img src="assets/farmaciasdelahorroblanco.png" alt="Farmacias del Ahorro" title="Hacer pedido en Farmacias del Ahorro" class="alliance-logo alliance-logo-img" style="height: 140px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
           </div>
-          <span class="alliance-name">Farmacia Juquilita</span>
-          <span class="alliance-type">Salud y Medicinas</span>
+          <span class="alliance-name">Farmacias del Ahorro</span>
+          <span class="alliance-type">Salud y Medicamentos</span>
         </div>
         <div class="alliance-item sa-stagger sa-d3 alliance-item-partner" onclick="openSuperAhorroModal()">
           <div class="alliance-logo-box">
@@ -2364,6 +2364,32 @@
     </div>
   </div>
 
+  <!-- Farmacias del Ahorro Order Modal -->
+  <div class="mobile-menu-overlay partner-modal-overlay" id="farmaciasahorro-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
+      <button class="menu-close" onclick="closeFarmaciasAhorroModal()">&times;</button>
+      <div class="menu-content">
+        <img src="assets/farmaciasdelahorroblanco.png" alt="Farmacias del Ahorro" title="Logo Farmacias del Ahorro" class="menu-logo partner-modal-logo" style="height: 130px;">
+        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Farmacias del Ahorro</h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Salud, bienestar y medicamentos a domicilio.</p>
+        
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">¿Qué necesitas de la farmacia?</label>
+          <textarea id="farmaciasahorro-textarea" class="partner-modal-textarea" placeholder="Ej: Paracetamol 500mg, Suero, Pañales, Jarabe..."></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onclick="sendFarmaciasAhorroWhatsApp()" class="partner-modal-btn-confirm">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+          </button>
+          <button onclick="closeFarmaciasAhorroModal()" class="partner-modal-btn-cancel">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* ── Partner Modals Logic (Robust History-Based) ── */
 
@@ -2374,7 +2400,8 @@
       { id: 'donafide-modal', textId: 'donafide-textarea', state: 'donafide' },
       { id: 'tortaspepe-modal', textId: 'tortaspepe-textarea', state: 'tortaspepe' },
       { id: 'matustacos-modal', textId: 'matustacos-textarea', state: 'matustacos' },
-      { id: 'lafogata-modal', textId: 'lafogata-textarea', state: 'lafogata' }
+      { id: 'lafogata-modal', textId: 'lafogata-textarea', state: 'lafogata' },
+      { id: 'farmaciasahorro-modal', textId: 'farmaciasahorro-textarea', state: 'farmaciasahorro' }
     ];
 
     function openPartnerModal(id, state) {
@@ -2489,6 +2516,18 @@
       if (!text) { alert("¡No olvides decirnos qué quieres de La Fogata! 🔥🍔🌮"); return; }
       const phone = "522331072438";
       const message = `🔥 Hola MotoClick! Quiero pedir de Taquería La Fogata:\n\n📝 MI PEDIDO:\n${text}\n\n📍 ¿Me apoyan con el mandado?`;
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      handleManualModalClose();
+    }
+
+    function openFarmaciasAhorroModal() { openPartnerModal('farmaciasahorro-modal', 'farmaciasahorro'); }
+    function closeFarmaciasAhorroModal() { handleManualModalClose(); }
+    function sendFarmaciasAhorroWhatsApp() {
+      const text = document.getElementById('farmaciasahorro-textarea').value.trim();
+      if (!text) { alert("Dinos qué medicina o producto de farmacia necesitas 💊🧼"); return; }
+      const phone = "522331072438";
+      const message = `💊 Hola MotoClick! Necesito un pedido de Farmacias del Ahorro:\n\n🚑 MEDICAMENTOS/PRODUCTOS:\n${text}\n\n🛵 ¿Me los traen a domicilio?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       handleManualModalClose();
