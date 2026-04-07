@@ -1124,6 +1124,19 @@
       try { await loadUsers(); } catch(e) { console.error('Failed to load users', e); }
       try { await loadVerifications(); } catch(e) { console.error('Failed to load verifications', e); }
       try { await loadSecurityCodes(); } catch(e) { console.error('Failed to load security codes', e); }
+      try { await loadGlobalAuditLogs(); } catch(e) { console.error('Failed to load audit logs', e); }
+      
+      // Auto-refresh stats periodically
+      setInterval(updateStats, 15000); // 15s refresh
+      
+      // Listen to broader database changes to refresh audit logs in real-time
+      if (store._sb) {
+        store._sb.channel('db-audit-sync')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => loadGlobalAuditLogs())
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => { loadGlobalAuditLogs(); loadUsers(); loadVerifications(); })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_verification_codes' }, () => { loadGlobalAuditLogs(); loadSecurityCodes(); })
+          .subscribe();
+      }
       
       try {
         if (store._sb) {
@@ -1349,23 +1362,24 @@
       if (!container) return;
 
       try {
-        // Consultamos órdenes y códigos para crear un feed unificado de forma resiliente
         let orders = [];
         let codes = [];
+        let users = [];
         
-        try {
-          const { data } = await store._sb.from('orders').select('*').order('created_at', { ascending: false }).limit(50);
-          orders = data || [];
-        } catch(e) { console.warn('Audit: Error loading orders', e); }
+        const [ordersRes, codesRes, usersRes] = await Promise.all([
+          store._sb.from('orders').select('*').order('created_at', { ascending: false }).limit(40),
+          store.getAllCashCodes(),
+          store._sb.from('users').select('*').order('created_at', { ascending: false }).limit(40)
+        ]);
 
-        try {
-          codes = await store.getAllCashCodes() || [];
-        } catch(e) { console.warn('Audit: Error loading codes', e); }
+        orders = ordersRes.data || [];
+        codes = codesRes || [];
+        users = usersRes.data || [];
 
         const events = [];
         
         // Mapear órdenes
-        (orders || []).forEach(o => {
+        orders.forEach(o => {
           events.push({
             time: new Date(o.created_at),
             type: o.status === 'entregado' ? 'success' : o.status === 'cancelado' ? 'warning' : 'info',
@@ -1375,7 +1389,7 @@
         });
 
         // Mapear códigos
-        (codes || []).forEach(c => {
+        codes.forEach(c => {
           events.push({
             time: new Date(c.created_at),
             type: 'info',
@@ -1392,9 +1406,19 @@
           }
         });
 
+        // Mapear usuarios (Nuevos registros y cambios de estado)
+        users.forEach(u => {
+          events.push({
+            time: new Date(u.created_at),
+            type: u.role === 'eliminado' ? 'warning' : 'success',
+            msg: u.role === 'eliminado' ? `🚫 Cuenta suspendida: ${u.name}` : `👤 Nuevo Registro: ${u.name} (${u.role.toUpperCase()})`,
+            meta: `ID: ${u.id.slice(0,8)}`
+          });
+        });
+
         // Ordenar por tiempo descendente
         events.sort((a, b) => b.time - a.time);
-
+        
         document.getElementById('log-count').innerText = `${events.length} Eventos`;
 
         if (events.length === 0) {
