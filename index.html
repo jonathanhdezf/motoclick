@@ -1439,10 +1439,10 @@
           <span class="alliance-name">Steren México</span>
           <span class="alliance-type">Soluciones en Electrónica</span>
         </div>
-        <div class="alliance-item sa-stagger sa-d1">
-          <i class="fas fa-shoe-prints alliance-icon"></i>
-          <span class="alliance-name">Boutique Glam</span>
-          <span class="alliance-type">Moda y Calzado</span>
+        <div class="alliance-item sa-stagger sa-d1" onclick="openDonaFideModal()" style="cursor: pointer;">
+          <img src="assets/donafideblanco.png" alt="Doña Fide" class="alliance-logo" style="height: 150px; width: auto; margin-bottom: 1rem; object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
+          <span class="alliance-name">Doña Fide</span>
+          <span class="alliance-type">Antojitos Mexicanos</span>
         </div>
         <div class="alliance-item sa-stagger sa-d2">
           <i class="fas fa-hamburger alliance-icon"></i>
@@ -2195,6 +2195,32 @@
     </div>
   </div>
 
+  <!-- Doña Fide Order Modal -->
+  <div class="mobile-menu-overlay" id="donafide-modal" style="display: flex; align-items: center; justify-content: center;">
+    <div class="mobile-menu-container animate-fade-in-up" style="padding: 2.5rem 2rem; max-width: 450px;">
+      <button class="menu-close" onclick="closeDonaFideModal()">&times;</button>
+      <div class="menu-content">
+        <img src="assets/donafideblanco.png" class="menu-logo" style="height: 150px; margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Doña Fide</h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">¿Se te antojó algo de Doña Fide? Nosotros vamos por ello.</p>
+        
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">Tu Pedido</label>
+          <textarea id="donafide-textarea" style="width: 100%; min-height: 120px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 12px; font-family: inherit; font-size: 0.9rem; resize: vertical;" placeholder="Ej: 3 tacos de pastor, 1 torta, 1 agua de horchata..."></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onclick="sendDonaFideWhatsApp()" style="width: 100%; padding: 16px; border-radius: 12px; background: #00e65b; border: none; color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s;">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+          </button>
+          <button onclick="closeDonaFideModal()" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer;">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     function openSuperAhorroModal() {
       const modal = document.getElementById('super-ahorro-modal');
@@ -2280,6 +2306,35 @@
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       closeOrtunoModal();
+    }
+
+    // Doña Fide Logic
+    function openDonaFideModal() {
+      const modal = document.getElementById('donafide-modal');
+      modal.classList.add('active');
+      modal.style.opacity = '1';
+      modal.style.pointerEvents = 'all';
+    }
+
+    function closeDonaFideModal() {
+      const modal = document.getElementById('donafide-modal');
+      modal.classList.remove('active');
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
+      document.getElementById('donafide-textarea').value = '';
+    }
+
+    function sendDonaFideWhatsApp() {
+      const text = document.getElementById('donafide-textarea').value.trim();
+      if (!text) {
+        alert("Por favor escribe tu antojo de Doña Fide 🌮🥤");
+        return;
+      }
+      const phone = "522331072438";
+      const message = `🌮 Hola MotoClick! Quiero pedir unos antojitos de Doña Fide:\n\n📝 PEDIDO:\n${text}\n\n🚗 ¿Pueden pasar por ellos?`;
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      closeDonaFideModal();
     }
   </script>
 </body>
