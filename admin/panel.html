@@ -630,21 +630,35 @@
     </div>
   </div>
 
-  <!-- Logout Confirmation Modal -->
-  <div id="logout-modal" class="modal-overlay hidden">
-    <div class="modal-content u-modal-config animate-fade-in modal-logout-custom">
-      <div class="u-logout-icon-box mb-2">
-         <i class="fas fa-sign-out-alt fa-2x"></i>
-      </div>
-      <h3 class="mb-1">¿Cerrar Sesión?</h3>
-      <p class="fs-sm text-muted mb-2">Estás a punto de abandonar el panel de administración. Deberás ingresar tus credenciales nuevamente para acceder.</p>
-      
-      <div class="modal-actions gap-sm-12">
-        <button class="action-btn u-flex-1 u-rounded-12" onclick="closeLogoutModal()">Cancelar</button>
-        <button class="action-btn active btn-warn u-flex-1 u-rounded-12" onclick="confirmLogout()">Abandonar</button>
+    <!-- Logout Modal -->
+    <div class="modal-overlay hidden" id="logout-modal">
+      <div class="modal-content animate-fade-in-up" style="max-width: 400px; text-align: center;">
+        <div class="u-logout-icon-box mb-lg">
+          <i class="fas fa-sign-out-alt fa-2x"></i>
+        </div>
+        <h3 class="m-0 mb-sm">¿Cerrar Sesión?</h3>
+        <p class="text-secondary mb-xl fs-sm">Se finalizará tu sesión administrativa actual.</p>
+        <div class="modal-actions" style="margin-top: 0;">
+          <button class="btn btn-secondary btn-block" onclick="closeLogoutModal()">Cancelar</button>
+          <button class="btn btn-primary btn-block btn-bg-danger" onclick="confirmLogout()">Sí, Salir</button>
+        </div>
       </div>
     </div>
-  </div>
+
+    <!-- Broadcast Modal (Replacement for prompt) -->
+    <div class="modal-overlay hidden" id="broadcast-modal" style="z-index: 10001;">
+      <div class="modal-content animate-fade-in-up broadcast-modal-card">
+        <h3 id="broadcast-modal-title" class="title-primary">📢 Comunicado</h3>
+        <p id="broadcast-modal-subtitle" class="text-secondary mb-md modal-subtitle">Escribe el mensaje que deseas enviar.</p>
+        <div class="form-group">
+          <textarea id="broadcast-msg-input" class="form-input" style="height: 120px;" placeholder="Escribe tu mensaje aquí..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary btn-block" onclick="closeBroadcastModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary btn-block" id="btn-confirm-broadcast">Enviar Ahora</button>
+        </div>
+      </div>
+    </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js?v=2.1"></script>
@@ -1222,26 +1236,66 @@
       `).join('');
     }
 
+    let currentBroadcastTarget = null;
+
     async function sendBroadcast(userId, name) {
-      const msg = prompt(`Enviar notificación privada a ${name}:`);
-      if (!msg) return;
-      
-      const { success } = await store.sendNotification(userId, msg);
-      if (success) {
-        showToast('Notificación enviada', 'success');
-      }
+      currentBroadcastTarget = userId;
+      document.getElementById('broadcast-modal-title').innerText = `💬 Mensaje a ${name}`;
+      document.getElementById('broadcast-modal-subtitle').innerText = "Envía una notificación privada que aparecerá de inmediato.";
+      document.getElementById('broadcast-msg-input').value = '';
+      document.getElementById('broadcast-modal').classList.remove('hidden');
+      document.getElementById('broadcast-modal').style.display = 'flex';
+      document.getElementById('broadcast-msg-input').focus();
     }
 
     async function sendGlobalBroadcast() {
-      const msg = prompt("Escribe el comunicado para TODOS los usuarios conectados:");
-      if (!msg) return;
-      
-      showToast('Enviando comunicado global...', 'info');
-      const { success } = await store.sendGlobalNotification(msg);
-      if (success) {
-        showToast('Comunicado enviado exitosamente 📢', 'success');
-      }
+      currentBroadcastTarget = 'all';
+      document.getElementById('broadcast-modal-title').innerText = "📢 Comunicado Global";
+      document.getElementById('broadcast-modal-subtitle').innerText = "Este mensaje se enviará a TODOS los usuarios conectados.";
+      document.getElementById('broadcast-msg-input').value = '';
+      document.getElementById('broadcast-modal').classList.remove('hidden');
+      document.getElementById('broadcast-modal').style.display = 'flex';
+      document.getElementById('broadcast-msg-input').focus();
     }
+
+    function closeBroadcastModal() {
+      document.getElementById('broadcast-modal').classList.add('hidden');
+      document.getElementById('broadcast-modal').style.display = 'none';
+      currentBroadcastTarget = null;
+    }
+
+    document.getElementById('btn-confirm-broadcast').onclick = async () => {
+      const msg = document.getElementById('broadcast-msg-input').value.trim();
+      if (!msg) {
+        showToast('Escribe un mensaje primero', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btn-confirm-broadcast');
+      btn.disabled = true;
+      btn.innerText = 'Enviando...';
+
+      try {
+        let res;
+        if (currentBroadcastTarget === 'all') {
+          res = await store.sendGlobalNotification(msg);
+        } else {
+          res = await store.sendNotification(currentBroadcastTarget, msg);
+        }
+
+        if (res && res.success) {
+          showToast('Mensaje enviado exitosamente', 'success');
+          closeBroadcastModal();
+        } else {
+          showToast('Error al enviar mensaje', 'error');
+        }
+      } catch (e) {
+        showToast('Error de conexión', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Enviar Ahora';
+      }
+    };
 
     function logoutAdmin() {
       const modal = document.getElementById('logout-modal');
@@ -1400,6 +1454,8 @@
       border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;
       color: #ef4444;
     }
+    .broadcast-modal-card { max-width: 450px; }
+    #broadcast-msg-input { resize: none; line-height: 1.5; font-size: 0.95rem; }
   </style>
 </body>
 </html>
