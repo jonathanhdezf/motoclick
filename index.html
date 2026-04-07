@@ -284,7 +284,18 @@
       transform: translateY(-3px);
       box-shadow: 0 15px 30px rgba(0, 230, 91, 0.4);
     }
-    .install-btn i { font-size: 1.2rem; }
+    .promo-app-hint {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .ticker-item i {
+      color: #00e65b;
+      margin-right: 8px;
+    }
 
 
 
@@ -1039,15 +1050,11 @@
     <!-- News Ticker -->
     <div class="news-ticker">
       <div class="ticker-wrapper">
-        <div class="ticker-content">
-          <span class="ticker-item"><span>🌤️</span> Teziutlán: 18°C Nublado</span>
-          <span class="ticker-item"><span>🟢</span> Centro: Tráfico Fluido en Av. Hidalgo</span>
-          <span class="ticker-item"><span>🛵</span> 12 repartidores activos</span>
-          <span class="ticker-item"><span>✨</span> Servicio flash en Teziutlán, Puebla</span>
-          <span class="ticker-item"><span>🌤️</span> Teziutlán: 18°C Nublado</span>
-          <span class="ticker-item"><span>🟢</span> Centro: Tráfico Fluido en Av. Hidalgo</span>
-          <span class="ticker-item"><span>🛵</span> 12 repartidores activos</span>
-          <span class="ticker-item"><span>✨</span> Servicio flash en Teziutlán, Puebla</span>
+        <div class="ticker-content" id="ticker-content-static">
+          <span class="ticker-item"><i class="fas fa-cloud-sun"></i> Teziutlán: --°C Cargando...</span>
+          <span class="ticker-item"><i class="fas fa-traffic-light"></i> Centro: Consultando tráfico...</span>
+          <span class="ticker-item"><i class="fas fa-motorcycle"></i> Buscando repartidores...</span>
+          <span class="ticker-item"><i class="fas fa-bolt"></i> Servicio flash activo</span>
         </div>
       </div>
     </div>
@@ -1470,10 +1477,10 @@
       const hour = now.getHours();
 
       // 1. Robust Weather Data
-      let weatherText = "🌤️ Teziutlán: 18°C Nublado";
+      let weatherData = "Teziutlán: --°C Cargando...";
       const weatherQueries = [
-        'https://wttr.in/Teziutlan,Puebla?format=%c+%t+%C&lang=es',
-        'https://wttr.in/19.81,-97.36?format=%c+%t+%C&lang=es' // Regional coordinates
+        'https://wttr.in/Teziutlan,Puebla?format=%t+%C&lang=es',
+        'https://wttr.in/19.81,-97.36?format=%t+%C&lang=es'
       ];
 
       for (let query of weatherQueries) {
@@ -1482,43 +1489,32 @@
           if (res.ok) {
             const data = await res.text();
             if (!data.includes("Unknown") && !data.includes("please try")) {
-              weatherText = `<span>${data.split(' ')[0]}</span> Teziutlán: ${data.split(' ').slice(1).join(' ')}`;
+              weatherData = `Teziutlán: ${data}`;
               break;
             }
           }
-        } catch (e) { console.error("Weather fetch failed for " + query); }
+        } catch (e) { console.error("Weather failed"); }
       }
 
-      // 2. Traffic Logic (Rotating points: Hidalgo, Juárez, Cuauhtémoc)
-      const trafficPoints = [
-        { name: "Av. Hidalgo", peakHours: [7, 8, 9, 18, 19, 20] },
-        { name: "Av. Juárez", peakHours: [8, 9, 10, 13, 14, 18, 19] },
-        { name: "Av. Cuauhtémoc", peakHours: [7, 8, 11, 12, 17, 18] }
-      ];
-
+      // 2. Traffic Logic
+      const trafficPoints = ["Av. Hidalgo", "Av. Juárez", "Av. Cuauhtémoc"];
       const currentPoint = trafficPoints[hour % trafficPoints.length];
-      const isPeak = currentPoint.peakHours.includes(hour);
-      
-      let trafficStatus = isPeak ? "🔴 Centro: Tráfico Intenso" : (hour >= 23 || hour <= 6 ? "🟢 Centro: Tráfico Despejado" : "🟡 Centro: Tráfico Moderado");
-      const trafficEmoji = trafficStatus.split(' ')[0];
-      const trafficDesc = trafficStatus.split(' ').slice(1).join(' ');
+      const peakHours = [7, 8, 9, 13, 14, 18, 19, 20];
+      const isPeak = peakHours.includes(hour);
+      const trafficDesc = isPeak ? "Tráfico Intenso" : (hour >= 23 || hour <= 6 ? "Tráfico Despejado" : "Tráfico Moderado");
 
-      // 3. Active Drivers (Dynamic simulation)
+      // 3. Active Drivers
       const baseDrivers = 12;
-      const driversPeakEffect = (hour >= 12 && hour <= 15) || (hour >= 18 && hour <= 21) ? 6 : 0;
-      const nightEffect = (hour >= 23 || hour <= 6) ? -8 : 0;
-      const randomShift = Math.floor(now.getMinutes() / 15); // Changes slightly every 15 mins
-      const activeDrivers = Math.max(4, baseDrivers + driversPeakEffect + nightEffect + randomShift);
+      const activeDrivers = Math.max(4, baseDrivers + (isPeak ? 5 : 0) + (hour <= 6 ? -8 : 2));
 
-      // Construct items
+      // Construct items with Green Icons
       const items = [
-        `<span class="ticker-item">${weatherText}</span>`,
-        `<span class="ticker-item"><span>${trafficEmoji}</span> ${trafficDesc} en ${currentPoint.name}</span>`,
-        `<span class="ticker-item"><span>🛵</span> ${activeDrivers} repartidores activos</span>`,
-        `<span class="ticker-item"><span>✨</span> Servicio flash en Teziutlán, Puebla</span>`
+        `<span class="ticker-item"><i class="fas fa-cloud-sun"></i> ${weatherData}</span>`,
+        `<span class="ticker-item"><i class="fas fa-traffic-light"></i> Centro: ${trafficDesc} en ${currentPoint}</span>`,
+        `<span class="ticker-item"><i class="fas fa-motorcycle"></i> ${activeDrivers} repartidores activos</span>`,
+        `<span class="ticker-item"><i class="fas fa-bolt"></i> Envío FLASH en Teziutlán</span>`
       ];
 
-      // Refresh ticker content
       tickerContent.innerHTML = [...items, ...items].join('');
     }
 
