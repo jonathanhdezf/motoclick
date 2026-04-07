@@ -1476,8 +1476,8 @@
       const now = new Date();
       const hour = now.getHours();
 
-      // 1. Robust Weather Data
-      let weatherData = "Teziutlán: --°C Cargando...";
+      // 1. Robust Weather Data (With Green Icons)
+      let weatherDisplay = "Teziutlán: 18°C Nublado";
       const weatherQueries = [
         'https://wttr.in/Teziutlan,Puebla?format=%t+%C&lang=es',
         'https://wttr.in/19.81,-97.36?format=%t+%C&lang=es'
@@ -1489,30 +1489,36 @@
           if (res.ok) {
             const data = await res.text();
             if (!data.includes("Unknown") && !data.includes("please try")) {
-              weatherData = `Teziutlán: ${data}`;
+              weatherDisplay = `Teziutlán: ${data}`;
               break;
             }
           }
-        } catch (e) { console.error("Weather failed"); }
+        } catch (e) { console.error("Weather update failed"); }
       }
 
-      // 2. Traffic Logic
-      const trafficPoints = ["Av. Hidalgo", "Av. Juárez", "Av. Cuauhtémoc"];
+      // 2. Advanced Traffic Logic (Returning to peak-hour simulation)
+      const trafficPoints = [
+        { name: "Av. Hidalgo", peakHours: [7, 8, 9, 13, 14, 18, 19, 20] },
+        { name: "Av. Juárez", peakHours: [8, 9, 10, 13, 14, 18, 19] },
+        { name: "Av. Cuauhtémoc", peakHours: [7, 8, 11, 12, 17, 18] }
+      ];
+
       const currentPoint = trafficPoints[hour % trafficPoints.length];
-      const peakHours = [7, 8, 9, 13, 14, 18, 19, 20];
-      const isPeak = peakHours.includes(hour);
-      const trafficDesc = isPeak ? "Tráfico Intenso" : (hour >= 23 || hour <= 6 ? "Tráfico Despejado" : "Tráfico Moderado");
+      const isPeak = currentPoint.peakHours.includes(hour);
+      const trafficStatus = isPeak ? "Tráfico Intenso" : (hour >= 23 || hour <= 6 ? "Tráfico Despejado" : "Tráfico Moderado");
 
-      // 3. Active Drivers
+      // 3. Active Drivers Simulation
       const baseDrivers = 12;
-      const activeDrivers = Math.max(4, baseDrivers + (isPeak ? 5 : 0) + (hour <= 6 ? -8 : 2));
+      const driversPeakEffect = isPeak ? 6 : 0;
+      const nightEffect = (hour >= 23 || hour <= 6) ? -8 : 0;
+      const activeDrivers = Math.max(4, baseDrivers + driversPeakEffect + nightEffect + Math.floor(now.getMinutes() / 15));
 
-      // Construct items with Green Icons
+      // Items with Professional Green Icons
       const items = [
-        `<span class="ticker-item"><i class="fas fa-cloud-sun"></i> ${weatherData}</span>`,
-        `<span class="ticker-item"><i class="fas fa-traffic-light"></i> Centro: ${trafficDesc} en ${currentPoint}</span>`,
-        `<span class="ticker-item"><i class="fas fa-motorcycle"></i> ${activeDrivers} repartidores activos</span>`,
-        `<span class="ticker-item"><i class="fas fa-bolt"></i> Envío FLASH en Teziutlán</span>`
+        `<span class="ticker-item"><i class="fas fa-cloud-sun"></i> ${weatherDisplay}</span>`,
+        `<span class="ticker-item"><i class="fas fa-traffic-light"></i> Centro: ${trafficStatus} en ${currentPoint.name}</span>`,
+        `<span class="ticker-item"><i class="fas fa-motorcycle"></i> ${activeDrivers} repartidores en línea</span>`,
+        `<span class="ticker-item"><i class="fas fa-bolt"></i> MotoClick FLASH: Entregas en <15 min</span>`
       ];
 
       tickerContent.innerHTML = [...items, ...items].join('');
