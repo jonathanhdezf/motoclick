@@ -157,6 +157,50 @@
 
     .promo-price { margin-top: var(--space-md); font-size: 0.75rem; color: var(--text-muted); opacity: 0.8; }
     
+    /* Yoshi Egg Animated Wrapper */
+    .yoshi-egg-container {
+      width: 100%;
+      height: 220px;
+      padding: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(0, 230, 91, 0.05) 0%, transparent 100%);
+      overflow: hidden;
+    }
+    
+    .yoshi-egg {
+      width: 120px;
+      height: 160px;
+      background: #fff;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      position: relative;
+      box-shadow: inset -15px -15px 30px rgba(0,0,0,0.1), 0 15px 35px rgba(0, 230, 91, 0.2);
+      animation: egg-wiggle 3s infinite ease-in-out;
+      border: 4px solid #f0f0f0;
+    }
+    
+    .egg-spot {
+      position: absolute;
+      background: #00e65b;
+      border-radius: 50%;
+      opacity: 0.9;
+    }
+    .spot-1 { width: 35px; height: 35px; top: 25%; left: 20%; }
+    .spot-2 { width: 45px; height: 45px; bottom: 25%; right: 15%; }
+    .spot-3 { width: 25px; height: 25px; top: 45%; right: 25%; }
+    .spot-4 { width: 20px; height: 20px; bottom: 15%; left: 30%; }
+    
+    @keyframes egg-wiggle {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      10% { transform: translateY(-10px) rotate(-5deg); }
+      20% { transform: translateY(0) rotate(5deg); }
+      30% { transform: translateY(-5px) rotate(-3deg); }
+      40% { transform: translateY(0) rotate(3deg); }
+      50% { transform: translateY(-15px) scaleY(0.9) scaleX(1.1); }
+      60% { transform: translateY(0) scale(1); }
+    }
+
     .promo-contest-desc {
       font-size: 0.85rem;
       border-top: 1px solid rgba(255,255,255,0.1);
@@ -1384,7 +1428,16 @@
   <div class="promo-overlay" id="promoPopup">
     <div class="promo-modal">
       <button class="promo-close" id="closePromo" aria-label="Cerrar">&times;</button>
-      <img src="./assets/mario_promo.jpg" alt="Super Mario Galaxy MotoClick Promo" class="promo-image">
+      
+      <div class="yoshi-egg-container">
+        <div class="yoshi-egg">
+          <div class="egg-spot spot-1"></div>
+          <div class="egg-spot spot-2"></div>
+          <div class="egg-spot spot-3"></div>
+          <div class="egg-spot spot-4"></div>
+        </div>
+      </div>
+
       <div class="promo-content">
         <div class="promo-badge">¡Dinámica Galaxy! 🛸⭐</div>
         <h2 class="promo-title">SUPER <span>MARIO</span> GALAXY</h2>
