@@ -1438,6 +1438,11 @@
           <span class="alliance-name">Super Ahorro</span>
           <span class="alliance-type">Supermercado</span>
         </div>
+        <div class="alliance-item sa-stagger sa-d4 alliance-item-partner" onclick="openLaFogataModal()">
+          <img src="assets/lafogatablanco.png" alt="La Fogata" title="Hacer pedido en La Fogata" class="alliance-logo alliance-logo-img" style="height: 120px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
+          <span class="alliance-name">La Fogata</span>
+          <span class="alliance-type">Taquería</span>
+        </div>
         <div class="alliance-item sa-stagger sa-d4">
           <i class="fas fa-birthday-cake alliance-icon"></i>
           <span class="alliance-name">Dulzura Local</span>
@@ -2316,6 +2321,32 @@
     </div>
   </div>
 
+  <!-- La Fogata Order Modal -->
+  <div class="mobile-menu-overlay partner-modal-overlay" id="lafogata-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
+      <button class="menu-close" onclick="closeLaFogataModal()">&times;</button>
+      <div class="menu-content">
+        <img src="assets/lafogatablanco.png" alt="La Fogata" title="Logo La Fogata" class="menu-logo partner-modal-logo" style="height: 150px;">
+        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Taquería La Fogata</h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Taquería — Sabor tradicional a la leña.</p>
+        
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">Dinos tu antojo</label>
+          <textarea id="lafogata-textarea" class="partner-modal-textarea" placeholder="Ej: 3 de asada, Una gringa de pastor, Volcán de lengua..."></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onclick="sendLaFogataWhatsApp()" class="partner-modal-btn-confirm">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+          </button>
+          <button onclick="closeLaFogataModal()" class="partner-modal-btn-cancel">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* ── Partner Modals Logic (Robust History-Based) ── */
 
@@ -2325,7 +2356,8 @@
       { id: 'ortuno-modal', textId: 'ortuno-textarea', state: 'ortuno' },
       { id: 'donafide-modal', textId: 'donafide-textarea', state: 'donafide' },
       { id: 'tortaspepe-modal', textId: 'tortaspepe-textarea', state: 'tortaspepe' },
-      { id: 'matustacos-modal', textId: 'matustacos-textarea', state: 'matustacos' }
+      { id: 'matustacos-modal', textId: 'matustacos-textarea', state: 'matustacos' },
+      { id: 'lafogata-modal', textId: 'lafogata-textarea', state: 'lafogata' }
     ];
 
     function openPartnerModal(id, state) {
@@ -2432,7 +2464,18 @@
       window.open(url, '_blank');
       handleManualModalClose();
     }
-  </script>
+
+    function openLaFogataModal() { openPartnerModal('lafogata-modal', 'lafogata'); }
+    function closeLaFogataModal() { handleManualModalClose(); }
+    function sendLaFogataWhatsApp() {
+      const text = document.getElementById('lafogata-textarea').value.trim();
+      if (!text) { alert("¡No olvides decirnos qué quieres de La Fogata! 🔥🍔🌮"); return; }
+      const phone = "522331072438";
+      const message = `🔥 Hola MotoClick! Quiero pedir de Taquería La Fogata:\n\n📝 MI PEDIDO:\n${text}\n\n📍 ¿Me apoyan con el mandado?`;
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      handleManualModalClose();
+    }
   </script>
 </body>
 </html>
