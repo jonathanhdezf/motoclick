@@ -1423,10 +1423,10 @@
         <p class="text-secondary mt-sm">Impulsando la economía local de Teziutlán con logística inteligente.</p>
       </div>
       <div class="alliances-grid">
-        <div class="alliance-item sa-stagger sa-d1">
-          <i class="fas fa-utensils alliance-icon"></i>
-          <span class="alliance-name">El Buen Sazón</span>
-          <span class="alliance-type">Restaurante Gourmet</span>
+        <div class="alliance-item sa-stagger sa-d1 alliance-item-partner" onclick="openTortasPepeModal()">
+          <img src="assets/tortaspepeblanco.png" alt="Tortas Tío Pepe" title="Hacer pedido en Tortas Tío Pepe" class="alliance-logo alliance-logo-img" style="height: 150px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
+          <span class="alliance-name">Tortas Tío Pepe</span>
+          <span class="alliance-type">Anatómicos y Tortas</span>
         </div>
         <div class="alliance-item sa-stagger sa-d2">
           <i class="fas fa-pills alliance-icon"></i>
@@ -2264,6 +2264,32 @@
     </div>
   </div>
 
+  <!-- Tortas Tío Pepe Order Modal -->
+  <div class="mobile-menu-overlay partner-modal-overlay" id="tortaspepe-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
+      <button class="menu-close" onclick="closeTortasPepeModal()">&times;</button>
+      <div class="menu-content">
+        <img src="assets/tortaspepeblanco.png" alt="Tortas Tío Pepe" title="Logo Tortas Tío Pepe" class="menu-logo partner-modal-logo" style="height: 150px;">
+        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Tortas Tío Pepe</h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Las mejores tortas y anatómicos de Teziutlán.</p>
+        
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">¿Qué se te antojó?</label>
+          <textarea id="tortaspepe-textarea" class="partner-modal-textarea" placeholder="Ej: Torta de pierna, Anatómico, Sincronizadas..."></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onclick="sendTortasPepeWhatsApp()" class="partner-modal-btn-confirm">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+          </button>
+          <button onclick="closeTortasPepeModal()" class="partner-modal-btn-cancel">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* ── Partner Modals Logic ── */
 
@@ -2396,6 +2422,39 @@
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       closeDonaFideModal();
+    }
+
+    // Tortas Tío Pepe Logic
+    function openTortasPepeModal() {
+      const modal = document.getElementById('tortaspepe-modal');
+      modal.classList.add('active');
+      modal.style.opacity = '1';
+      modal.style.pointerEvents = 'all';
+      window.history.pushState({ modal: 'tortaspepe' }, "");
+    }
+
+    function closeTortasPepeModal(manual = true) {
+      if (manual) window.history.back();
+      else {
+        const modal = document.getElementById('tortaspepe-modal');
+        modal.classList.remove('active');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        document.getElementById('tortaspepe-textarea').value = '';
+      }
+    }
+
+    function sendTortasPepeWhatsApp() {
+      const text = document.getElementById('tortaspepe-textarea').value.trim();
+      if (!text) {
+        alert("¡No olvides escribir lo que vas a pedir de Tío Pepe! 🥪🤤");
+        return;
+      }
+      const phone = "522331072438";
+      const message = `🥪 Hola MotoClick! Quiero pedir unas Tortas Tío Pepe:\n\n🔥 MI PEDIDO:\n${text}\n\n🛵 ¿Pueden pasar por ellas?`;
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      closeTortasPepeModal();
     }
   </script>
 </body>
