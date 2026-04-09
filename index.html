@@ -1154,6 +1154,42 @@
       justify-content: space-between;
       font-size: 0.8rem;
     }
+    .total-label { font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .total-val { font-size: 1.2rem; font-weight: 900; color: #00e65b; }
+
+    /* Selection Styles */
+    .selection-section { text-align: left; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .selection-title {
+      font-size: 0.75rem;
+      color: #00e65b;
+      margin-top: 1.2rem;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+    }
+    .selection-count { background: rgba(0,230,91,0.15); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; }
+    
+    .config-card {
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      animation: slideIn 0.3s ease-out;
+    }
+    .config-card:last-child { border-bottom: none; }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .config-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .config-name { font-weight: 700; color: #fff; font-size: 0.95rem; }
+    .btn-remove-item {
+      background: rgba(255,70,70,0.1); color: #ff4646; border: none; width: 28px; height: 28px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
     
     .config-group { margin-bottom: 12px; }
     .config-label { display: block; font-size: 0.7rem; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
