@@ -2230,16 +2230,31 @@
       .nav-bubble.active { height: 26px; }
       .nav-bubble::after { display: none; } /* Hide tooltips on mobile to avoid overlap */
     }
-    /* Preview Ticket Styles */
-    .preview-ticket-overlay { 
-      background: rgba(0,0,0,0.85); 
-      backdrop-filter: blur(10px); 
-      display: none !important; 
-      align-items: center; 
+    /* ── Order Ticket System ── */
+    .preview-ticket-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.88);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 999999;
+      padding: 20px;
+      box-sizing: border-box;
     }
-    .preview-ticket-overlay.active { display: flex !important; }
+    .preview-ticket-overlay.active {
+      display: flex;
+      animation: ticketFadeIn 0.25s ease;
+    }
+    @keyframes ticketFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
     
     .ticket-container {
       background: #fff;
