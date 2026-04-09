@@ -1707,7 +1707,7 @@
         <div class="promo-badge">¡Dinámica Galaxy! 🛸⭐</div>
         <h2 class="promo-title">SUPER <span>MARIO</span> GALAXY</h2>
         <p class="promo-desc">
-          El estreno de #SuperMarioGalaxy nos tiene muy emocionados, ¡especialmente por el color verde! 😍 Queremos saber qué cosas locas has pedido a domicilio. 🦖 ¿Cuál es el objeto más grande o extraño que MotoClick te ha traído?
+          El estreno de #SuperMarioGalaxy nos tiene muy emocionados, ¡especialmente por el color Riverside! 😍 Queremos saber qué cosas locas has pedido a domicilio. 🦖 ¿Cuál es el objeto más grande o extraño que MotoClick te ha traído?
         </p>
         <p class="promo-desc promo-contest-desc">
           La respuesta más creativa se ganará un <strong>¡Pedido GRATIS de hasta $200!*</strong> 🛵💨 (Aplican términos y condiciones).
@@ -1718,6 +1718,33 @@
         <span class="promo-price promo-app-hint">
           👇 Si no has pedido nada raro aún, ¡Aprovecha nuestra App!
         </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doña Fide Order Preview Ticket -->
+  <div class="preview-ticket-overlay" id="donafide-ticket-modal">
+    <div class="ticket-container animate-fade-in-up">
+      <div class="ticket-header">
+        <img src="assets/logoblancomotoclick.png" alt="MotoClick" class="ticket-logo">
+        <div class="ticket-subtitle">Resumen de Pedido</div>
+        <div class="ticket-title" id="ticket-shop-name">Doña Fide</div>
+      </div>
+      <div class="ticket-body" id="ticket-items-list">
+        <!-- Receipt items injection -->
+      </div>
+      <div class="ticket-total">
+        <span class="ticket-total-label">TOTAL</span>
+        <span class="ticket-total-val" id="ticket-total-val">$0.00</span>
+      </div>
+      <div style="padding: 10px 20px; text-align: center; font-size: 0.65rem; color: #94a3b8; font-style: italic;">
+        *Este es un presupuesto estimado. El pago se realiza al recibir.
+      </div>
+      <div class="ticket-footer">
+        <button class="btn-ticket-edit" onclick="closeDonaFideTicket()">Editar</button>
+        <button class="btn-ticket-confirm" onclick="sendDonaFideWhatsAppConfirmed()">
+          <i class="fab fa-whatsapp"></i> ENVIAR YA
+        </button>
       </div>
     </div>
   </div>
@@ -2231,6 +2258,108 @@
       .nav-bubble { width: 8px; height: 8px; }
       .nav-bubble.active { height: 26px; }
       .nav-bubble::after { display: none; } /* Hide tooltips on mobile to avoid overlap */
+    }
+    /* Preview Ticket Styles */
+    .preview-ticket-overlay { 
+      background: rgba(0,0,0,0.85); 
+      backdrop-filter: blur(10px); 
+      display: none !important; 
+      align-items: center; 
+      justify-content: center;
+      z-index: 9999;
+    }
+    .preview-ticket-overlay.active { display: flex !important; }
+    
+    .ticket-container {
+      background: #fff;
+      color: #1a1a1a;
+      width: 90%;
+      max-width: 360px;
+      padding: 0;
+      border-radius: 4px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .ticket-header {
+      padding: 24px 20px;
+      background: #f8fafc;
+      text-align: center;
+      border-bottom: 2px dashed #e2e8f0;
+    }
+    .ticket-body { padding: 20px; }
+    .ticket-logo { height: 40px; margin-bottom: 10px; filter: invert(1); }
+    .ticket-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; color: #000; }
+    .ticket-subtitle { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; }
+    
+    .ticket-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      border-bottom: 1px dotted #e2e8f0;
+      padding-bottom: 8px;
+    }
+    .ticket-item:last-child { border-bottom: none; }
+    .ticket-item-qty { font-weight: 800; margin-right: 8px; }
+    .ticket-item-opts { display: block; font-size: 0.7rem; color: #64748b; margin-top: 2px; }
+    
+    .ticket-total {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px dashed #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ticket-total-label { font-weight: 800; font-size: 1rem; }
+    .ticket-total-val { font-weight: 900; font-size: 1.4rem; color: #000; }
+    
+    .ticket-footer {
+      padding: 20px;
+      background: #f8fafc;
+      display: flex;
+      gap: 12px;
+    }
+    .btn-ticket-confirm {
+      flex: 2;
+      background: #00e65b;
+      color: #000;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-ticket-edit {
+      flex: 1;
+      background: #e2e8f0;
+      color: #475569;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    
+    /* Paper edge effect */
+    .ticket-container::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background-image: radial-gradient(circle, #fff 3px, transparent 0);
+      background-size: 12px 12px;
+      background-position: -6px 0;
     }
   </style>
 
@@ -2807,23 +2936,60 @@
         alert("¡Selecciona al menos un antojito para tu orden! 🌮😋");
         return;
       }
+      showDonaFideTicket();
+    }
 
+    function showDonaFideTicket() {
+      const modal = document.getElementById('donafide-ticket-modal');
+      const list = document.getElementById('ticket-items-list');
+      const totalEl = document.getElementById('ticket-total-val');
+      
+      if (!modal || !list) return;
+
+      list.innerHTML = '';
+      let subtotal = 0;
+
+      donaFideOrderList.forEach(item => {
+        const menuData = donaFideMenuData[item.menuIndex];
+        const itemPrice = menuData.price * item.qty;
+        subtotal += itemPrice;
+
+        const isCebollaDish = ['Chalupas (3 pzas)', 'Enchiladas (3 pzas)', 'Enfrijoladas (3 pzas)'].includes(menuData.name);
+        const s = item.sauce === 'Sin Salsa' ? 'Sin salsa' : `Salsa ${item.sauce}`;
+        const q = item.cheese === 'Sin Queso' ? 'Sin queso' : 'Con queso';
+        const vText = isCebollaDish ? (item.veggies === 'Sin Verdura' ? 'Sin cebolla' : 'Con cebolla') : (item.veggies === 'Sin Verdura' ? 'Sin verdura' : 'Con verdura');
+
+        const div = document.createElement('div');
+        div.className = 'ticket-item';
+        div.innerHTML = `
+          <div>
+            <span class="ticket-item-qty">${item.qty}x</span>
+            <span style="font-weight:700;">${menuData.name}</span>
+            <span class="ticket-item-opts">${s}, ${q}, ${vText}</span>
+          </div>
+          <div style="font-weight:700;">$${itemPrice}.00</div>
+        `;
+        list.appendChild(div);
+      });
+
+      totalEl.innerText = `$${subtotal.toFixed(2)}`;
+      modal.classList.add('active');
+    }
+
+    function closeDonaFideTicket() {
+      const modal = document.getElementById('donafide-ticket-modal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function sendDonaFideWhatsAppConfirmed() {
       let subtotal = 0;
       let orderLines = donaFideOrderList.map(item => {
         const menuData = donaFideMenuData[item.menuIndex];
         subtotal += (menuData.price * item.qty);
         const isCebollaDish = ['Chalupas (3 pzas)', 'Enchiladas (3 pzas)', 'Enfrijoladas (3 pzas)'].includes(menuData.name);
-        
         const s = item.sauce === 'Sin Salsa' ? 'Sin salsa' : `Salsa ${item.sauce}`;
         const q = item.cheese === 'Sin Queso' ? 'Sin queso' : 'Con queso';
-        
-        let vText = '';
-        if (isCebollaDish) {
-          vText = item.veggies === 'Sin Verdura' ? 'Sin cebolla' : 'Con cebolla';
-        } else {
-          vText = item.veggies === 'Sin Verdura' ? 'Sin verdura' : 'Con verdura';
-        }
-
+        const vText = isCebollaDish ? (item.veggies === 'Sin Verdura' ? 'Sin cebolla' : 'Con cebolla') : (item.veggies === 'Sin Verdura' ? 'Sin verdura' : 'Con verdura');
         return `• ${item.qty}x ${menuData.name} (${s}, ${q}, ${vText})`;
       });
 
