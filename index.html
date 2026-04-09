@@ -2663,15 +2663,38 @@
     }
 
     function addToDFOrder(menuIndex) {
-      const newItem = {
-        id: Date.now() + Math.random(),
-        menuIndex: menuIndex,
-        sauce: 'Verde',
-        cheese: 'Con Queso',
-        veggies: 'Con Verdura'
-      };
-      donaFideOrderList.push(newItem);
+      // Check if an item with exact same default options already exists
+      const existing = donaFideOrderList.find(i => 
+        i.menuIndex === menuIndex && 
+        i.sauce === 'Verde' && 
+        i.cheese === 'Con Queso' && 
+        i.veggies === 'Con Verdura'
+      );
+
+      if (existing) {
+        existing.qty++;
+      } else {
+        donaFideOrderList.push({
+          id: Date.now() + Math.random(),
+          menuIndex: menuIndex,
+          sauce: 'Verde',
+          cheese: 'Con Queso',
+          veggies: 'Con Verdura',
+          qty: 1
+        });
+      }
       renderDFOrder();
+    }
+
+    function updateDFQty(id, delta) {
+      const item = donaFideOrderList.find(i => i.id === id);
+      if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) {
+          donaFideOrderList = donaFideOrderList.filter(i => i.id !== id);
+        }
+        renderDFOrder();
+      }
     }
 
     function removeDFItem(id) {
@@ -2683,6 +2706,21 @@
       const item = donaFideOrderList.find(i => i.id === id);
       if (item) {
         item[option] = value;
+        
+        // After toggle, check if we should merge with another identical config
+        const duplicate = donaFideOrderList.find(i => 
+          i.id !== id &&
+          i.menuIndex === item.menuIndex &&
+          i.sauce === item.sauce &&
+          i.cheese === item.cheese &&
+          i.veggies === item.veggies
+        );
+
+        if (duplicate) {
+          duplicate.qty += item.qty;
+          donaFideOrderList = donaFideOrderList.filter(i => i.id !== id);
+        }
+        
         renderDFOrder();
       }
     }
@@ -2703,10 +2741,12 @@
 
       container.innerHTML = '';
       let subtotal = 0;
+      let totalItems = 0;
 
       donaFideOrderList.forEach((item) => {
         const menuData = donaFideMenuData[item.menuIndex];
-        subtotal += menuData.price;
+        subtotal += (menuData.price * item.qty);
+        totalItems += item.qty;
         
         // Conditional Label based on dish type
         const isCebollaDish = ['Chalupas (3 pzas)', 'Enchiladas (3 pzas)', 'Enfrijoladas (3 pzas)'].includes(menuData.name);
@@ -2716,8 +2756,16 @@
         card.className = 'config-card';
         card.innerHTML = `
           <div class="config-header">
-            <span class="config-name">${menuData.emoji} ${menuData.name}</span>
-            <button class="btn-remove-item" onclick="removeDFItem(${item.id})">&times;</button>
+            <div style="display: flex; flex-direction: column;">
+              <span class="config-name">${menuData.emoji} ${menuData.name}</span>
+              <span style="font-size: 0.75rem; color: #00e65b; font-weight: 700;">$${menuData.price * item.qty}.00</span>
+            </div>
+            
+            <div class="item-controls" style="background: rgba(0,230,91,0.1); border-color: rgba(0,230,91,0.2);">
+              <button class="btn-qty btn-minus" style="width: 24px; height: 24px; font-size: 0.8rem;" onclick="updateDFQty(${item.id}, -1)">-</button>
+              <span class="item-qty" style="font-size: 0.9rem; min-width: 15px;">${item.qty}</span>
+              <button class="btn-qty btn-plus" style="width: 24px; height: 24px; font-size: 0.8rem;" onclick="updateDFQty(${item.id}, 1)">+</button>
+            </div>
           </div>
           
           <div class="config-group">
@@ -2750,7 +2798,7 @@
         container.appendChild(card);
       });
 
-      countEl.innerText = `${donaFideOrderList.length} ${donaFideOrderList.length === 1 ? 'platillo' : 'platillos'}`;
+      countEl.innerText = `${totalItems} ${totalItems === 1 ? 'platillo' : 'platillos'}`;
       totalEl.innerText = `$${subtotal.toFixed(2)}`;
     }
 
@@ -2763,7 +2811,7 @@
       let subtotal = 0;
       let orderLines = donaFideOrderList.map(item => {
         const menuData = donaFideMenuData[item.menuIndex];
-        subtotal += menuData.price;
+        subtotal += (menuData.price * item.qty);
         const isCebollaDish = ['Chalupas (3 pzas)', 'Enchiladas (3 pzas)', 'Enfrijoladas (3 pzas)'].includes(menuData.name);
         
         const s = item.sauce === 'Sin Salsa' ? 'Sin salsa' : `Salsa ${item.sauce}`;
@@ -2776,7 +2824,7 @@
           vText = item.veggies === 'Sin Verdura' ? 'Sin verdura' : 'Con verdura';
         }
 
-        return `• ${menuData.name} (${s}, ${q}, ${vText})`;
+        return `• ${item.qty}x ${menuData.name} (${s}, ${q}, ${vText})`;
       });
 
       const phone = "522331072438";
