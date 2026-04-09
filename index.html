@@ -1152,11 +1152,36 @@
       border-radius: 14px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
+      font-size: 0.8rem;
     }
-    .total-label { font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
-    .total-val { font-size: 1.2rem; font-weight: 900; color: #00e65b; }
+    
+    .config-group { margin-bottom: 12px; }
+    .config-label { display: block; font-size: 0.7rem; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
+    
+    .option-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(0,0,0,0.2);
+      padding: 4px;
+      border-radius: 10px;
+    }
+    .option-btn {
+      flex: 1;
+      padding: 6px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-btn.active {
+      background: #00e65b;
+      color: #000;
+      box-shadow: 0 2px 8px rgba(0,230,91,0.3);
+    }
   </style>
 </head>
 <body>
@@ -2333,19 +2358,31 @@
 
   <!-- Doña Fide Order Modal -->
   <div class="mobile-menu-overlay partner-modal-overlay" id="donafide-modal">
-    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container" style="max-width: 500px !important;">
       <button class="menu-close" onclick="closeDonaFideModal()">&times;</button>
-      <div class="menu-content">
-        <img src="assets/donafideblanco.png" alt="Doña Fide" title="Logo Doña Fide" class="menu-logo partner-modal-logo" style="height: 120px;">
+      <div class="menu-content" style="max-height: 85vh; overflow-y: auto;">
+        <img src="assets/donafideblanco.png" alt="Doña Fide" title="Logo Doña Fide" class="menu-logo partner-modal-logo" style="height: 100px;">
         <h3 style="margin-bottom: 0.1rem; color: #fff;">Antojitos Doña Fide</h3>
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1.5rem;">Crea tu orden seleccionando los productos:</p>
+        <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 1.2rem;">Toca un platillo para agregarlo a tu orden:</p>
         
-        <div class="menu-items-list" id="donafide-items">
-          <!-- Items will be generated here -->
+        <!-- Menu Summary (Horizontal Scroll or Grid) -->
+        <div id="donafide-menu-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem;">
+          <!-- Menu Items generated here -->
         </div>
 
-        <div class="menu-total-container">
-          <span class="total-label">Total estimado</span>
+        <!-- Order Detail Section -->
+        <div class="selection-section">
+          <div class="selection-title">
+            <span>Tu Selección</span>
+            <span class="selection-count" id="order-count">0 platillos</span>
+          </div>
+          <div id="donafide-order-list">
+            <p style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.85rem; padding: 20px;">Tu orden está vacía</p>
+          </div>
+        </div>
+
+        <div class="menu-total-container" style="margin-top: 1rem;">
+          <span class="total-label">Subtotal</span>
           <span class="total-val" id="donafide-total">$0.00</span>
         </div>
 
@@ -2550,6 +2587,7 @@
 
     function openDonaFideModal() { 
       initDonaFideMenu();
+      renderDFOrder();
       openPartnerModal('donafide-modal', 'donafide'); 
     }
     function closeDonaFideModal() { handleManualModalClose(); }
@@ -2564,65 +2602,109 @@
       { name: "Quesadilla Pollo", price: 12, emoji: "🧀" },
       { name: "Quesadilla Queso", price: 12, emoji: "🧀" }
     ];
-    let donaFideOrder = {};
+    let donaFideOrderList = []; // Array of { id, menuIndex, sauce, onion }
 
     function initDonaFideMenu() {
-      const container = document.getElementById('donafide-items');
+      const container = document.getElementById('donafide-menu-grid');
       if (!container) return;
       container.innerHTML = '';
-      donaFideOrder = {};
       
       donaFideMenuData.forEach((item, index) => {
-        donaFideOrder[index] = 0;
-        const row = document.createElement('div');
-        row.className = 'menu-item-row';
-        row.innerHTML = `
+        const div = document.createElement('div');
+        div.className = 'menu-item-row';
+        div.style.cursor = 'pointer';
+        div.style.padding = '8px 12px';
+        div.onclick = () => addToDFOrder(index);
+        div.innerHTML = `
           <div class="item-info">
-            <span class="item-name">${item.emoji} ${item.name}</span>
+            <span class="item-name" style="font-size: 0.8rem;">${item.emoji} ${item.name}</span>
             <span class="item-price">$${item.price}.00</span>
           </div>
-          <div class="item-controls">
-            <button class="btn-qty btn-minus" onclick="updateDFQty(${index}, -1)">-</button>
-            <span class="item-qty" id="df-qty-${index}">0</span>
-            <button class="btn-qty btn-plus" onclick="updateDFQty(${index}, 1)">+</button>
+          <div class="btn-qty btn-plus">+</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function addToDFOrder(menuIndex) {
+      const newItem = {
+        id: Date.now() + Math.random(),
+        menuIndex: menuIndex,
+        sauce: 'Verde', // Default
+        onion: 'Con Cebolla' // Default
+      };
+      donaFideOrderList.push(newItem);
+      renderDFOrder();
+    }
+
+    function removeDFItem(id) {
+      donaFideOrderList = donaFideOrderList.filter(item => item.id !== id);
+      renderDFOrder();
+    }
+
+    function updateDFOption(id, option, value) {
+      const item = donaFideOrderList.find(i => i.id === id);
+      if (item) {
+        item[option] = value;
+        renderDFOrder();
+      }
+    }
+
+    function renderDFOrder() {
+      const container = document.getElementById('donafide-order-list');
+      const countEl = document.getElementById('order-count');
+      const totalEl = document.getElementById('donafide-total');
+      
+      if (!container) return;
+      
+      if (donaFideOrderList.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.85rem; padding: 20px;">Tu orden está vacía</p>`;
+        countEl.innerText = '0 platillos';
+        totalEl.innerText = '$0.00';
+        return;
+      }
+
+      container.innerHTML = '';
+      let subtotal = 0;
+
+      donaFideOrderList.forEach((item) => {
+        const menuData = donaFideMenuData[item.menuIndex];
+        subtotal += menuData.price;
+        
+        const card = document.createElement('div');
+        card.className = 'config-card';
+        card.innerHTML = `
+          <div class="config-header">
+            <span class="config-name">${menuData.emoji} ${menuData.name}</span>
+            <button class="btn-remove-item" onclick="removeDFItem(${item.id})">&times;</button>
+          </div>
+          
+          <div class="config-group">
+            <label class="config-label">¿Qué salsa prefieres?</label>
+            <div class="option-group">
+              <button class="option-btn ${item.sauce === 'Verde' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'sauce', 'Verde')">Verde</button>
+              <button class="option-btn ${item.sauce === 'Roja' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'sauce', 'Roja')">Roja</button>
+              <button class="option-btn ${item.sauce === 'Sin Salsa' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'sauce', 'Sin Salsa')">🚫 Sin</button>
+            </div>
+          </div>
+
+          <div class="config-group" style="margin-bottom: 0;">
+            <label class="config-label">¿Con cebolla?</label>
+            <div class="option-group">
+              <button class="option-btn ${item.onion === 'Con Cebolla' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'onion', 'Con Cebolla')">Sí</button>
+              <button class="option-btn ${item.onion === 'Sin Cebolla' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'onion', 'Sin Cebolla')">🚫 No</button>
+            </div>
           </div>
         `;
-        container.appendChild(row);
+        container.appendChild(card);
       });
-      updateDFTotal();
-    }
 
-    function updateDFQty(index, delta) {
-      const newQty = Math.max(0, donaFideOrder[index] + delta);
-      donaFideOrder[index] = newQty;
-      const el = document.getElementById(`df-qty-${index}`);
-      if (el) el.innerText = newQty;
-      updateDFTotal();
-    }
-
-    function updateDFTotal() {
-      let total = 0;
-      donaFideMenuData.forEach((item, index) => {
-        total += item.price * donaFideOrder[index];
-      });
-      const el = document.getElementById('donafide-total');
-      if (el) el.innerText = `$${total.toFixed(2)}`;
+      countEl.innerText = `${donaFideOrderList.length} ${donaFideOrderList.length === 1 ? 'platillo' : 'platillos'}`;
+      totalEl.innerText = `$${subtotal.toFixed(2)}`;
     }
 
     function sendDonaFideWhatsApp() {
-      let orderLines = [];
-      let total = 0;
-
-      donaFideMenuData.forEach((item, index) => {
-        const qty = donaFideOrder[index];
-        if (qty > 0) {
-          const subtotal = qty * item.price;
-          orderLines.push(`${qty}x ${item.name} ($${subtotal})`);
-          total += subtotal;
-        }
-      });
-
-      if (orderLines.length === 0) {
+      if (donaFideOrderList.length === 0) {
         alert("¡Selecciona al menos un antojito para tu orden! 🌮😋");
         return;
       }
