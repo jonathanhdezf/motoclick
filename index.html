@@ -2249,61 +2249,95 @@
     }
     .preview-ticket-overlay.active {
       display: flex;
-      animation: ticketFadeIn 0.25s ease;
+      animation: ticketOverlayFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    @keyframes ticketFadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
+    @keyframes ticketOverlayFade {
+      from { opacity: 0; background: rgba(0,0,0,0); }
+      to   { opacity: 1; background: rgba(0,0,0,0.88); }
     }
-    
+
     .ticket-container {
       background: #fff;
+      background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('https://www.transparenttextures.com/patterns/p6.png'); /* Subtle paper texture */
       color: #1a1a1a;
-      width: 90%;
-      max-width: 360px;
+      width: 92%;
+      max-width: 380px;
       padding: 0;
       border-radius: 4px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.7);
       position: relative;
       overflow: hidden;
       font-family: 'Courier New', Courier, monospace;
+      animation: ticketPrint 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+      transform-origin: top center;
     }
+    
+    @keyframes ticketPrint {
+      0% { transform: translateY(-100%) scaleY(0); opacity: 0; }
+      100% { transform: translateY(0) scaleY(1); opacity: 1; }
+    }
+
     .ticket-header {
-      padding: 24px 20px;
-      background: #f8fafc;
+      padding: 30px 24px;
       text-align: center;
-      border-bottom: 2px dashed #e2e8f0;
+      border-bottom: 2px dashed #cbd5e1;
+      position: relative;
     }
-    .ticket-body { padding: 20px; }
-    .ticket-logo { height: 40px; margin-bottom: 10px; filter: invert(1); }
-    .ticket-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; color: #000; }
-    .ticket-subtitle { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; }
+    .ticket-header::before {
+      content: "OFFICIAL RECEIPT";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
+      color: #94a3b8;
+      letter-spacing: 0.3em;
+      font-weight: 700;
+    }
+
+    .ticket-body { 
+      padding: 24px; 
+      max-height: 45vh; 
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #e2e8f0 transparent;
+    }
+    .ticket-logo { height: 45px; margin-bottom: 12px; filter: invert(1) contrast(1.5); }
+    .ticket-title { 
+      font-size: 1.3rem; 
+      font-weight: 900; 
+      margin-bottom: 4px; 
+      color: #000; 
+      text-shadow: 0.5px 0.5px 0.5px rgba(0,0,0,0.2); /* Ink bleed effect */
+    }
+    .ticket-subtitle { font-size: 0.7rem; color: #475569; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 700; }
     
     .ticket-item {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       font-size: 0.85rem;
       border-bottom: 1px dotted #e2e8f0;
-      padding-bottom: 8px;
+      padding-bottom: 12px;
+      color: #2d3748;
     }
     .ticket-item:last-child { border-bottom: none; }
-    .ticket-item-qty { font-weight: 800; margin-right: 8px; }
-    .ticket-item-opts { display: block; font-size: 0.7rem; color: #64748b; margin-top: 2px; }
+    .ticket-item-qty { font-weight: 900; margin-right: 8px; color: #000; }
+    .ticket-item-opts { display: block; font-size: 0.7rem; color: #718096; margin-top: 5px; font-style: italic; }
     
     .ticket-total {
-      margin-top: 20px;
+      margin: 0 24px 20px 24px;
       padding-top: 20px;
-      border-top: 2px dashed #e2e8f0;
+      border-top: 3px double #000;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
     }
-    .ticket-total-label { font-weight: 800; font-size: 1rem; }
-    .ticket-total-val { font-weight: 900; font-size: 1.4rem; color: #000; }
+    .ticket-total-label { font-weight: 900; font-size: 1.2rem; }
+    .ticket-total-val { font-weight: 900; font-size: 1.8rem; color: #000; }
     
-    .ticket-footer {
-      padding: 20px;
+    .ticket-footer-actions {
+      padding: 20px 24px;
       background: #f8fafc;
       display: flex;
       gap: 12px;
@@ -2313,39 +2347,45 @@
       background: #00e65b;
       color: #000;
       border: none;
-      padding: 14px;
+      padding: 16px;
       border-radius: 8px;
-      font-weight: 800;
-      font-size: 0.9rem;
+      font-weight: 900;
+      font-size: 0.95rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
+    .btn-ticket-confirm:hover { background: #00ff66; transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,230,91,0.4); }
+    
     .btn-ticket-edit {
       flex: 1;
-      background: #e2e8f0;
-      color: #475569;
-      border: none;
-      padding: 14px;
+      background: #fff;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      padding: 16px;
       border-radius: 8px;
       font-weight: 700;
       font-size: 0.85rem;
       cursor: pointer;
+      transition: all 0.2s;
     }
+    .btn-ticket-edit:hover { background: #f1f5f9; color: #334155; }
     
-    /* Paper edge effect */
     .ticket-container::after {
       content: "";
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 6px;
-      background-image: radial-gradient(circle, #fff 3px, transparent 0);
-      background-size: 12px 12px;
-      background-position: -6px 0;
+      height: 10px;
+      background-image: radial-gradient(circle, #f8fafc 5px, transparent 0);
+      background-size: 20px 20px;
+      background-position: -10px 0;
     }
   </style>
 
@@ -2668,10 +2708,10 @@
         <span class="ticket-total-label">TOTAL</span>
         <span class="ticket-total-val" id="ticket-total-val">$0.00</span>
       </div>
-      <div style="padding: 10px 20px; text-align: center; font-size: 0.65rem; color: #94a3b8; font-style: italic;">
+      <div style="padding: 10px 24px; text-align: center; font-size: 0.65rem; color: #94a3b8; font-style: italic; background: #f8fafc;">
         *Este es un presupuesto estimado. El pago se realiza al recibir.
       </div>
-      <div class="ticket-footer">
+      <div class="ticket-footer-actions">
         <button class="btn-ticket-edit" onclick="closeDonaFideTicket()">Editar</button>
         <button class="btn-ticket-confirm" onclick="sendDonaFideWhatsAppConfirmed()">
           <i class="fab fa-whatsapp"></i> ENVIAR YA
