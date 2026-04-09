@@ -2944,6 +2944,12 @@
       
       if (!modal || !list) return;
 
+      // PORTAL PATTERN: Move the ticket to document.body to escape any
+      // stacking context created by overflow:hidden/auto parents.
+      if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+
       list.innerHTML = '';
       let subtotal = 0;
 
@@ -2965,7 +2971,7 @@
             <span style="font-weight:700;">${menuData.name}</span>
             <span class="ticket-item-opts">${s}, ${q}, ${vText}</span>
           </div>
-          <div style="font-weight:700;">$${itemPrice}.00</div>
+          <div style="font-weight:700; white-space:nowrap;">$${itemPrice}.00</div>
         `;
         list.appendChild(div);
       });
@@ -2973,6 +2979,7 @@
       totalEl.innerText = `$${subtotal.toFixed(2)}`;
       modal.classList.add('active');
     }
+
 
     function closeDonaFideTicket() {
       const modal = document.getElementById('donafide-ticket-modal');
