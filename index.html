@@ -2630,8 +2630,9 @@
       const newItem = {
         id: Date.now() + Math.random(),
         menuIndex: menuIndex,
-        sauce: 'Verde', // Default
-        onion: 'Con Cebolla' // Default
+        sauce: 'Verde',
+        cheese: 'Con Queso',
+        veggies: 'Con Verdura'
       };
       donaFideOrderList.push(newItem);
       renderDFOrder();
@@ -2688,11 +2689,21 @@
             </div>
           </div>
 
-          <div class="config-group" style="margin-bottom: 0;">
-            <label class="config-label">¿Con cebolla?</label>
-            <div class="option-group">
-              <button class="option-btn ${item.onion === 'Con Cebolla' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'onion', 'Con Cebolla')">Sí</button>
-              <button class="option-btn ${item.onion === 'Sin Cebolla' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'onion', 'Sin Cebolla')">🚫 No</button>
+          <div style="display: flex; gap: 10px;">
+            <div class="config-group" style="flex: 1; margin-bottom: 0;">
+              <label class="config-label">¿Con Queso?</label>
+              <div class="option-group">
+                <button class="option-btn ${item.cheese === 'Con Queso' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'cheese', 'Con Queso')">Sí</button>
+                <button class="option-btn ${item.cheese === 'Sin Queso' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'cheese', 'Sin Queso')">🚫 No</button>
+              </div>
+            </div>
+
+            <div class="config-group" style="flex: 1; margin-bottom: 0;">
+              <label class="config-label">¿Con Verdura?</label>
+              <div class="option-group">
+                <button class="option-btn ${item.veggies === 'Con Verdura' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'veggies', 'Con Verdura')">Sí</button>
+                <button class="option-btn ${item.veggies === 'Sin Verdura' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'veggies', 'Sin Verdura')">🚫 No</button>
+              </div>
             </div>
           </div>
         `;
@@ -2709,8 +2720,18 @@
         return;
       }
 
+      let subtotal = 0;
+      let orderLines = donaFideOrderList.map(item => {
+        const menuData = donaFideMenuData[item.menuIndex];
+        subtotal += menuData.price;
+        const s = item.sauce === 'Sin Salsa' ? 'Sin salsa' : `Salsa ${item.sauce}`;
+        const q = item.cheese === 'Sin Queso' ? 'Sin queso' : 'Con queso';
+        const v = item.veggies === 'Sin Verdura' ? 'Sin verdura' : 'Con verdura';
+        return `• ${menuData.name} (${s}, ${q}, ${v})`;
+      });
+
       const phone = "522331072438";
-      const message = `🌮 Hola MotoClick! Quiero mi orden de Doña Fide:\n\n📝 MI PEDIDO:\n${orderLines.join('\n')}\n\n💰 TOTAL ESTIMADO: $${total}.00\n\n🛵 ¿Me lo traen calientito?`;
+      const message = `🌮 Hola MotoClick! Quiero mi orden de Doña Fide:\n\n📝 MI PEDIDO:\n${orderLines.join('\n')}\n\n💰 SUBTOTAL: $${subtotal}.00\n\n🛵 ¿Me lo traen calientito?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       handleManualModalClose();
