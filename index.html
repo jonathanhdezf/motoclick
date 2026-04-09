@@ -1086,6 +1086,77 @@
     .partner-modal-btn-cancel { width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .partner-modal-btn-cancel:hover { background: rgba(255,255,255,0.1); }
     .partner-modal-overlay { display: flex !important; align-items: center; justify-content: center; }
+
+    /* Interactive Menu Styles */
+    .menu-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,230,91,0.2) transparent;
+    }
+    .menu-items-list::-webkit-scrollbar { width: 4px; }
+    .menu-items-list::-webkit-scrollbar-thumb { background: rgba(0,230,91,0.2); border-radius: 10px; }
+
+    .menu-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.03);
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.2s ease;
+    }
+    .menu-item-row:hover { background: rgba(255,255,255,0.06); border-color: rgba(0,230,91,0.15); }
+    
+    .item-info { text-align: left; }
+    .item-name { display: block; font-size: 0.9rem; font-weight: 700; color: #fff; }
+    .item-price { font-size: 0.75rem; color: #00e65b; font-weight: 600; opacity: 0.9; }
+    
+    .item-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.2);
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .btn-qty {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .btn-minus { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn-plus { background: #00e65b; color: #000; }
+    .btn-qty:active { transform: scale(0.9); }
+    .item-qty { font-weight: 800; color: #fff; font-size: 1rem; min-width: 20px; text-align: center; }
+
+    .menu-total-container {
+      background: rgba(0,230,91,0.05);
+      border: 1px solid rgba(0,230,91,0.2);
+      padding: 12px 16px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .total-label { font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .total-val { font-size: 1.2rem; font-weight: 900; color: #00e65b; }
   </style>
 </head>
 <body>
@@ -2265,18 +2336,22 @@
     <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
       <button class="menu-close" onclick="closeDonaFideModal()">&times;</button>
       <div class="menu-content">
-        <img src="assets/donafideblanco.png" alt="Doña Fide" title="Logo Doña Fide" class="menu-logo partner-modal-logo" style="height: 150px;">
-        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Doña Fide</h3>
-        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">¿Se te antojó algo de Doña Fide? Nosotros vamos por ello.</p>
+        <img src="assets/donafideblanco.png" alt="Doña Fide" title="Logo Doña Fide" class="menu-logo partner-modal-logo" style="height: 120px;">
+        <h3 style="margin-bottom: 0.1rem; color: #fff;">Antojitos Doña Fide</h3>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1.5rem;">Crea tu orden seleccionando los productos:</p>
         
-        <div style="margin-bottom: 1.5rem; text-align: left;">
-          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">Tu Pedido</label>
-          <textarea id="donafide-textarea" class="partner-modal-textarea" placeholder="Enchiladas, Tacos Dorados, Chalupas etc"></textarea>
+        <div class="menu-items-list" id="donafide-items">
+          <!-- Items will be generated here -->
+        </div>
+
+        <div class="menu-total-container">
+          <span class="total-label">Total estimado</span>
+          <span class="total-val" id="donafide-total">$0.00</span>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <button onclick="sendDonaFideWhatsApp()" class="partner-modal-btn-confirm">
-            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Confirmar Pedido
           </button>
           <button onclick="closeDonaFideModal()" class="partner-modal-btn-cancel">
             Regresar
@@ -2473,13 +2548,87 @@
       handleManualModalClose();
     }
 
-    function openDonaFideModal() { openPartnerModal('donafide-modal', 'donafide'); }
+    function openDonaFideModal() { 
+      initDonaFideMenu();
+      openPartnerModal('donafide-modal', 'donafide'); 
+    }
     function closeDonaFideModal() { handleManualModalClose(); }
+
+    const donaFideMenuData = [
+      { name: "Tacos (3 pzas)", price: 18, emoji: "🌮" },
+      { name: "Molotes (3 pzas)", price: 18, emoji: "🌯" },
+      { name: "Chalupas (3 pzas)", price: 18, emoji: "🥘" },
+      { name: "Enchiladas (3 pzas)", price: 18, emoji: "🌶️" },
+      { name: "Enfrijoladas (3 pzas)", price: 18, emoji: "🥣" },
+      { name: "Tostadas (3 pzas)", price: 18, emoji: "💿" },
+      { name: "Quesadilla Pollo", price: 12, emoji: "🧀" },
+      { name: "Quesadilla Queso", price: 12, emoji: "🧀" }
+    ];
+    let donaFideOrder = {};
+
+    function initDonaFideMenu() {
+      const container = document.getElementById('donafide-items');
+      if (!container) return;
+      container.innerHTML = '';
+      donaFideOrder = {};
+      
+      donaFideMenuData.forEach((item, index) => {
+        donaFideOrder[index] = 0;
+        const row = document.createElement('div');
+        row.className = 'menu-item-row';
+        row.innerHTML = `
+          <div class="item-info">
+            <span class="item-name">${item.emoji} ${item.name}</span>
+            <span class="item-price">$${item.price}.00</span>
+          </div>
+          <div class="item-controls">
+            <button class="btn-qty btn-minus" onclick="updateDFQty(${index}, -1)">-</button>
+            <span class="item-qty" id="df-qty-${index}">0</span>
+            <button class="btn-qty btn-plus" onclick="updateDFQty(${index}, 1)">+</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+      updateDFTotal();
+    }
+
+    function updateDFQty(index, delta) {
+      const newQty = Math.max(0, donaFideOrder[index] + delta);
+      donaFideOrder[index] = newQty;
+      const el = document.getElementById(`df-qty-${index}`);
+      if (el) el.innerText = newQty;
+      updateDFTotal();
+    }
+
+    function updateDFTotal() {
+      let total = 0;
+      donaFideMenuData.forEach((item, index) => {
+        total += item.price * donaFideOrder[index];
+      });
+      const el = document.getElementById('donafide-total');
+      if (el) el.innerText = `$${total.toFixed(2)}`;
+    }
+
     function sendDonaFideWhatsApp() {
-      const text = document.getElementById('donafide-textarea').value.trim();
-      if (!text) { alert("Por favor dinos qué se te antojó de Doña Fide  taco🌮😋"); return; }
+      let orderLines = [];
+      let total = 0;
+
+      donaFideMenuData.forEach((item, index) => {
+        const qty = donaFideOrder[index];
+        if (qty > 0) {
+          const subtotal = qty * item.price;
+          orderLines.push(`${qty}x ${item.name} ($${subtotal})`);
+          total += subtotal;
+        }
+      });
+
+      if (orderLines.length === 0) {
+        alert("¡Selecciona al menos un antojito para tu orden! 🌮😋");
+        return;
+      }
+
       const phone = "522331072438";
-      const message = `🌮 Hola MotoClick! Se me antojó algo de Doña Fide:\n\n📦 MI ORDEN:\n${text}\n\n🛵 ¿Me lo traen calientito?`;
+      const message = `🌮 Hola MotoClick! Quiero mi orden de Doña Fide:\n\n📝 MI PEDIDO:\n${orderLines.join('\n')}\n\n💰 TOTAL ESTIMADO: $${total}.00\n\n🛵 ¿Me lo traen calientito?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
       handleManualModalClose();
