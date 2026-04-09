@@ -1707,8 +1707,6 @@
         <div class="promo-badge">¡Dinámica Galaxy! 🛸⭐</div>
         <h2 class="promo-title">SUPER <span>MARIO</span> GALAXY</h2>
         <p class="promo-desc">
-          El estreno de #SuperMarioGalaxy nos tiene muy emocionados, ¡especialmente por el color Riverside! 😍 Queremos saber qué cosas locas has pedido a domicilio. 🦖 ¿Cuál es el objeto más grande o extraño que MotoClick te ha traído?
-        </p>
         <p class="promo-desc promo-contest-desc">
           La respuesta más creativa se ganará un <strong>¡Pedido GRATIS de hasta $200!*</strong> 🛵💨 (Aplican términos y condiciones).
         </p>
@@ -1718,33 +1716,6 @@
         <span class="promo-price promo-app-hint">
           👇 Si no has pedido nada raro aún, ¡Aprovecha nuestra App!
         </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Doña Fide Order Preview Ticket -->
-  <div class="preview-ticket-overlay" id="donafide-ticket-modal">
-    <div class="ticket-container animate-fade-in-up">
-      <div class="ticket-header">
-        <img src="assets/logoblancomotoclick.png" alt="MotoClick" class="ticket-logo">
-        <div class="ticket-subtitle">Resumen de Pedido</div>
-        <div class="ticket-title" id="ticket-shop-name">Doña Fide</div>
-      </div>
-      <div class="ticket-body" id="ticket-items-list">
-        <!-- Receipt items injection -->
-      </div>
-      <div class="ticket-total">
-        <span class="ticket-total-label">TOTAL</span>
-        <span class="ticket-total-val" id="ticket-total-val">$0.00</span>
-      </div>
-      <div style="padding: 10px 20px; text-align: center; font-size: 0.65rem; color: #94a3b8; font-style: italic;">
-        *Este es un presupuesto estimado. El pago se realiza al recibir.
-      </div>
-      <div class="ticket-footer">
-        <button class="btn-ticket-edit" onclick="closeDonaFideTicket()">Editar</button>
-        <button class="btn-ticket-confirm" onclick="sendDonaFideWhatsAppConfirmed()">
-          <i class="fab fa-whatsapp"></i> ENVIAR YA
-        </button>
       </div>
     </div>
   </div>
@@ -2563,6 +2534,33 @@
     </div>
   </div>
 
+  <!-- Doña Fide Order Preview Ticket -->
+  <div class="preview-ticket-overlay" id="donafide-ticket-modal">
+    <div class="ticket-container animate-fade-in-up">
+      <div class="ticket-header">
+        <img src="assets/logoblancomotoclick.png" alt="MotoClick" class="ticket-logo">
+        <div class="ticket-subtitle">Resumen de Pedido</div>
+        <div class="ticket-title" id="ticket-shop-name">Doña Fide</div>
+      </div>
+      <div class="ticket-body" id="ticket-items-list">
+        <!-- Receipt items injection -->
+      </div>
+      <div class="ticket-total">
+        <span class="ticket-total-label">TOTAL</span>
+        <span class="ticket-total-val" id="ticket-total-val">$0.00</span>
+      </div>
+      <div style="padding: 10px 20px; text-align: center; font-size: 0.65rem; color: #94a3b8; font-style: italic;">
+        *Este es un presupuesto estimado. El pago se realiza al recibir.
+      </div>
+      <div class="ticket-footer">
+        <button class="btn-ticket-edit" onclick="closeDonaFideTicket()">Editar</button>
+        <button class="btn-ticket-confirm" onclick="sendDonaFideWhatsAppConfirmed()">
+          <i class="fab fa-whatsapp"></i> ENVIAR YA
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tortas Tío Pepe Order Modal -->
   <div class="mobile-menu-overlay partner-modal-overlay" id="tortaspepe-modal">
     <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
@@ -2996,7 +2994,9 @@
       const phone = "522331072438";
       const message = `🌮 Hola MotoClick! Quiero mi orden de Doña Fide:\n\n📝 MI PEDIDO:\n${orderLines.join('\n')}\n\n💰 SUBTOTAL: $${subtotal}.00\n\n🛵 ¿Me lo traen calientito?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      
       window.open(url, '_blank');
+      closeDonaFideTicket();
       handleManualModalClose();
     }
 
