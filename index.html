@@ -2672,6 +2672,10 @@
         const menuData = donaFideMenuData[item.menuIndex];
         subtotal += menuData.price;
         
+        // Conditional Label based on dish type
+        const isCebollaDish = ['Chalupas (3 pzas)', 'Enchiladas (3 pzas)', 'Enfrijoladas (3 pzas)'].includes(menuData.name);
+        const veggieLabel = isCebollaDish ? '¿Con Cebolla?' : '¿Con Verdura?';
+        
         const card = document.createElement('div');
         card.className = 'config-card';
         card.innerHTML = `
@@ -2699,7 +2703,7 @@
             </div>
 
             <div class="config-group" style="flex: 1; margin-bottom: 0;">
-              <label class="config-label">¿Con Verdura?</label>
+              <label class="config-label">${veggieLabel}</label>
               <div class="option-group">
                 <button class="option-btn ${item.veggies === 'Con Verdura' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'veggies', 'Con Verdura')">Sí</button>
                 <button class="option-btn ${item.veggies === 'Sin Verdura' ? 'active' : ''}" onclick="updateDFOption(${item.id}, 'veggies', 'Sin Verdura')">🚫 No</button>
@@ -2724,10 +2728,19 @@
       let orderLines = donaFideOrderList.map(item => {
         const menuData = donaFideMenuData[item.menuIndex];
         subtotal += menuData.price;
+        const isCebollaDish = ['Chalupas (3 pzas)', 'Enchiladas (3 pzas)', 'Enfrijoladas (3 pzas)'].includes(menuData.name);
+        
         const s = item.sauce === 'Sin Salsa' ? 'Sin salsa' : `Salsa ${item.sauce}`;
         const q = item.cheese === 'Sin Queso' ? 'Sin queso' : 'Con queso';
-        const v = item.veggies === 'Sin Verdura' ? 'Sin verdura' : 'Con verdura';
-        return `• ${menuData.name} (${s}, ${q}, ${v})`;
+        
+        let vText = '';
+        if (isCebollaDish) {
+          vText = item.veggies === 'Sin Verdura' ? 'Sin cebolla' : 'Con cebolla';
+        } else {
+          vText = item.veggies === 'Sin Verdura' ? 'Sin verdura' : 'Con verdura';
+        }
+
+        return `• ${menuData.name} (${s}, ${q}, ${vText})`;
       });
 
       const phone = "522331072438";
