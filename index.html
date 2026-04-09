@@ -1617,6 +1617,13 @@
           <span class="alliance-name">Matu's Tacos</span>
           <span class="alliance-type">Taquería</span>
         </div>
+        <div class="alliance-item sa-stagger sa-d3 alliance-item-partner" onclick="openFocoTezModal()">
+          <div class="alliance-logo-box">
+            <img src="assets/focotezblanco.png" alt="FOCO TEZ" title="Hacer pedido en FOCO TEZ" class="alliance-logo alliance-logo-img" style="height: 180px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.15));">
+          </div>
+          <span class="alliance-name">FOCO TEZ</span>
+          <span class="alliance-type">Iluminación y Autopartes</span>
+        </div>
       </div>
     </section>
 
@@ -2468,7 +2475,45 @@
       // Force initial sync
       syncVisibility();
     })();
+    function openFocoTezModal() { openPartnerModal('focotez-modal', 'focotez'); }
+    function closeFocoTezModal() { handleManualModalClose(); }
+    function sendFocoTezWhatsApp() {
+      const text = document.getElementById('focotez-textarea').value.trim();
+      if (!text) { alert("Dinos qué refacción o foco necesitas de FOCO TEZ 💡🚗"); return; }
+      const phone = "522331072438";
+      const message = `💡 Hola MotoClick! Necesito un pedido de FOCO TEZ Teziutlán:\n\n🚗 REFACCIONES/ACCESORIOS:\n${text}\n\n🛵 ¿Me apoyan con el mandado?`;
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      handleManualModalClose();
+    }
   </script>
+
+  <!-- Foco Tez Order Modal -->
+  <div class="mobile-menu-overlay partner-modal-overlay" id="focotez-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
+      <button class="menu-close" onclick="closeFocoTezModal()">&times;</button>
+      <div class="menu-content">
+        <img src="assets/focotezblanco.png" alt="Foco Tez" title="Logo Foco Tez" class="menu-logo partner-modal-logo" style="height: 150px;">
+        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en Foco Tez</h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Refacciones, focos y accesorios automotrices.</p>
+        
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">¿Qué necesitas?</label>
+          <textarea id="focotez-textarea" class="partner-modal-textarea" placeholder="Ej: Foco H4, Balatas, Aceite..."></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onclick="sendFocoTezWhatsApp()" class="partner-modal-btn-confirm">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+          </button>
+          <button onclick="closeFocoTezModal()" class="partner-modal-btn-cancel">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Super Ahorro Order Modal -->
   <div class="mobile-menu-overlay partner-modal-overlay" id="super-ahorro-modal">
     <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
@@ -2731,7 +2776,8 @@
       { id: 'tortaspepe-modal', textId: 'tortaspepe-textarea', state: 'tortaspepe' },
       { id: 'matustacos-modal', textId: 'matustacos-textarea', state: 'matustacos' },
       { id: 'lafogata-modal', textId: 'lafogata-textarea', state: 'lafogata' },
-      { id: 'farmaciasahorro-modal', textId: 'farmaciasahorro-textarea', state: 'farmaciasahorro' }
+      { id: 'farmaciasahorro-modal', textId: 'farmaciasahorro-textarea', state: 'farmaciasahorro' },
+      { id: 'focotez-modal', textId: 'focotez-textarea', state: 'focotez' }
     ];
 
     function openPartnerModal(id, state) {
