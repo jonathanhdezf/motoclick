@@ -3042,6 +3042,11 @@
     }
 
     function sendDonaFideWhatsAppConfirmed() {
+      // Generate unique Order ID
+      const orderId = 'MC-' + Math.floor(1000 + Math.random() * 9000);
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
       let subtotal = 0;
       let orderLines = donaFideOrderList.map(item => {
         const menuData = donaFideMenuData[item.menuIndex];
@@ -3054,7 +3059,7 @@
       });
 
       const phone = "522331072438";
-      const message = `🌮 Hola MotoClick! Quiero mi orden de Doña Fide:\n\n📝 MI PEDIDO:\n${orderLines.join('\n')}\n\n💰 SUBTOTAL: $${subtotal}.00\n\n🛵 ¿Me lo traen calientito?`;
+      const message = `🌮 *PEDIDO: #${orderId}*\n⏰ *HORA:* ${timeStr}\n\nHola MotoClick! Quiero mi orden de Doña Fide:\n\n📝 *MI PEDIDO:*\n${orderLines.join('\n')}\n\n💰 *SUBTOTAL:* $${subtotal}.00\n\n🛵 ¿Me lo traen calientito?`;
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       
       window.open(url, '_blank');
