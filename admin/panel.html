@@ -639,10 +639,10 @@
         </div>
         <h3 class="m-0 mb-sm">¿Cerrar Sesión?</h3>
         <p class="text-secondary mb-xl fs-sm">Se finalizará tu sesión administrativa actual.</p>
-        <div class="modal-actions" style="margin-top: 0;">
-          <button class="btn btn-secondary btn-block" onclick="closeLogoutModal()">Cancelar</button>
-          <button class="btn btn-primary btn-block btn-bg-danger" onclick="confirmLogout()">Sí, Salir</button>
-        </div>
+          <div class="modal-actions" style="margin-top: 0;">
+            <button class="btn btn-secondary btn-block" onclick="closeLogoutModal()">Cancelar</button>
+            <button class="btn btn-primary btn-block btn-bg-danger" id="btn-do-logout">Sí, Salir</button>
+          </div>
       </div>
     </div>
 
@@ -1332,12 +1332,19 @@
       if (window.handleLogout) {
         await window.handleLogout();
       } else {
-        // Fallback si utils.js no cargó
         localStorage.clear(); 
         sessionStorage.clear();
         window.location.replace('../index.html');
       }
     }
+
+    // Inicializar listeners del modal de logout
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnLogout = document.getElementById('btn-do-logout');
+      if (btnLogout) {
+        btnLogout.addEventListener('click', confirmLogout);
+      }
+    });
 
     function printIdentityReport(userId, name, fullName, idPhoto, profilePhoto) {
       if (!fullName || fullName === 'N/A') fullName = name;
