@@ -219,27 +219,49 @@ class MotoClickStore {
    * Usa MotoClickAuth.signIn() que maneja sesiones JWT
    */
   async loginUser(phone, role, pin) {
-    // Si tenemos Auth, usar el flujo de Supabase Auth
+    // Si tenemos Auth, intentar flujo de Supabase Auth
     if (this._auth && typeof this._auth.signIn === 'function') {
       const result = await this._auth.signIn(phone, pin || phone.slice(-4));
-      if (!result.success) return result;
-
-      // El perfil ya se cargó por el listener de auth
-      this._currentUser = this._auth.getCurrentUser();
-
-      // Verificar que el rol coincida (seguridad extra)
-      if (role && this._currentUser && this._currentUser.role !== role) {
-        // Cerrar sesión porque el rol no coincide
-        await this._auth.signOut();
-        this._currentUser = null;
-        localStorage.removeItem('motoclick_current_user');
-        return { success: false, error: 'Esta cuenta no tiene permisos de ' + (role === 'client' ? 'cliente' : 'repartidor') + '.' };
+      
+      // Si el login fue exitoso, terminar
+      if (result.success) {
+        this._currentUser = this._auth.getCurrentUser();
+        if (role && this._currentUser && this._currentUser.role !== role) {
+          await this._auth.signOut();
+          return { success: false, error: 'Esta cuenta no tiene permisos de ' + (role === 'client' ? 'cliente' : 'repartidor') + '.' };
+        }
+        return { success: true, user: this._currentUser };
       }
 
-      return { success: true, user: this._currentUser };
+      // 🛡️ AUTO-MIGRACIÓN: Si falla porque el usuario no existe en Auth, pero sí en DB
+      console.log('[Store] Auth falló, intentando login legacy para migración...');
+      const legacyResult = await this._fb_loginUser(phone, role, pin);
+      
+      if (legacyResult.success) {
+        console.log('[Store] Usuario legacy detectado. Migrando a Supabase Auth...');
+        // Registrar al usuario en Auth de forma transparente
+        const signUpResult = await this._auth.signUp({
+          phone: phone,
+          pin: pin || phone.slice(-4),
+          name: legacyResult.user.name,
+          role: role,
+          extra: {
+            address: legacyResult.user.address,
+            vehicle: legacyResult.user.vehicle
+          }
+        });
+
+        if (signUpResult.success) {
+          showToast('Cuenta actualizada al nuevo sistema de seguridad 🛡️', 'success');
+          this._currentUser = signUpResult.user;
+          return { success: true, user: this._currentUser };
+        }
+      }
+
+      return result; // Devolver el error original de Auth si la migración no aplica
     }
 
-    // Fallback legacy: login directo por DB (sin auth)
+    // Fallback legacy total (si Auth no está cargado)
     return this._fb_loginUser(phone, role, pin);
   }
 
