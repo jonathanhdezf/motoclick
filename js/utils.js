@@ -469,8 +469,12 @@ function openProfileModal() {
     modal.id = 'profile-modal';
     modal.className = 'modal-overlay animate-fade-in';
     
+    // Preparar info de OAuth (Google/Facebook)
+    const avatarUrl = user.profile_photo_url || user.photo || '../assets/logo_motoclick.png';
+    const userEmail = user.email || 'Sin correo vinculado';
+
     // Different fields based on role
-    const extraField = user.role === 'client' 
+    const roleContent = user.role === 'client' 
       ? `<div class="form-group mb-0">
            <label class="form-label">Mis Direcciones Favoritas</label>
            <div id="favorite-addresses-container" style="display: flex; flex-direction: column; gap: var(--space-sm); margin-bottom: var(--space-md); max-height: 200px; overflow-y: auto; padding-right: 5px;"></div>
@@ -478,18 +482,8 @@ function openProfileModal() {
               <i class="fas fa-map-marker-alt"></i> Agregar nueva dirección con mapa
            </button>
          </div>`
-      : `<div class="form-group" style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
-           <label class="form-label" style="text-align: left;">Foto de perfil</label>
-           <div class="profile-photo-preview" style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--primary-500); margin: 0 auto var(--space-sm); overflow: hidden; display: flex; align-items: center; justify-content: center;">
-             ${(user.profile_photo_url || user.photo) ? `<img src="${user.profile_photo_url || user.photo}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;">` : `<span id="modal-photo-icon" style="font-size: 2.5rem;">👤</span>`}
-           </div>
-           <label class="btn btn-sm btn-secondary" style="cursor: pointer; display: inline-block;">
-             Cambiar Foto
-             <input type="file" id="profile-photo" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
-           </label>
-         </div>
-         <div class="form-group">
-           <label class="form-label">Vehículo</label>
+      : `<div class="form-group">
+           <label class="form-label">Vehículo de Trabajo</label>
            <select id="profile-vehicle" class="form-select">
              <option value="Motocicleta" ${user.vehicle === 'Motocicleta' ? 'selected' : ''}>Motocicleta</option>
              <option value="Bicicleta" ${user.vehicle === 'Bicicleta' ? 'selected' : ''}>Bicicleta</option>
@@ -497,29 +491,43 @@ function openProfileModal() {
            </select>
          </div>`;
 
-    modal.innerHTML = `
-      <div class="modal-content card-glass">
-        <div class="modal-header">
-          <h3>Mi Perfil</h3>
+    modal.innerHTML = \`
+      <div class="modal-content card-glass" style="max-width: 450px;">
+        <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+          <h3 style="font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px;">Mi Perfil Premium</h3>
           <button class="modal-close" onclick="document.getElementById('profile-modal').remove()">&times;</button>
         </div>
-        <div class="modal-body mt-md">
-          <div class="form-group">
-            <label class="form-label">Nombre</label>
-            <input type="text" id="profile-name" class="form-input" value="${user.name}">
+        
+        <div class="modal-body" style="padding-top: var(--space-md);">
+          <!-- Header de Perfil con Foto de Google -->
+          <div style="text-align: center; margin-bottom: 1.5rem; position: relative;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-card); border: 3px solid var(--primary-500); margin: 0 auto 1rem; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(0,230,91,0.2);">
+              <img src="\${avatarUrl}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='../assets/logo_motoclick.png'">
+            </div>
+            <h4 style="font-size: 1.2rem; color: #fff; margin-bottom: 4px;">\${user.name}</h4>
+            <div style="font-size: 0.85rem; color: var(--primary-500); font-weight: 700; margin-bottom: 8px;">
+               <i class="fas fa-envelope" style="font-size: 0.75rem; margin-right: 4px;"></i> \${userEmail}
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); background: rgba(255,255,255,0.05); display: inline-block; padding: 4px 12px; border-radius: 20px;">
+               <i class="fas fa-phone" style="font-size: 0.75rem; margin-right: 4px;"></i> \${user.phone}
+            </div>
           </div>
+
           <div class="form-group">
-            <label class="form-label">Teléfono</label>
-            <input type="text" id="profile-phone" class="form-input" value="${user.phone}" disabled>
-            <small class="text-muted mt-sm">El teléfono no se puede cambiar.</small>
+            <label class="form-label">Nombre para el repartidor</label>
+            <input type="text" id="profile-name" class="form-input" value="\${user.name}" placeholder="Tu nombre real">
           </div>
-          ${extraField}
+
+          \${roleContent}
+
           <div class="form-group mt-lg">
-            <button class="btn btn-primary btn-block" onclick="saveProfileChanges()">Guardar Cambios</button>
+            <button class="btn btn-primary btn-block" onclick="saveProfileChanges()" style="height: 50px; font-weight: 800; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,230,91,0.3);">
+               Guardar Configuración
+            </button>
           </div>
         </div>
       </div>
-    `;
+    \`;
     document.body.appendChild(modal);
     window._tempProfilePhoto = null;
   }
