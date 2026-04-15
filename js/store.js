@@ -13,6 +13,10 @@
 
 class MotoClickStore {
   constructor() {
+    // Definir global de inmediato para otros scripts
+    window.store = this;
+    window.MotoClickStore = this;
+
     this._listeners = {};
     this._sb = null;
     this._useFallback = true;
