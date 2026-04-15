@@ -1327,11 +1327,16 @@
       modal.style.display = 'none';
     }
 
-    function confirmLogout() {
-      showToast('Cerrando sesión...', 'info');
-      localStorage.clear(); 
-      sessionStorage.clear();
-      window.location.replace('../index.html');
+    async function confirmLogout() {
+      showToast('Cerrando sesión de administrador...', 'info');
+      if (window.handleLogout) {
+        await window.handleLogout();
+      } else {
+        // Fallback si utils.js no cargó
+        localStorage.clear(); 
+        sessionStorage.clear();
+        window.location.replace('../index.html');
+      }
     }
 
     function printIdentityReport(userId, name, fullName, idPhoto, profilePhoto) {
