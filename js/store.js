@@ -1,7 +1,14 @@
 /**
- * MotoClick — Store con Supabase
- * Las funciones que antes eran síncronas ahora son async/await.
- * Si Supabase no está configurado, usa localStorage como fallback.
+ * MotoClick — Store con Supabase Auth
+ * 
+ * INTEGRACIÓN CON SUPABASE AUTH:
+ * - login/register usan supabase.auth (manejo de sesiones JWT)
+ * - Las consultas a la DB usan las políticas RLS con auth.uid()
+ * - Si Auth no está disponible, fallback a login directo por DB (legacy)
+ * 
+ * MIGRACIÓN:
+ * Los usuarios existentes con PIN en texto plano migran automáticamente
+ * al usar auth.signInWithPassword() con el formato email virtual.
  */
 
 class MotoClickStore {
@@ -10,6 +17,7 @@ class MotoClickStore {
     this._sb = null;
     this._useFallback = true;
     this._currentUser = null;
+    this._auth = null;  // Referencia a MotoClickAuth
     this._init();
   }
 
@@ -21,12 +29,39 @@ class MotoClickStore {
     if (typeof supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON !== 'undefined') {
       this._sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
       this._useFallback = false;
+
+      // Inicializar capa de autenticación si está disponible
+      if (typeof MotoClickAuth !== 'undefined') {
+        this._auth = new MotoClickAuth(this._sb);
+        // Restaurar sesión si existe
+        this._restoreSession();
+      }
+
       this._subscribeRealtime();
       this._initPresence();
     } else {
       console.warn('[MotoClick] Supabase no disponible — usando localStorage.');
       this._useFallback = true;
       this._initBroadcast();
+    }
+  }
+
+  /**
+   * Restaurar sesión activa desde Supabase Auth
+   */
+  async _restoreSession() {
+    if (!this._auth || !this._sb) return;
+
+    try {
+      const { data } = await this._sb.auth.getSession();
+      if (data.session) {
+        console.log('[Store] Session restored, loading profile...');
+        await this._auth._onSessionStart(data.session);
+        // Actualizar referencia local
+        this._currentUser = JSON.parse(localStorage.getItem('motoclick_current_user'));
+      }
+    } catch (e) {
+      console.warn('[Store] Session restore failed:', e);
     }
   }
 
@@ -145,19 +180,79 @@ class MotoClickStore {
   }
 
   // ══════════════════════════════════════════════════════════════
-  // USERS
+  // USERS — Autenticación con Supabase Auth
   // ══════════════════════════════════════════════════════════════
+
+  /**
+   * Registrar usuario con Supabase Auth
+   * Usa MotoClickAuth.signUp() que crea cuenta en auth.users
+   * El trigger _mc_on_signup crea automáticamente el perfil en public.users
+   */
   async registerUser(userData) {
-    if (this._useFallback) return this._fb_registerUser(userData);
-    
-    // Payload base (Columnas garantizadas en users)
+    // Si tenemos Auth, usar el flujo de Supabase Auth
+    if (this._auth && typeof this._auth.signUp === 'function') {
+      const result = await this._auth.signUp({
+        phone: userData.phone,
+        pin: userData.pin || userData.phone.slice(-4),
+        name: userData.name,
+        role: userData.role || 'client',
+        extra: {
+          address: userData.address,
+          vehicle: userData.vehicle,
+          photo: userData.photo || userData.profile_photo_url
+        }
+      });
+
+      if (!result.success) return result;
+
+      // El perfil ya se creó por el trigger y se guardó en localStorage
+      this._currentUser = this._auth.getCurrentUser();
+      return { success: true, user: this._currentUser };
+    }
+
+    // Fallback legacy: registro directo en DB (sin auth)
+    return this._fb_registerUser(userData);
+  }
+
+  /**
+   * Iniciar sesión con Supabase Auth
+   * Usa MotoClickAuth.signIn() que maneja sesiones JWT
+   */
+  async loginUser(phone, role, pin) {
+    // Si tenemos Auth, usar el flujo de Supabase Auth
+    if (this._auth && typeof this._auth.signIn === 'function') {
+      const result = await this._auth.signIn(phone, pin || phone.slice(-4));
+      if (!result.success) return result;
+
+      // El perfil ya se cargó por el listener de auth
+      this._currentUser = this._auth.getCurrentUser();
+
+      // Verificar que el rol coincida (seguridad extra)
+      if (role && this._currentUser && this._currentUser.role !== role) {
+        // Cerrar sesión porque el rol no coincide
+        await this._auth.signOut();
+        this._currentUser = null;
+        localStorage.removeItem('motoclick_current_user');
+        return { success: false, error: 'Esta cuenta no tiene permisos de ' + (role === 'client' ? 'cliente' : 'repartidor') + '.' };
+      }
+
+      return { success: true, user: this._currentUser };
+    }
+
+    // Fallback legacy: login directo por DB (sin auth)
+    return this._fb_loginUser(phone, role, pin);
+  }
+
+  /**
+   * Fallback legacy — registro directo en DB
+   */
+  async _fb_registerUser(userData) {
     const payload = {
-      name: userData.name, 
-      phone: userData.phone, 
+      name: userData.name,
+      phone: userData.phone,
       role: userData.role
     };
 
-    // Intentar inserción con columnas extendidas (puede fallar si el esquema es viejo o tiene caché)
     const extendedPayload = { ...payload };
     if (userData.pin) extendedPayload.pin = userData.pin;
     if (userData.address) extendedPayload.address = userData.address;
@@ -167,12 +262,11 @@ class MotoClickStore {
     }
 
     let { data, error } = await this._sb.from('users').insert([extendedPayload]).select().single();
-    
-    // Si falla por columna inexistente (address, vehicle, pin), reintentamos con el payload base
+
     if (error && (error.code === 'PGRST105' || error.message.includes('column'))) {
-      console.warn('[Store] Registro: Reintentando con esquema simplificado por error de columnas.');
+      console.warn('[Store] Registro: Reintentando con esquema simplificado.');
       const retry = await this._sb.from('users').insert([payload]).select().single();
-      data = retry.data; 
+      data = retry.data;
       error = retry.error;
     }
 
@@ -184,12 +278,14 @@ class MotoClickStore {
     return { success: true, user: data };
   }
 
-  async loginUser(phone, role, pin) {
-    if (this._useFallback) return this._fb_loginUser(phone, role, pin);
+  /**
+   * Fallback legacy — login directo por DB
+   */
+  async _fb_loginUser(phone, role, pin) {
     const { data, error } = await this._sb.from('users')
       .select('*').eq('phone', phone).eq('role', role).maybeSingle();
     if (error || !data) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
-    
+
     if (pin) {
       const expectedPin = data.pin || phone.slice(-4);
       if (pin !== expectedPin) {
@@ -243,9 +339,81 @@ class MotoClickStore {
 
   getCurrentUser() { return this._currentUser; }
 
-  logout() {
+  /**
+   * Cerrar sesión — usa Supabase Auth si está disponible
+   */
+  async logout() {
+    if (this._auth && typeof this._auth.signOut === 'function') {
+      await this._auth.signOut();
+    }
     this._currentUser = null;
     localStorage.removeItem('motoclick_current_user');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // SOCIAL LOGIN — Google
+  // ══════════════════════════════════════════════════════════════
+
+  /**
+   * Iniciar sesión con Google
+   * Redirige al usuario a Google OAuth. Al regresar, se procesa la sesión.
+   * @param {string} role - 'client' | 'driver'
+   */
+  async loginWithGoogle(role = 'client') {
+    if (this._auth && typeof this._auth.signInWithGoogle === 'function') {
+      return await this._auth.signInWithGoogle(role);
+    }
+    return { success: false, error: 'Google Auth no disponible' };
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // SOCIAL LOGIN — Facebook
+  // ══════════════════════════════════════════════════════════════
+
+  /**
+   * Iniciar sesión con Facebook
+   * Redirige al usuario a Facebook OAuth. Al regresar, se procesa la sesión.
+   * @param {string} role - 'client' | 'driver'
+   */
+  async loginWithFacebook(role = 'client') {
+    if (this._auth && typeof this._auth.signInWithFacebook === 'function') {
+      return await this._auth.signInWithFacebook(role);
+    }
+    return { success: false, error: 'Facebook Auth no disponible' };
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // OAUTH POST-REDIRECT — Completar perfil al volver de OAuth
+  // ══════════════════════════════════════════════════════════════
+
+  /**
+   * Se llama en las páginas de destino después de OAuth redirect
+   * para asegurar que el perfil del usuario está completo.
+   * Verifica si necesita ingresar teléfono.
+   */
+  async handleOAuthCallback(role = 'client') {
+    if (this._auth) {
+      if (typeof this._auth.checkOAuthProfileComplete === 'function') {
+        return await this._auth.checkOAuthProfileComplete(role);
+      }
+      if (typeof this._auth.completeOAuthProfile === 'function') {
+        const session = await this._sb?.auth?.getSession();
+        if (session?.data?.session?.user) {
+          return await this._auth.completeOAuthProfile(session.data.session.user, role);
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Guardar teléfono para usuario que vino de OAuth
+   */
+  async saveOAuthPhone(phone) {
+    if (this._auth && typeof this._auth.saveOAuthPhone === 'function') {
+      return await this._auth.saveOAuthPhone(phone);
+    }
+    return { success: false, error: 'Auth no disponible' };
   }
 
   // ══════════════════════════════════════════════════════════════

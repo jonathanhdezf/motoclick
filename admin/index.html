@@ -33,23 +33,80 @@
   </div>
   
   <script src="../js/utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/store.js"></script>
+  <script src="../js/utils.js"></script>
   <script>
-    if (localStorage.getItem('mc_admin_session') === 'true') {
-       window.location.replace('/admin/panel.html');
+    // Verificar sesión activa de admin
+    (function() {
+      const user = store.getCurrentUser();
+      if (user && user.role === 'admin') {
+        window.location.replace('/admin/panel.html');
+      }
+    })();
+
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      const form = e.target;
+      const pass = form.password.value;
+
+      if (!pass || pass.length < 6) {
+        showToast('Contraseña incorrecta.', 'error');
+        return;
+      }
+
+      const btn = form.querySelector('[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Verificando...';
+
+      // Intentar login con Supabase Auth (admin usa email + contraseña)
+      if (store._auth) {
+        // Admin se autentica con email real en Supabase Auth
+        const adminEmail = 'admin@motoclick.app';
+        const result = await store._auth._sb.auth.signInWithPassword({
+          email: adminEmail,
+          password: pass
+        });
+
+        btn.disabled = false; btn.textContent = 'Acceder al Panel';
+
+        if (result.error) {
+          showToast('Contraseña incorrecta, acceso denegado.', 'error');
+          form.password.value = '';
+          return;
+        }
+
+        if (result.data.user) {
+          // Cargar perfil de admin
+          const { data: profile } = await store._sb
+            .from('users')
+            .select('*')
+            .eq('user_id', result.data.user.id)
+            .maybeSingle();
+
+          if (profile && profile.role === 'admin') {
+            store.setCurrentUser(profile);
+            showToast('¡Bienvenido, Administrador! 🛡️', 'success');
+            setTimeout(() => window.location.replace('/admin/panel.html'), 600);
+          } else {
+            showToast('Esta cuenta no tiene permisos de administrador.', 'error');
+            await store._auth.signOut();
+            form.password.value = '';
+          }
+        }
+      } else {
+        // Fallback legacy — sin Auth
+        showToast('Servicio de autenticación no disponible.', 'error');
+        btn.disabled = false; btn.textContent = 'Acceder al Panel';
+      }
     }
 
-    function handleAdminLogin(e) {
-      e.preventDefault();
-      const pass = e.target.password.value;
-      // Contraseña del administrador quemada localmente debido a infraestructura frontend
-      if (pass === 'admin2026') {
-         localStorage.setItem('mc_admin_session', 'true');
-         showToast('Acceso concedido.', 'success');
-         setTimeout(() => { window.location.replace('/admin/panel.html'); }, 600);
-      } else {
-         showToast('Contraseña incorrecta, acceso denegado.', 'error');
-         e.target.password.value = '';
+    async function logoutAdmin() {
+      if (store && typeof store.logout === 'function') {
+        await store.logout();
       }
+      window.location.href = '../';
     }
   </script>
 </body>

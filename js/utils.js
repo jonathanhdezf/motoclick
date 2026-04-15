@@ -257,8 +257,27 @@ function navigateTo(path) {
   window.location.href = path;
 }
 
-function requireAuth(role) {
-  const user = window.store.getCurrentUser();
+/**
+ * Guardia de autenticación — verifica sesión activa y rol
+ * Ahora valida con Supabase Auth session, no solo localStorage
+ */
+async function requireAuth(role) {
+  const store = window.store;
+  if (!store) {
+    console.warn('[Auth] Store no inicializado');
+    return null;
+  }
+
+  // Intentar restaurar sesión desde Supabase Auth si está disponible
+  if (store._auth && store._auth.isAuthenticated && store._auth.isAuthenticated()) {
+    const currentUser = store._auth.getCurrentUser();
+    if (currentUser && currentUser.role === role) {
+      return currentUser;
+    }
+  }
+
+  // Fallback: verificar desde localStorage
+  const user = store.getCurrentUser();
   if (!user || user.role !== role) {
     const redirectPath = role === 'client' ? '../cliente/' : '../repartidor/';
     showToast('Inicia sesión para continuar.', 'warning');
@@ -266,6 +285,37 @@ function requireAuth(role) {
     return null;
   }
   return user;
+}
+
+/**
+ * Cerrar sesión — handler universal para todos los portales
+ */
+async function handleLogout() {
+  const store = window.store;
+  if (!store) {
+    // Si store no existe, redirigir directamente
+    window.location.href = '../';
+    return;
+  }
+
+  try {
+    await store.logout();
+    showToast('Sesión cerrada correctamente', 'info');
+  } catch (e) {
+    console.error('[Auth] Logout error:', e);
+  }
+
+  // Redirigir según el portal actual
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/cliente/')) {
+    setTimeout(() => navigateTo('../cliente/'), 300);
+  } else if (currentPath.includes('/repartidor/')) {
+    setTimeout(() => navigateTo('../repartidor/'), 300);
+  } else if (currentPath.includes('/admin/')) {
+    setTimeout(() => navigateTo('../admin/'), 300);
+  } else {
+    setTimeout(() => navigateTo('../'), 300);
+  }
 }
 
 // ── Leaflet map helpers ──

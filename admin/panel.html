@@ -666,12 +666,16 @@
   <script src="../js/store.js?v=2.1"></script>
   <script src="../js/utils.js?v=2.1"></script>
   <script>
-    // 🛡️ Seguridad Proactiva: Verificar sesión al instante
-    if (!localStorage.getItem('mc_admin_session') && !localStorage.getItem('isAdmin')) {
-      window.location.replace('../index.html');
-    }
+    // 🛡️ Seguridad Proactiva: Verificar sesión de administrador al instante
+    (function() {
+      const user = JSON.parse(localStorage.getItem('motoclick_current_user'));
+      if (!user || user.role !== 'admin') {
+        console.warn('[Admin] Acceso denegado: Sesión inválida o rol insuficiente.');
+        window.location.replace('../index.html');
+      }
+    })();
 
-    const store = new MotoClickStore();
+    const store = window.MotoClickStore;
     let currentUserId = null;
 
     // --- Navigation Logic ---

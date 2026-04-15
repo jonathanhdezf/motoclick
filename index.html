@@ -2738,6 +2738,32 @@
     </div>
   </div>
 
+  <!-- FOCO TEZ Order Modal -->
+  <div class="mobile-menu-overlay partner-modal-overlay" id="focotez-modal">
+    <div class="mobile-menu-container animate-fade-in-up partner-modal-container">
+      <button class="menu-close" onclick="closeFocoTezModal()">&times;</button>
+      <div class="menu-content">
+        <img src="assets/focotezblanco.png" alt="FOCO TEZ" title="Logo FOCO TEZ" class="menu-logo partner-modal-logo" style="height: 130px;">
+        <h3 style="margin-bottom: 0.5rem; color: #fff;">Pedido en FOCO TEZ</h3>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem;">Focos LED, Faros, Baterías y Accesorios Automotrices.</p>
+        
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+          <label style="display: block; font-size: 0.75rem; color: #00e65b; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">¿Qué refacción o accesorio buscas?</label>
+          <textarea id="focotez-textarea" class="partner-modal-textarea" placeholder="Ej: Focos LED H7, Batería, Limpiaparabrisas, Calavera..."></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button onclick="sendFocoTezWhatsApp()" class="partner-modal-btn-confirm">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Pedido
+          </button>
+          <button onclick="closeFocoTezModal()" class="partner-modal-btn-cancel">
+            Regresar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Doña Fide Order Preview Ticket -->
   <div class="preview-ticket-overlay" id="donafide-ticket-modal">
     <div class="ticket-container animate-fade-in-up">

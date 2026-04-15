@@ -40,6 +40,36 @@
     .report-link { color: #00e65b; text-decoration: none; font-size: 0.85rem; font-weight: 700; opacity: 0.8; transition: opacity 0.2s; }
     .report-link:hover { opacity: 1; text-decoration: underline; }
     body { opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+
+    /* Social Login Styles */
+    .social-login-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0 16px;
+    }
+    .social-login-divider::before, .social-login-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border-color);
+    }
+    .social-login-divider .text-muted { font-size: 0.8rem; color: var(--text-muted); }
+    .social-login-buttons {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .btn-social {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 12px; border-radius: 12px;
+      font-size: 0.95rem; font-weight: 600;
+      border: 1px solid var(--border-color);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-primary);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-social:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+    .btn-social:active { transform: scale(0.98); }
+    .social-icon { width: 20px; height: 20px; flex-shrink: 0; }
+    .btn-google:hover { border-color: #4285F4; box-shadow: 0 2px 12px rgba(66,133,244,0.15); }
+    .btn-facebook:hover { border-color: #1877F2; box-shadow: 0 2px 12px rgba(24,119,242,0.15); }
   </style>
   <script>document.addEventListener("DOMContentLoaded", () => { setTimeout(() => { document.body.style.visibility='visible'; document.body.style.opacity='1'; }, 100); });</script>
 </head>
@@ -90,6 +120,20 @@
               Iniciar Sesión
             </button>
           </form>
+
+          <div class="social-login-divider">
+            <span class="text-muted">o continúa con</span>
+          </div>
+          <div class="social-login-buttons">
+            <button type="button" class="btn btn-social btn-google" onclick="handleGoogleLogin()">
+              <svg class="social-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Google
+            </button>
+            <button type="button" class="btn btn-social btn-facebook" onclick="handleFacebookLogin()">
+              <svg class="social-icon" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              Facebook
+            </button>
+          </div>
         </div>
 
         <!-- Register -->
@@ -129,11 +173,109 @@
     </div>
   </div>
 
+  <!-- OAuth Phone Modal — Solicitar teléfono después de login social -->
+  <div class="modal-overlay hidden" id="oauth-phone-modal">
+    <div class="modal-content animate-fade-in-up">
+      <div class="text-center" style="margin-bottom: 1.5rem;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🏍️</div>
+        <h3 class="modal-h3">¡Casi listo, Repartidor!</h3>
+        <p class="text-secondary mb-md modal-p">Necesitamos tu número de celular para asignarte mandados.</p>
+      </div>
+      <form onsubmit="handleOAuthPhoneSubmit(event)">
+        <div class="form-group">
+          <label class="form-label" for="oauth-phone">Número de Celular (10 dígitos)</label>
+          <input class="form-input" type="tel" id="oauth-phone" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 5512345678" maxlength="10" required>
+          <span class="form-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="custom-checkbox" style="font-size: 0.8rem; color: var(--text-muted);">
+            <input type="checkbox" id="oauth-agree-terms" required>
+            <span class="checkmark"></span>
+            Acepto los <a href="../terminos.html" target="_blank" style="color: var(--text-accent);">términos y condiciones</a> de repartidor
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary btn-block" id="oauth-phone-submit">
+            Continuar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
+    // ── OAuth Callback Handler — Se ejecuta al volver de Google/Facebook ──
+    (async function() {
+      const session = await store._sb?.auth?.getSession();
+      if (session?.data?.session?.user) {
+        const authUser = session.data.session.user;
+        const provider = authUser.app_metadata?.provider;
+
+        if (provider === 'google' || provider === 'facebook') {
+          const result = await store.handleOAuthCallback('driver');
+
+          if (result && result.success && result.needsPhone) {
+            document.getElementById('oauth-phone-modal').classList.remove('hidden');
+            document.getElementById('oauth-phone').focus();
+            return;
+          }
+
+          if (result && result.success && result.user) {
+            if (result.user.role === 'driver') {
+              showToast('¡Bienvenido, Repartidor! 🏍️', 'success');
+              setTimeout(() => navigateTo('panel.html'), 600);
+            } else {
+              showToast('Esta cuenta es de cliente, no de repartidor.', 'warning');
+              await store._auth.signOut();
+            }
+            return;
+          }
+        }
+      }
+
+      const user = store.getCurrentUser();
+      if (user && user.role === 'driver') {
+        window.location.href = 'panel.html';
+      }
+    })();
+
+    // ── OAuth Phone Submit ──
+    async function handleOAuthPhoneSubmit(e) {
+      e.preventDefault();
+      const phone = document.getElementById('oauth-phone').value.trim();
+      const agreedTerms = document.getElementById('oauth-agree-terms').checked;
+
+      if (!agreedTerms) {
+        showToast('Debes aceptar los términos y condiciones', 'warning');
+        return;
+      }
+
+      if (!phone || phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
+        showToast('Ingresa un número de celular válido de 10 dígitos', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('oauth-phone-submit');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+
+      const result = await store.saveOAuthPhone(phone);
+
+      btn.disabled = false; btn.textContent = 'Continuar';
+
+      if (result.success) {
+        showToast('¡Teléfono registrado! 📱', 'success');
+        document.getElementById('oauth-phone-modal').classList.add('hidden');
+        setTimeout(() => navigateTo('panel.html'), 600);
+      } else {
+        showToast(result.error, 'error');
+      }
+    }
+
     // Check if already logged in
     (function() {
       const user = store.getCurrentUser();
@@ -154,13 +296,16 @@
       const form = e.target;
       const valid = validateForm(form, { phone: { required: true, phone: true } });
       if (!valid) return;
-      
+
       const pin = form.pin ? form.pin.value.trim() : null;
 
       const btn = form.querySelector('[type="submit"]');
       btn.disabled = true; btn.textContent = 'Verificando...';
+
       const result = await store.loginUser(form.phone.value.trim(), 'driver', pin);
+
       btn.disabled = false; btn.textContent = 'Iniciar Sesión';
+
       if (result.success) {
         showToast('¡Bienvenido de vuelta! 🏍️', 'success');
         setTimeout(() => navigateTo('panel.html'), 600);
@@ -177,7 +322,7 @@
         phone: { required: true, phone: true }
       });
       if (!valid) return;
-      
+
       const accessCode = form.code.value.trim();
       if (accessCode !== '1010001') {
          showToast('Código de acceso incorrecto. No autorizado.', 'error');
@@ -186,17 +331,37 @@
 
       const btn = form.querySelector('[type="submit"]');
       btn.disabled = true; btn.textContent = 'Registrando...';
+
       const result = await store.registerUser({
         name: form.name.value.trim(),
         phone: form.phone.value.trim(),
         vehicle: form.vehicle.value,
         role: 'driver'
       });
+
       btn.disabled = false; btn.textContent = 'Registrarme como Repartidor';
+
       if (result.success) {
         showToast('¡Registro exitoso! 🚀', 'success');
         setTimeout(() => navigateTo('panel.html'), 600);
       } else {
+        showToast(result.error, 'error');
+      }
+    }
+
+    // ── Social Login Handlers ──
+    async function handleGoogleLogin() {
+      showToast('Conectando con Google...', 'info');
+      const result = await store.loginWithGoogle('driver');
+      if (!result.success && result.error) {
+        showToast(result.error, 'error');
+      }
+    }
+
+    async function handleFacebookLogin() {
+      showToast('Conectando con Facebook...', 'info');
+      const result = await store.loginWithFacebook('driver');
+      if (!result.success && result.error) {
         showToast(result.error, 'error');
       }
     }
