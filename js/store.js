@@ -382,10 +382,16 @@ class MotoClickStore {
    * @param {string} role - 'client' | 'driver'
    */
   async loginWithGoogle(role = 'client') {
+    // Garantizar que Auth esté listo
+    if (!this._auth && typeof MotoClickAuth !== 'undefined' && this._sb) {
+      this._auth = new MotoClickAuth(this._sb);
+    }
+    
     if (this._auth && typeof this._auth.signInWithGoogle === 'function') {
       return await this._auth.signInWithGoogle(role);
     }
-    return { success: false, error: 'Google Auth no disponible' };
+    console.error('[Store] Google Auth falló: _auth no disponible');
+    return { success: false, error: 'Google Auth no disponible en este momento' };
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -398,10 +404,16 @@ class MotoClickStore {
    * @param {string} role - 'client' | 'driver'
    */
   async loginWithFacebook(role = 'client') {
+    // Garantizar que Auth esté listo
+    if (!this._auth && typeof MotoClickAuth !== 'undefined' && this._sb) {
+      this._auth = new MotoClickAuth(this._sb);
+    }
+
     if (this._auth && typeof this._auth.signInWithFacebook === 'function') {
       return await this._auth.signInWithFacebook(role);
     }
-    return { success: false, error: 'Facebook Auth no disponible' };
+    console.error('[Store] Facebook Auth falló: _auth no disponible');
+    return { success: false, error: 'Facebook Auth no disponible en este momento' };
   }
 
   // ══════════════════════════════════════════════════════════════
