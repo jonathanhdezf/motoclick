@@ -227,13 +227,28 @@ class MotoClickStore {
     if (this._auth && typeof this._auth.signIn === 'function') {
       const result = await this._auth.signIn(phone, pin || phone.slice(-4));
       
-      // Si el login fue exitoso, terminar
+      // Si el login fue exitoso, verificar integridad del ROL en la base de datos
       if (result.success) {
-        this._currentUser = this._auth.getCurrentUser();
-        if (role && this._currentUser && this._currentUser.role !== role) {
+        // NO CONFIAR en el objeto devuelto por Auth, pedirlo a la tabla public.users
+        const { data: profile, error } = await this._sb
+          .from('users')
+          .select('role, phone')
+          .eq('id', result.user.id)
+          .single();
+
+        if (error || !profile) {
           await this._auth.signOut();
-          return { success: false, error: 'Esta cuenta no tiene permisos de ' + (role === 'client' ? 'cliente' : 'repartidor') + '.' };
+          return { success: false, error: 'Error al verificar perfil de seguridad.' };
         }
+
+        if (role && profile.role !== role) {
+          console.error(`[Security] Intento de acceso con rol incorrecto. DB: ${profile.role}, Esperado: ${role}`);
+          await this._auth.signOut();
+          return { success: false, error: 'Acceso denegado: Esta cuenta no tiene permisos para este portal.' };
+        }
+
+        this._currentUser = { ...result.user, ...profile };
+        this.setCurrentUser(this._currentUser);
         return { success: true, user: this._currentUser };
       }
 

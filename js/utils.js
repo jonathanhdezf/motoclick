@@ -1,8 +1,92 @@
 /**
- * MotoClick — Utilidades compartidas
+ * Middleware de Integridad: Verificar que el usuario tenga todos los datos necesarios
+ * Especialmente útil para usuarios de Google que no tienen teléfono inicialmente.
  */
+function checkSessionIntegrity() {
+  const user = window.store?.getCurrentUser();
+  if (!user) return;
 
-/* ── PWA & Service Worker Setup ── */
+  // 1. Verificar si falta el teléfono (común en Google Login)
+  if (!user.phone || user.phone === '' || user.phone.includes('@')) {
+    console.warn('[Integrity] Perfil incompleto: Falta número de teléfono.');
+    
+    // Si estamos en una página que requiere teléfono, forzar modal
+    const protectedPages = ['nuevo-pedido.html', 'panel.html', 'rastreo.html'];
+    const currentPage = window.location.pathname.split('/').pop();
+    
+    if (protectedPages.includes(currentPage)) {
+      setTimeout(() => {
+        showPhoneCompletionModal();
+      }, 1000);
+    }
+  }
+}
+
+/**
+ * Mostrar modal obligatorio para completar el número de teléfono
+ */
+function showPhoneCompletionModal() {
+  if (document.getElementById('completion-modal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'completion-modal';
+  modal.className = 'modal-overlay animate-fade-in';
+  modal.style.zIndex = '10000';
+  modal.innerHTML = `
+    <div class="modal-content card-glass" style="max-width: 400px; text-align: center;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">📱</div>
+      <h3 class="mb-sm">¡Ya casi terminamos!</h3>
+      <p class="text-secondary mb-lg">Para continuar en MotoClick, necesitamos un número de teléfono para que los repartidores puedan contactarte.</p>
+      
+      <div class="form-group" style="text-align: left;">
+        <label class="form-label">Número de WhatsApp (10 dígitos)</label>
+        <input type="tel" id="complete-phone" class="form-input" placeholder="Ej. 3312345678" maxlength="10">
+      </div>
+      
+      <button class="btn btn-primary btn-block mt-md" id="btn-save-phone" onclick="saveMissingPhone()">
+        Confirmar y Continuar
+      </button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+/**
+ * Guardar el teléfono faltante y actualizar el perfil
+ */
+async function saveMissingPhone() {
+  const phone = document.getElementById('complete-phone').value.trim();
+  if (!/^\d{10}$/.test(phone)) {
+    showToast('Ingresa un número válido de 10 dígitos.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-phone');
+  btn.disabled = true;
+  btn.innerText = 'Guardando...';
+
+  try {
+    const result = await window.store.updateUser(window.store.getCurrentUser().id, { phone: phone });
+    if (result.success) {
+      showToast('Perfil completado. ¡Bienvenido! 🛵', 'success');
+      document.getElementById('completion-modal').remove();
+      // Recargar para aplicar cambios
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      showToast(result.error || 'Error al guardar el teléfono', 'error');
+      btn.disabled = false;
+      btn.innerText = 'Confirmar y Continuar';
+    }
+  } catch (e) {
+    showToast('Error de conexión.', 'error');
+    btn.disabled = false;
+  }
+}
+
+// Ejecutar verificación al cargar
+window.addEventListener('load', () => {
+  setTimeout(checkSessionIntegrity, 1500);
+});
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     if (!document.querySelector('link[rel="manifest"]')) {
