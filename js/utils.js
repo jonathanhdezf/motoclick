@@ -1,9 +1,16 @@
+// Ejecutar verificación de integridad cuando el perfil esté listo
+window.addEventListener('motoclick:auth:ready', (e) => {
+  const profile = e.detail;
+  if (profile) {
+    checkSessionIntegrity(profile);
+  }
+});
+
 /**
  * Middleware de Integridad: Verificar que el usuario tenga todos los datos necesarios
  * Especialmente útil para usuarios de Google que no tienen teléfono inicialmente.
  */
-function checkSessionIntegrity() {
-  const user = window.store?.getCurrentUser();
+function checkSessionIntegrity(user) {
   if (!user) return;
 
   // 1. Verificar si falta el teléfono (común en Google Login)
@@ -15,9 +22,7 @@ function checkSessionIntegrity() {
     const currentPage = window.location.pathname.split('/').pop();
     
     if (protectedPages.includes(currentPage)) {
-      setTimeout(() => {
-        showPhoneCompletionModal();
-      }, 1000);
+      showPhoneCompletionModal();
     }
   }
 }
@@ -343,32 +348,28 @@ function navigateTo(path) {
 
 /**
  * Guardia de autenticación — verifica sesión activa y rol
- * Ahora valida con Supabase Auth session, no solo localStorage
+ * Optimización Senior: Validación instantánea por cache + validación reactiva
  */
 async function requireAuth(role) {
   const store = window.store;
-  if (!store) {
-    console.warn('[Auth] Store no inicializado');
-    return null;
+  if (!store) return null;
+
+  // 1. Verificación instantánea vía Cache (para evitar parpadeo)
+  const cachedUser = store.getCurrentUser();
+  if (cachedUser && cachedUser.role === role) {
+    return cachedUser;
   }
 
-  // Intentar restaurar sesión desde Supabase Auth si está disponible
-  if (store._auth && store._auth.isAuthenticated && store._auth.isAuthenticated()) {
-    const currentUser = store._auth.getCurrentUser();
-    if (currentUser && currentUser.role === role) {
-      return currentUser;
-    }
-  }
-
-  // Fallback: verificar desde localStorage
-  const user = store.getCurrentUser();
-  if (!user || user.role !== role) {
+  // 2. Verificación profunda vía Supabase
+  const isAuthed = store._auth?.isAuthenticated && store._auth.isAuthenticated();
+  if (!isAuthed && !cachedUser) {
     const redirectPath = role === 'client' ? '../cliente/' : '../repartidor/';
     showToast('Inicia sesión para continuar.', 'warning');
-    setTimeout(() => navigateTo(redirectPath), 500);
+    navigateTo(redirectPath);
     return null;
   }
-  return user;
+
+  return cachedUser;
 }
 
 /**

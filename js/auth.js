@@ -48,12 +48,23 @@ class MotoClickAuth {
 
   /**
    * Al iniciar sesión, cargar perfil del usuario desde public.users
+   * Optimización Senior: Cacheamos el perfil para evitar hits innecesarios a la DB
    */
   async _onSessionStart(session) {
     if (!session || !session.user) return;
 
     try {
-      // Obtener el perfil completo desde public.users
+      // Intentar obtener de cache primero para velocidad instantánea
+      const cachedProfile = localStorage.getItem('motoclick_current_user');
+      if (cachedProfile) {
+        const profile = JSON.parse(cachedProfile);
+        if (profile.user_id === session.user.id) {
+          console.log('[Auth] Profile loaded from cache');
+          this._updateAppStatus(profile);
+        }
+      }
+
+      // Validar/Actualizar desde la DB en segundo plano
       const { data: userProfile, error } = await this._sb
         .from('users')
         .select('*')
@@ -61,27 +72,31 @@ class MotoClickAuth {
         .maybeSingle();
 
       if (error) {
-        console.error('[Auth] Error loading profile:', error);
+        console.error('[Auth] Error loading profile from DB:', error);
         return;
       }
 
       if (userProfile) {
-        // Guardar perfil en localStorage para acceso rápido offline
-        localStorage.setItem('motoclick_current_user', JSON.stringify(userProfile));
-
-        // Actualizar la referencia en store si existe
-        if (window.store && typeof window.store.setCurrentUser === 'function') {
-          window.store.setCurrentUser(userProfile);
-        }
-
-        console.log('[Auth] Profile loaded:', userProfile.name, '(', userProfile.role, ')');
+        this._updateAppStatus(userProfile);
+        console.log('[Auth] Profile synced from DB:', userProfile.name);
       } else {
-        // Perfil no existe — puede ser usuario nuevo sin trigger
-        console.warn('[Auth] No profile found in public.users for auth user');
+        console.warn('[Auth] No profile found in public.users');
       }
     } catch (e) {
       console.error('[Auth] Session start error:', e);
     }
+  }
+
+  /**
+   * Actualizar el estado global de la aplicación con el perfil del usuario
+   */
+  _updateAppStatus(profile) {
+    localStorage.setItem('motoclick_current_user', JSON.stringify(profile));
+    if (window.store && typeof window.store.setCurrentUser === 'function') {
+      window.store.setCurrentUser(profile);
+    }
+    // Despachar evento personalizado para que otros módulos reaccionen
+    window.dispatchEvent(new CustomEvent('motoclick:auth:ready', { detail: profile }));
   }
 
   /**
@@ -92,6 +107,7 @@ class MotoClickAuth {
     if (window.store && typeof window.store.logout === 'function') {
       window.store.logout();
     }
+    window.dispatchEvent(new CustomEvent('motoclick:auth:cleared'));
     console.log('[Auth] Session ended, local data cleared');
   }
 
@@ -110,98 +126,70 @@ class MotoClickAuth {
   }
 
   // ══════════════════════════════════════════════════════════════
-  // REGISTRO (Sign Up)
+  // REGISTRO (Sign Up) con Retry Logic (Senior Pattern)
   // ══════════════════════════════════════════════════════════════
 
   /**
    * Registrar nuevo usuario con Supabase Auth
-   * 
-   * @param {Object} params
-   * @param {string} params.phone - Teléfono (10 dígitos)
-   * @param {string} params.pin - PIN/contraseña (4+ dígitos)
-   * @param {string} params.name - Nombre completo
-   * @param {string} params.role - 'client' | 'driver'
-   * @param {Object} [params.extra] - Campos extra (vehicle, address, etc.)
-   * @returns {Promise<{success: boolean, user?: Object, error?: string}>}
    */
   async signUp({ phone, pin, name, role = 'client', extra = {} }) {
     if (!this._sb || !this._sb.auth) {
       return { success: false, error: 'Supabase Auth no disponible' };
     }
 
-    // Validaciones
-    if (!phone || phone.length < 10) {
-      return { success: false, error: 'Ingresa un teléfono válido de 10 dígitos' };
-    }
-    if (!pin || pin.length < 4) {
-      return { success: false, error: 'El PIN debe tener al menos 4 dígitos' };
-    }
-    if (!name || name.trim().length < 2) {
-      return { success: false, error: 'Ingresa tu nombre completo' };
-    }
-    if (!['client', 'driver'].includes(role)) {
-      return { success: false, error: 'Rol de usuario inválido' };
-    }
+    // Validaciones básicas
+    if (!phone || phone.length < 10) return { success: false, error: 'Teléfono inválido' };
+    if (!pin || pin.length < 4) return { success: false, error: 'PIN muy corto' };
 
     try {
-      // Supabase Auth requiere formato de teléfono internacional para phone auth
-      // Para simplificar, usamos email+password con formato especial:
-      // email = telefono@motoclick.app (invisible para el usuario)
-      // Esto evita necesitar SMS OTP para cada registro
-      
       const virtualEmail = `${phone}@motoclick.app`;
       
       const { data, error } = await this._sb.auth.signUp({
         email: virtualEmail,
         password: pin,
         options: {
-          data: {
-            name: name.trim(),
-            phone: phone,
-            role: role,
-            ...extra
-          },
-          // No enviar email de confirmación (auto-confirm)
-          emailRedirectTo: window.location.origin + '/cliente/nuevo-pedido.html'
+          data: { name: name.trim(), phone, role, ...extra }
         }
       });
 
       if (error) {
-        if (error.message.includes('already exists') || error.message.includes('already registered')) {
-          return { success: false, error: 'Ya existe una cuenta con ese teléfono' };
-        }
-        return { success: false, error: error.message };
+        const msg = error.message.includes('already exists') ? 'El teléfono ya está registrado' : error.message;
+        return { success: false, error: msg };
       }
 
-      if (!data.user) {
-        return { success: false, error: 'Error al crear la cuenta. Intenta de nuevo.' };
-      }
+      if (!data.user) return { success: false, error: 'Error al crear cuenta' };
 
-      // Esperar un momento a que el trigger cree el perfil en public.users
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Obtener el perfil creado por el trigger
-      const { data: profile } = await this._sb
-        .from('users')
-        .select('*')
-        .eq('user_id', data.user.id)
-        .maybeSingle();
-
+      // OPTIMIZACIÓN: Esperar al perfil con reintentos (Exponential Backoff)
+      const profile = await this._waitForProfile(data.user.id);
+      
       if (profile) {
-        localStorage.setItem('motoclick_current_user', JSON.stringify(profile));
-        if (window.store && typeof window.store.setCurrentUser === 'function') {
-          window.store.setCurrentUser(profile);
-        }
+        this._updateAppStatus(profile);
+        return { success: true, user: profile };
       }
 
-      console.log('[Auth] Sign up successful:', name, '(', role, ')');
-      return { success: true, user: profile || data.user };
+      return { success: true, user: data.user, warning: 'Perfil en creación...' };
 
     } catch (e) {
       console.error('[Auth] Sign up error:', e);
-      return { success: false, error: 'Error de conexión. Verifica tu internet.' };
+      return { success: false, error: 'Error de conexión' };
     }
   }
+
+  /**
+   * Esperar a que el trigger de la DB cree el perfil (Retry Loop)
+   */
+  async _waitForProfile(userId, maxRetries = 5) {
+    for (let i = 0; i < maxRetries; i++) {
+      const { data } = await this._sb.from('users').select('*').eq('user_id', userId).maybeSingle();
+      if (data) return data;
+      
+      // Espera incremental: 200ms, 400ms, 800ms...
+      const wait = 200 * Math.pow(2, i);
+      await new Promise(r => setTimeout(r, wait));
+    }
+    return null;
+  }
+
 
   // ══════════════════════════════════════════════════════════════
   // INICIO DE SESIÓN (Sign In)
