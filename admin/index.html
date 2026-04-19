@@ -42,7 +42,7 @@
     window.addEventListener('load', () => {
       const user = window.store?.getCurrentUser();
       if (user && user.role === 'admin') {
-        window.location.replace('panel.html');
+        window.location.replace('/admin/panel.html');
       }
     });
 
@@ -85,7 +85,7 @@
             if (profile && profile.role === 'admin') {
               store.setCurrentUser(profile);
               showToast('¡Bienvenido, Administrador! 🛡️', 'success');
-              setTimeout(() => window.location.replace('panel.html'), 600);
+              setTimeout(() => window.location.replace('/admin/panel.html'), 600);
             } else {
               showToast('Esta cuenta no tiene permisos de administrador.', 'error');
               await store._auth.signOut();

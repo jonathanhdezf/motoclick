@@ -234,19 +234,24 @@
           if (result && result.success && result.user) {
             if (result.user.role === 'driver') {
               showToast('¡Bienvenido, Repartidor! 🏍️', 'success');
-              setTimeout(() => navigateTo('panel.html'), 600);
+              setTimeout(() => navigateTo('/repartidor/panel.html'), 600);
             } else {
               showToast('Esta cuenta es de cliente, no de repartidor.', 'warning');
               await store._auth.signOut();
             }
             return;
           }
+
+          // Si llegamos aquí y result no fue exitoso
+          if (result && !result.success) {
+            showToast(result.error || 'Error al completar el perfil social.', 'error');
+          }
         }
       }
 
       const user = store.getCurrentUser();
       if (user && user.role === 'driver') {
-        window.location.href = 'panel.html';
+        window.location.href = '/repartidor/panel.html';
       }
     })();
 
@@ -276,7 +281,7 @@
       if (result.success) {
         showToast('¡Teléfono registrado! 📱', 'success');
         document.getElementById('oauth-phone-modal').classList.add('hidden');
-        setTimeout(() => navigateTo('panel.html'), 600);
+        setTimeout(() => navigateTo('/repartidor/panel.html'), 600);
       } else {
         showToast(result.error, 'error');
       }
@@ -286,7 +291,7 @@
     (function() {
       const user = store.getCurrentUser();
       if (user && user.role === 'driver') {
-        window.location.href = 'panel.html';
+        window.location.href = '/repartidor/panel.html';
       }
     })();
 
@@ -314,7 +319,7 @@
 
       if (result.success) {
         showToast('¡Bienvenido de vuelta! 🏍️', 'success');
-        setTimeout(() => navigateTo('panel.html'), 600);
+        setTimeout(() => navigateTo('/repartidor/panel.html'), 600);
       } else {
         showToast(result.error, 'error');
       }
@@ -349,7 +354,7 @@
 
       if (result.success) {
         showToast('¡Registro exitoso! 🚀', 'success');
-        setTimeout(() => navigateTo('panel.html'), 600);
+        setTimeout(() => navigateTo('/repartidor/panel.html'), 600);
       } else {
         showToast(result.error, 'error');
       }

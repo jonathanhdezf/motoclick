@@ -289,18 +289,26 @@
             return; // No continuar hasta que ingrese teléfono
           }
 
-          if (result && result.success && result.user && result.user.role === 'client') {
-            // Teléfono ya registrado — continuar normalmente
-            showToast('¡Bienvenido! 🎉', 'success');
-            setTimeout(() => navigateTo('nuevo-pedido.html'), 600);
+          if (result && result.success && result.user) {
+            if (result.user.role === 'client') {
+              showToast('¡Bienvenido! 🎉', 'success');
+              setTimeout(() => navigateTo('/cliente/nuevo-pedido.html'), 600);
+            } else {
+              showToast(`Esta cuenta tiene el rol de ${result.user.role}. Usa el portal correspondiente.`, 'warning');
+              await store.logout();
+            }
             return;
+          }
+
+          if (result && !result.success) {
+            showToast(result.error || 'No pudimos vincular tu cuenta de Google.', 'error');
           }
         }
       }
 
       // Si no hay sesión OAuth, verificar si ya está logueado como cliente
       const user = store.getCurrentUser();
-      if (user && user.role === 'client') window.location.href = 'nuevo-pedido.html';
+      if (user && user.role === 'client') window.location.href = '/cliente/nuevo-pedido.html';
     })();
 
     // ── OAuth Phone Submit ──
@@ -389,7 +397,7 @@
 
       if (result.success) {
         showToast('¡Cuenta creada con éxito! 🚀', 'success');
-        setTimeout(() => navigateTo('nuevo-pedido.html'), 600);
+        setTimeout(() => navigateTo('/cliente/nuevo-pedido.html'), 600);
       } else {
         showToast(result.error, 'error');
       }
