@@ -846,7 +846,12 @@
                     </div>
                 </div>
                 <h4 id="profile-name-text" class="m-0">Nombre de Usuario</h4>
-                <p id="profile-phone-text" class="text-muted fs-xs m-0">55 0000 0000</p>
+                <p id="profile-email-text" class="text-muted fs-xs m-0">correo@ejemplo.com</p>
+                <div class="mt-xs">
+                    <a id="profile-whatsapp-link" href="#" target="_blank" class="text-accent fs-xs" style="text-decoration: none; font-weight: 600;">
+                        <i class="fab fa-whatsapp"></i> <span id="profile-phone-text">55 0000 0000</span>
+                    </a>
+                </div>
             </div>
 
             <div id="verification-banner" class="verification-status-banner banner-none">
@@ -930,14 +935,21 @@
         // Cargar foto desde metadatos si está disponible (Google/Facebook)
         const initialsEl = document.getElementById('profile-initials');
         const imgEl = document.getElementById('profile-avatar-img');
+        const emailEl = document.getElementById('profile-email-text');
+        const phoneEl = document.getElementById('profile-phone-text');
+        const waLink = document.getElementById('profile-whatsapp-link');
         
         // Verificar si hay sesión activa para obtener metadatos frescos
         let avatarUrl = user.avatar_url || user.profile_photo_url;
+        let userEmail = user.email;
+        let userPhone = user.phone;
+
         try {
             const { data } = await store._sb.auth.getSession();
-            if (data?.session?.user?.user_metadata) {
+            if (data?.session?.user) {
                 const meta = data.session.user.user_metadata;
-                avatarUrl = meta.avatar_url || meta.picture || avatarUrl;
+                avatarUrl = meta?.avatar_url || meta?.picture || avatarUrl;
+                userEmail = data.session.user.email || userEmail;
             }
         } catch(e) {}
 
@@ -952,7 +964,15 @@
         }
 
         document.getElementById('profile-name-text').textContent = user.name || 'Usuario';
-        document.getElementById('profile-phone-text').textContent = user.phone || 'Sin teléfono';
+        emailEl.textContent = userEmail || 'Sin correo configurado';
+        phoneEl.textContent = userPhone || 'Sin teléfono';
+
+        if (userPhone) {
+            waLink.href = `https://wa.me/52${userPhone.replace(/\D/g, '')}`;
+            waLink.classList.remove('hidden');
+        } else {
+            waLink.classList.add('hidden');
+        }
         
         const banner = document.getElementById('verification-banner');
         const vText = document.getElementById('verification-text');
