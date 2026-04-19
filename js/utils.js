@@ -343,7 +343,11 @@ function getStatusIndex(status) {
 
 // ── Navigation ──
 function navigateTo(path) {
-  window.location.href = path;
+  window.location.assign(path);
+}
+
+function navigateReplace(path) {
+  window.location.replace(path);
 }
 
 /**
@@ -380,10 +384,14 @@ async function requireAuth(role) {
   }
 
   if (!cachedUser || (role && cachedUser.role !== role)) {
-    const redirectPath = role === 'client' ? '../cliente/' : '../repartidor/';
+    let redirectPath = '/';
+    if (role === 'admin') redirectPath = '/admin/';
+    else if (role === 'client') redirectPath = '/cliente/';
+    else if (role === 'driver') redirectPath = '/repartidor/';
+    
     console.warn('[AuthGuard] Session failed or role mismatch. Redirecting to:', redirectPath);
     showToast('Inicia sesión para continuar.', 'warning');
-    navigateTo(redirectPath);
+    navigateReplace(redirectPath);
     return null;
   }
 
@@ -408,16 +416,16 @@ async function handleLogout() {
     console.error('[Auth] Logout error:', e);
   }
 
-  // Redirigir según el portal actual
+  // Redirigir según el portal actual invalidando el historial (security rule)
   const currentPath = window.location.pathname;
   if (currentPath.includes('/cliente/')) {
-    setTimeout(() => navigateTo('../cliente/'), 300);
+    setTimeout(() => navigateReplace('/cliente/'), 300);
   } else if (currentPath.includes('/repartidor/')) {
-    setTimeout(() => navigateTo('../repartidor/'), 300);
+    setTimeout(() => navigateReplace('/repartidor/'), 300);
   } else if (currentPath.includes('/admin/')) {
-    setTimeout(() => navigateTo('../admin/'), 300);
+    setTimeout(() => navigateReplace('/admin/'), 300);
   } else {
-    setTimeout(() => navigateTo('../'), 300);
+    setTimeout(() => navigateReplace('/'), 300);
   }
 }
 
@@ -940,3 +948,15 @@ window.saveProfileChanges = async function() {
     showToast(result?.error || 'Error al actualizar el perfil', 'error');
   }
 }
+
+// ── Security Guard: BFCache Exploit Prevention ──
+// Detect if page was loaded from browser history (Back button cache)
+window.addEventListener('pageshow', function (event) {
+  if (event.persisted) {
+    if (window.store && typeof window.store.getCurrentUser === 'function') {
+      if (!window.store.getCurrentUser()) {
+        window.location.replace('/');
+      }
+    }
+  }
+});
