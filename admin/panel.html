@@ -677,13 +677,48 @@
   <script src="../js/store.js?v=2.1"></script>
   <script src="../js/utils.js?v=2.1"></script>
   <script>
-    // 🛡️ Seguridad Proactiva: Verificar sesión de administrador al instante
+    // ═══════════════════════════════════════════════════════════════
+    // 🛡️ CAPA 1 — Guard Pre-JS: Ocultar el panel desde el primer ciclo
+    // El body empieza invisible para evitar flash de contenido admin
+    // ═══════════════════════════════════════════════════════════════
+    document.documentElement.style.visibility = 'hidden';
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🛡️ CAPA 2 — BFCache Mobile Interceptor (pageshow inline)
+    // Se registra ANTES de cargar Supabase/store/utils para actuar
+    // inmediatamente cuando el navegador sirve la página desde caché.
+    // ═══════════════════════════════════════════════════════════════
+    window.addEventListener('pageshow', function(event) {
+      const isFromCache = event.persisted;
+      const sessionAlive = sessionStorage.getItem('mc_admin_session') === '1';
+      
+      if (isFromCache && !sessionAlive) {
+        // La página viene del BFCache pero la sesión fue destruida
+        // Redirigir sin escapes, blanquear el DOM antes
+        document.documentElement.style.visibility = 'hidden';
+        window.location.replace('/admin/');
+        return;
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🛡️ CAPA 3 — Guard Síncrono: Verificar sesión al instante
+    // Usa localStorage para chequeo inmediato. Si falla, cortar acceso.
+    // ═══════════════════════════════════════════════════════════════
     (function() {
-      const user = JSON.parse(localStorage.getItem('motoclick_current_user'));
+      const raw = localStorage.getItem('motoclick_current_user');
+      let user = null;
+      try { user = JSON.parse(raw); } catch(_) {}
+
       if (!user || user.role !== 'admin') {
         console.warn('[Admin] Acceso denegado: Sesión inválida o rol insuficiente.');
-        window.location.replace('../index.html');
+        window.location.replace('/admin/');
+        return; // No ejecutar nada más
       }
+
+      // Sesión válida — marcar token volátil y mostrar el panel
+      sessionStorage.setItem('mc_admin_session', '1');
+      document.documentElement.style.visibility = 'visible';
     })();
 
     const store = window.MotoClickStore;
@@ -1339,13 +1374,17 @@
     }
 
     async function confirmLogout() {
+      // 🛡️ Destruir token volátil PRIMERO — antes de cualquier redirect
+      // Si el usuario presiona "Atrás", el pageshow interceptor lo detecta
+      sessionStorage.removeItem('mc_admin_session');
+      sessionStorage.clear();
+
       showToast('Cerrando sesión de administrador...', 'info');
       if (window.handleLogout) {
         await window.handleLogout();
       } else {
-        localStorage.clear(); 
-        sessionStorage.clear();
-        window.location.replace('../index.html');
+        localStorage.clear();
+        window.location.replace('/admin/');
       }
     }
 
