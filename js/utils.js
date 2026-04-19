@@ -355,15 +355,33 @@ async function requireAuth(role) {
   if (!store) return null;
 
   // 1. Verificación instantánea vía Cache (para evitar parpadeo)
-  const cachedUser = store.getCurrentUser();
+  let cachedUser = store.getCurrentUser();
   if (cachedUser && cachedUser.role === role) {
     return cachedUser;
   }
 
   // 2. Verificación profunda vía Supabase
-  const isAuthed = store._auth?.isAuthenticated && store._auth.isAuthenticated();
-  if (!isAuthed && !cachedUser) {
+  // Esperar un momento si la sesión se está restaurando
+  let session = null;
+  if (store._sb?.auth) {
+    const { data } = await store._sb.auth.getSession();
+    session = data.session;
+  }
+
+  if (session) {
+    // Estamos autenticados — ¿Por qué no tenemos perfil? 
+    // Tal vez se está cargando. Esperamos un poco.
+    console.log('[AuthGuard] Authenticated but no profile cache. Waiting...');
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 300));
+      cachedUser = store.getCurrentUser();
+      if (cachedUser) break;
+    }
+  }
+
+  if (!cachedUser || (role && cachedUser.role !== role)) {
     const redirectPath = role === 'client' ? '../cliente/' : '../repartidor/';
+    console.warn('[AuthGuard] Session failed or role mismatch. Redirecting to:', redirectPath);
     showToast('Inicia sesión para continuar.', 'warning');
     navigateTo(redirectPath);
     return null;
@@ -576,7 +594,7 @@ function openProfileModal() {
            </select>
          </div>`;
 
-    modal.innerHTML = \`
+    modal.innerHTML = `
       <div class="modal-content card-glass" style="max-width: 450px;">
         <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
           <h3 style="font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px;">Mi Perfil Premium</h3>
@@ -587,23 +605,23 @@ function openProfileModal() {
           <!-- Header de Perfil con Foto de Google -->
           <div style="text-align: center; margin-bottom: 1.5rem; position: relative;">
             <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-card); border: 3px solid var(--primary-500); margin: 0 auto 1rem; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(0,230,91,0.2);">
-              <img src="\${avatarUrl}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='../assets/logo_motoclick.png'">
+              <img src="${avatarUrl}" id="modal-photo-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='../assets/logo_motoclick.png'">
             </div>
-            <h4 style="font-size: 1.2rem; color: #fff; margin-bottom: 4px;">\${user.name}</h4>
+            <h4 style="font-size: 1.2rem; color: #fff; margin-bottom: 4px;">${user.name}</h4>
             <div style="font-size: 0.85rem; color: var(--primary-500); font-weight: 700; margin-bottom: 8px;">
-               <i class="fas fa-envelope" style="font-size: 0.75rem; margin-right: 4px;"></i> \${userEmail}
+               <i class="fas fa-envelope" style="font-size: 0.75rem; margin-right: 4px;"></i> ${userEmail}
             </div>
             <div style="font-size: 0.9rem; color: var(--text-muted); background: rgba(255,255,255,0.05); display: inline-block; padding: 4px 12px; border-radius: 20px;">
-               <i class="fas fa-phone" style="font-size: 0.75rem; margin-right: 4px;"></i> \${user.phone}
+               <i class="fas fa-phone" style="font-size: 0.75rem; margin-right: 4px;"></i> ${user.phone}
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Nombre para el repartidor</label>
-            <input type="text" id="profile-name" class="form-input" value="\${user.name}" placeholder="Tu nombre real">
+            <input type="text" id="profile-name" class="form-input" value="${user.name}" placeholder="Tu nombre real">
           </div>
 
-          \${roleContent}
+          ${roleContent}
 
           <div class="form-group mt-lg">
             <button class="btn btn-primary btn-block" onclick="saveProfileChanges()" style="height: 50px; font-weight: 800; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,230,91,0.3);">
@@ -612,7 +630,7 @@ function openProfileModal() {
           </div>
         </div>
       </div>
-    \`;
+    `;
     document.body.appendChild(modal);
     window._tempProfilePhoto = null;
   }
