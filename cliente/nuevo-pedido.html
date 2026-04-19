@@ -10,6 +10,24 @@
     <link rel="stylesheet" href="../styles/main.css">
   <script src="../js/gs-scroll.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+      // REVELADO RÁPIDO PARA EVITAR PANTALLA NEGRA
+      (function() {
+        // Fail-safe: Forzar revelado si algo falla
+        setTimeout(function() {
+          document.documentElement.style.visibility = 'visible';
+          document.body.style.visibility = 'visible';
+          document.body.style.opacity = '1';
+        }, 2500);
+        
+        document.addEventListener("DOMContentLoaded", function() {
+          setTimeout(function() {
+            document.body.style.visibility = 'visible';
+            document.body.style.opacity = '1';
+          }, 100);
+        });
+      })();
+    </script>
     <style>
     .order-form-header {
       text-align: center;
@@ -535,7 +553,7 @@
     .report-link-footer { text-align: center; margin-top: 3rem; padding-bottom: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; }
     .report-link { color: #00e65b !important; text-decoration: none; font-size: 0.85rem; font-weight: 700; opacity: 0.8; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
     .report-link:hover { opacity: 1; transform: translateY(-2px); text-decoration: underline !important; }
-    body { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-out; }
+    body { opacity: 0; visibility: hidden; transition: opacity 0.5s ease; }
     
     /* Autocomplete dropdown style fix */
     .pac-container {
@@ -915,14 +933,9 @@
   <script src="../js/utils.js?v=1.1"></script>
   <script>
     let user = null;
-    (async function init() {
-      user = await requireAuth('client');
-      if (user) {
-        // Immediate greet to avoid flicker
-        const nameEl = document.getElementById('user-display-name');
-        if (nameEl) nameEl.textContent = `Hola, ${user.name || 'Usuario'}`;
-      }
-    })();
+    let pickupAutocomplete, deliveryAutocomplete, directionsService;
+    // La inicialización se maneja una sola vez en el DOMContentLoaded
+    // para evitar conflictos y bloqueos de pantalla.
 
     // ── Profile & Verification Logic ──
     async function openProfileModal() {
@@ -1090,27 +1103,21 @@
 
     async function init() {
       console.log("🚀 Motor de MotoClick Iniciado");
-      const user = store.getCurrentUser();
       
-      // 0. REQUISITO INDISPENSABLE: Verificar teléfono
-      // Si el usuario viene de OAuth y no tiene teléfono, DEBE completarlo
+      // 1. Autenticación profunda
+      user = await requireAuth('client');
+      if (!user) return; // requireAuth ya redirige
+
+      // 2. REQUISITO INDISPENSABLE: Verificar teléfono
       if (user && (!user.phone || user.phone.length < 10)) {
           console.warn("[Security] Perfil incompleto: Redirigiendo a registro de teléfono.");
-          // Guardar estado para saber que venimos de aquí
-          sessionStorage.setItem('motoclick_pending_phone', 'true');
-          navigateTo('./'); // Al ir al index, el callback de OAuth lo detectará y pedirá el teléfono
+          navigateTo('./');
           return;
       }
-        // Safe check for cached environments
-        let freshUser = user;
-        if (typeof store.getUserById === 'function') {
-           freshUser = await store.getUserById(user.id) || user;
-           store.setCurrentUser(freshUser);
-        }
-        
-        const curUser = store.getCurrentUser();
-        const displayEl = document.getElementById('user-display-name');
-        if (displayEl) displayEl.textContent = `Hola, ${curUser.name || 'Usuario'}`;
+      
+      // Saludo inmediato
+      const displayEl = document.getElementById('user-display-name');
+      if (displayEl) displayEl.textContent = `Hola, ${user.name || 'Usuario'}`;
 
         
         const hBadge = document.getElementById('header-verified-badge');
@@ -1602,21 +1609,6 @@
         modal.classList.add('hidden');
     }
 
-    // init has been moved and consolidated above
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-      init();
-
-      store.on('notification', (payload) => {
-        const isTarget = !payload.userId || payload.userId === 'all' || payload.userId === user.id;
-        if (isTarget) {
-          showToast(`📢 ADM: ${payload.message}`, 'info', 15000); 
-          if (typeof playNotificationSound === 'function') playNotificationSound('success');
-        }
-      });
-    });
-
     function handleLogout() {
       store.logout();
       showToast('Sesión cerrada.', 'info');
@@ -1633,9 +1625,18 @@
       desc.focus();
     }
 
-    window.addEventListener('load', () => {
-       document.body.style.visibility = 'visible';
-       document.body.style.opacity = '1';
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
+
+      if (window.store) {
+        store.on('notification', (payload) => {
+          const isTarget = !payload.userId || payload.userId === 'all' || (user && payload.userId === user.id);
+          if (isTarget) {
+            showToast(`📢 ADM: ${payload.message}`, 'info', 15000); 
+            if (typeof playNotificationSound === 'function') playNotificationSound('success');
+          }
+        });
+      }
     });
 
     // ── Cash Verification Dynamic System ──
@@ -1661,14 +1662,16 @@
         successBadge.classList.add('active');
         input.style.borderColor = "#22c55e";
         
-        // Save code metadata to order form potentially (optional)
         window._verifiedCashCodeId = result.codeData?.id; 
 
         showToast('¡Código Validado! Pago en efectivo desbloqueado.', 'success');
         
         setTimeout(() => {
-          document.querySelector('.verification-help').style.opacity = "0.3";
-          document.querySelector('.verification-help').style.pointerEvents = "none";
+          const help = document.querySelector('.verification-help');
+          if (help) {
+            help.style.opacity = "0.3";
+            help.style.pointerEvents = "none";
+          }
         }, 1500);
       } else {
         input.classList.add('animate-shake');
@@ -1678,6 +1681,6 @@
       }
     }
   </script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places&callback=init"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places"></script>
 </body>
 </html>
