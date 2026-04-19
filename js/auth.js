@@ -384,7 +384,6 @@ class MotoClickAuth {
           redirectTo,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent'
           }
         }
       });
