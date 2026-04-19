@@ -306,9 +306,17 @@
         }
       }
 
-      // Si no hay sesión OAuth, verificar si ya está logueado como cliente
+      // Si no hay sesión OAuth activa en el redirect, verificar si ya está logueado
       const user = store.getCurrentUser();
-      if (user && user.role === 'client') window.location.href = '/cliente/nuevo-pedido.html';
+      if (user && user.role === 'client') {
+        // REQUISITO INDISPENSABLE: Si no tiene teléfono, forzar modal
+        if (!user.phone || user.phone.length < 10) {
+          document.getElementById('oauth-phone-modal').classList.remove('hidden');
+          document.getElementById('oauth-phone').focus();
+          return;
+        }
+        window.location.href = '/cliente/nuevo-pedido.html';
+      }
     })();
 
     // ── OAuth Phone Submit ──

@@ -965,12 +965,13 @@
 
         document.getElementById('profile-name-text').textContent = user.name || 'Usuario';
         emailEl.textContent = userEmail || 'Sin correo configurado';
-        phoneEl.textContent = userPhone || 'Sin teléfono';
 
-        if (userPhone) {
+        if (userPhone && userPhone.length >= 10) {
+            phoneEl.textContent = userPhone;
             waLink.href = `https://wa.me/52${userPhone.replace(/\D/g, '')}`;
             waLink.classList.remove('hidden');
         } else {
+            phoneEl.textContent = 'Pendiente / No registrado';
             waLink.classList.add('hidden');
         }
         
@@ -1091,8 +1092,15 @@
       console.log("🚀 Motor de MotoClick Iniciado");
       const user = store.getCurrentUser();
       
-      // 1. Logic for Identity Display & Checkout Dynamic Unlock
-      if (user) {
+      // 0. REQUISITO INDISPENSABLE: Verificar teléfono
+      // Si el usuario viene de OAuth y no tiene teléfono, DEBE completarlo
+      if (user && (!user.phone || user.phone.length < 10)) {
+          console.warn("[Security] Perfil incompleto: Redirigiendo a registro de teléfono.");
+          // Guardar estado para saber que venimos de aquí
+          sessionStorage.setItem('motoclick_pending_phone', 'true');
+          navigateTo('./'); // Al ir al index, el callback de OAuth lo detectará y pedirá el teléfono
+          return;
+      }
         // Safe check for cached environments
         let freshUser = user;
         if (typeof store.getUserById === 'function') {
