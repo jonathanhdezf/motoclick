@@ -266,11 +266,15 @@
     .ticker-item {
       color: var(--text-primary) !important;
       font-weight: 600 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
     .ticker-item i {
       color: #00e65b !important;
       margin-right: 8px;
+      background: transparent !important;
       filter: drop-shadow(0 0 5px rgba(0, 230, 91, 0.4));
     }
 
@@ -1600,10 +1604,14 @@
           const res = await fetch(query);
           if (res.ok) {
             let data = (await res.text()).trim();
+            // Sanitize: remove potential ANSI escape codes or weird characters from wttr.in
+            data = data.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+            
             // Manual translation fallback for WTTR glitches
             const translations = {
               "Light drizzle": "Llovizna ligera",
               "Patchy rain upcoming": "Lluvia ocasional",
+              "Patchy rain nearby": "Lluvia ocasional",
               "Clear": "Despejado",
               "Cloudy": "Nublado",
               "Partly cloudy": "Parcialmente nublado",
