@@ -355,12 +355,22 @@
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
-    const user = requireAuth('driver');
+    let user = null;
     let previousCount = 0;
 
-    if (user) {
-      document.getElementById('user-greeting').innerHTML =
-        `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
+    (async function init() {
+      user = await requireAuth('driver');
+      if (user) {
+        document.getElementById('user-greeting').innerHTML =
+          `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
+        // Continuar inicialización...
+        setupDashboard();
+      }
+    })();
+
+    async function setupDashboard() {
+      if (!user) return;
+      // Mover aquí la lógica que depende de user...
         
       const todayString = new Date().toISOString().split('T')[0];
       const datePicker = document.getElementById('history-date-filter');

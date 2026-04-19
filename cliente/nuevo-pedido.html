@@ -902,12 +902,15 @@
   <script src="../js/store.js?v=1.1"></script>
   <script src="../js/utils.js?v=1.1"></script>
   <script>
-    const user = requireAuth('client');
-    if (user) {
-      // Immediate greet to avoid flicker
-      const nameEl = document.getElementById('user-display-name');
-      if (nameEl) nameEl.textContent = `Hola, ${user.name || 'Usuario'}`;
-    }
+    let user = null;
+    (async function init() {
+      user = await requireAuth('client');
+      if (user) {
+        // Immediate greet to avoid flicker
+        const nameEl = document.getElementById('user-display-name');
+        if (nameEl) nameEl.textContent = `Hola, ${user.name || 'Usuario'}`;
+      }
+    })();
 
     // ── Profile & Verification Logic ──
     async function openProfileModal() {
