@@ -1612,7 +1612,9 @@
             data = data.replace(/<[^>]*>?/gm, ''); // Strip all other tags
             // Remove ANSI escape codes
             data = data.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
-            data = data.trim();
+            // Remove wttr.in credits and clean up
+            data = data.replace(/wttr\.in\s*—\s*Weather\s*Report/gi, '');
+            data = data.replace(/\s+/g, ' ').trim();
             
             // Manual translation fallback for WTTR glitches
             const translations = {
