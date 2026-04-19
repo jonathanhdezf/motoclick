@@ -103,12 +103,19 @@ class MotoClickAuth {
    * Al cerrar sesión, limpiar datos locales
    */
   _onSessionEnd() {
-    localStorage.removeItem('motoclick_current_user');
+    // Destructive loop: Nuke any ghost tokens preventing a clean exit
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sb-') || key.startsWith('motoclick_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    sessionStorage.clear();
+
     if (window.store && typeof window.store.setCurrentUser === 'function') {
       window.store.setCurrentUser(null);
     }
     window.dispatchEvent(new CustomEvent('motoclick:auth:cleared'));
-    console.log('[Auth] Session ended, local data cleared');
+    console.log('[Auth] Session ended, all local tokens and cache aggressively cleared');
   }
 
   /**
