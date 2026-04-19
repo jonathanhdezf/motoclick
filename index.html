@@ -178,66 +178,7 @@
 
     .promo-price { margin-top: var(--space-md); font-size: 0.75rem; color: var(--text-muted); opacity: 0.8; }
     
-    /* Yoshi Egg Animated Wrapper */
-    .yoshi-egg-container {
-      width: 100%;
-      height: 220px;
-      padding: 20px 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(180deg, rgba(0, 230, 91, 0.05) 0%, transparent 100%);
-      overflow: hidden;
-    }
-    
-    .yoshi-egg {
-      width: 120px;
-      height: 160px;
-      background: #fff;
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-      position: relative;
-      box-shadow: inset -15px -15px 30px rgba(0,0,0,0.1), 0 15px 35px rgba(0, 230, 91, 0.2);
-      animation: egg-wiggle 3s infinite ease-in-out;
-      border: 4px solid #f0f0f0;
-      cursor: pointer;
-      transition: transform 0.1s active;
-    }
-    .yoshi-egg:active { transform: scale(0.9) !important; }
-    
-    .egg-spot {
-      position: absolute;
-      background: #00e65b;
-      border-radius: 50%;
-      opacity: 0.9;
-    }
-    .spot-1 { width: 35px; height: 35px; top: 25%; left: 20%; }
-    .spot-2 { width: 45px; height: 45px; bottom: 25%; right: 15%; }
-    .spot-3 { width: 25px; height: 25px; top: 45%; right: 25%; }
-    .spot-4 { width: 20px; height: 20px; bottom: 15%; left: 30%; }
-    
-    @keyframes egg-wiggle {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      10% { transform: translateY(-10px) rotate(-5deg); }
-      20% { transform: translateY(0) rotate(5deg); }
-      30% { transform: translateY(-5px) rotate(-3deg); }
-      40% { transform: translateY(0) rotate(3deg); }
-      50% { transform: translateY(-15px) scaleY(0.9) scaleX(1.1); }
-      60% { transform: translateY(0) scale(1); }
-    }
 
-    .promo-contest-desc {
-      font-size: 0.85rem;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      padding-top: 10px;
-    }
-    
-    .promo-app-hint {
-      display: block;
-      text-align: center;
-      margin-top: 12px;
-      font-size: 0.8rem;
-      opacity: 0.7;
-    }
 
     .menu-footer { margin-top: 2.5rem; color: var(--text-muted); font-size: 0.8rem; }
 
@@ -561,114 +502,7 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
-    /* ── Promo Popup ── */
-    .promo-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 10000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
-    }
-    .promo-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
-    .promo-modal {
-      width: 100%;
-      max-width: 450px;
-      background: #0a0f1a;
-      border-radius: 24px;
-      overflow: hidden;
-      position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-      transform: translateY(20px);
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .promo-overlay.active .promo-modal { transform: translateY(0); }
-    
-    .promo-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      display: block;
-    }
-    .promo-content {
-      padding: 30px;
-      text-align: center;
-    }
-    .promo-badge {
-      display: inline-block;
-      padding: 6px 12px;
-      background: var(--color-primary, #f97316);
-      color: white;
-      font-weight: 800;
-      font-size: 0.75rem;
-      border-radius: 999px;
-      text-transform: uppercase;
-      margin-bottom: 15px;
-      letter-spacing: 1px;
-    }
-    .promo-title {
-      font-size: 1.6rem;
-      font-weight: 900;
-      margin-bottom: 15px;
-      line-height: 1.2;
-      color: var(--text-primary);
-    }
-    .promo-title span { color: #22c55e; } /* Green for Mexico team vibe */
-    .promo-desc {
-      color: var(--text-secondary);
-      font-size: 1rem;
-      line-height: 1.5;
-      margin-bottom: 25px;
-    }
-    .promo-price {
-      display: block;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-top: 10px;
-    }
-    .promo-close {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: #000;
-      border: 2px solid rgba(255, 255, 255, 0.4);
-      color: white;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 100;
-      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
-    .promo-close:hover { 
-      background: var(--color-primary, #f97316); 
-      border-color: white;
-      transform: rotate(90deg) scale(1.1); 
-    }
 
-    .promo-cta-btn {
-      border-radius: 12px;
-      font-weight: 700;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
 
     /* ====================================================
        NUEVAS SECCIONES — Valor & B2B
@@ -1728,36 +1562,7 @@
     </footer>
   </div>
 
-  <!-- Promo Mario Modal -->
-  <div class="promo-overlay" id="promoPopup">
-    <div class="promo-modal">
-      <button class="promo-close" id="closePromo" aria-label="Cerrar">&times;</button>
-      
-      <div class="yoshi-egg-container">
-        <div class="yoshi-egg" onclick="playYoshiSound()">
-          <div class="egg-spot spot-1"></div>
-          <div class="egg-spot spot-2"></div>
-          <div class="egg-spot spot-3"></div>
-          <div class="egg-spot spot-4"></div>
-        </div>
-      </div>
 
-      <div class="promo-content">
-        <div class="promo-badge">¡Dinámica Galaxy! 🛸⭐</div>
-        <h2 class="promo-title">SUPER <span>MARIO</span> GALAXY</h2>
-        <p class="promo-desc">
-        <p class="promo-desc promo-contest-desc">
-          La respuesta más creativa se ganará un <strong>¡Pedido GRATIS de hasta $200!*</strong> 🛵💨 (Aplican términos y condiciones).
-        </p>
-        <a href="https://wa.me/522331072438?text=Hola! Mi respuesta creativa para ganar el pedido gratis es: " target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block btn-lg promo-cta-btn">
-          <i class="fab fa-whatsapp"></i> Enviar mi Anécdota
-        </a>
-        <span class="promo-price promo-app-hint">
-          👇 Si no has pedido nada raro aún, ¡Aprovecha nuestra App!
-        </span>
-      </div>
-    </div>
-  </div>
 
   <script>
     /* ── Dynamic News Ticker (Senior implementation) ── */
@@ -1988,60 +1793,7 @@
       });
     }
 
-    /* ── Promo Popup Logic ── */
-    window.addEventListener('load', () => {
-      const promoPopup = document.getElementById('promoPopup');
-      const closePromo = document.getElementById('closePromo');
-      
-      if (promoPopup && closePromo) {
-        // Show after 2.5 seconds to let user scroll first
-        setTimeout(() => {
-          if (!sessionStorage.getItem('promoClosed')) {
-            promoPopup.classList.add('active');
-            // document.body.style.overflow = 'hidden'; // REMOVED: let user scroll through if they want
-          }
-        }, 2500);
 
-        const hidePromo = () => {
-          promoPopup.classList.remove('active');
-          document.body.style.overflow = '';
-          sessionStorage.setItem('promoClosed', 'true');
-        };
-
-        closePromo.addEventListener('click', hidePromo);
-        promoPopup.addEventListener('click', (e) => {
-          if (e.target === promoPopup) hidePromo();
-        });
-      }
-    });
-
-    /* Yoshi Sound Synthesis (Real-time) */
-    function playYoshiSound() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Characteristic yoshi "Mwa" sound (Fast ramp)
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(320, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(750, audioCtx.currentTime + 0.08);
-        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.25);
-        
-        gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-      } catch (e) {
-        console.log("Audio not supported or blocked");
-      }
-    }
 
     /* ================================================================
        SCROLL ANIMATIONS ENGINE — Pure JS, zero deps
