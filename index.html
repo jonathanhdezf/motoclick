@@ -254,9 +254,15 @@
       opacity: 0.7;
     }
 
+    .ticker-item {
+      color: var(--text-primary) !important;
+      font-weight: 600 !important;
+    }
+
     .ticker-item i {
-      color: #00e65b;
+      color: #00e65b !important;
       margin-right: 8px;
+      filter: drop-shadow(0 0 5px rgba(0, 230, 91, 0.4));
     }
 
     /* ── Trust Carousel Desktop Support ── */
@@ -1155,7 +1161,7 @@
         <div class="ticker-content" id="ticker-content-static">
           <span class="ticker-item"><i class="fas fa-cloud-sun"></i> Teziutlán: --°C Cargando...</span>
           <span class="ticker-item"><i class="fas fa-traffic-light"></i> Centro: Consultando tráfico...</span>
-          <span class="ticker-item"><i class="fas fa-motorcycle"></i> Buscando repartidores...</span>
+          <span class="ticker-item"><i class="fas fa-motorcycle"></i> Cargando repartidores...</span>
           <span class="ticker-item"><i class="fas fa-bolt"></i> Servicio flash activo</span>
         </div>
       </div>
@@ -1614,8 +1620,8 @@
       const items = [
         `<span class="ticker-item"><i class="fas fa-cloud-sun"></i> ${weatherDisplay}</span>`,
         `<span class="ticker-item"><i class="fas fa-traffic-light"></i> Centro: ${trafficStatus} en ${currentPoint.name}</span>`,
-        `<span class="ticker-item"><i class="fas fa-motorcycle"></i> ${activeDrivers} repartidores en línea</span>`,
-        `<span class="ticker-item"><i class="fas fa-bolt"></i> MotoClick FLASH: Entregas en <15 min</span>`
+        `<span class="ticker-item"><i class="fas fa-motorcycle"></i> ${activeDrivers} repartidores activos</span>`,
+        `<span class="ticker-item"><i class="fas fa-bolt"></i> MotoClick FLASH activo</span>`
       ];
 
       tickerContent.innerHTML = [...items, ...items].join('');
