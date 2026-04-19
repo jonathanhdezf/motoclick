@@ -77,8 +77,13 @@ class MotoClickAuth {
       }
 
       if (userProfile) {
-        this._updateAppStatus(userProfile);
-        console.log('[Auth] Profile synced from DB:', userProfile.name);
+        const metadata = session.user.user_metadata || {};
+        const mergedUser = {
+          ...userProfile,
+          avatar_url: metadata.avatar_url || metadata.picture || userProfile.profile_photo_url
+        };
+        this._updateAppStatus(mergedUser);
+        console.log('[Auth] Profile synced from DB:', mergedUser.name);
       } else {
         console.warn('[Auth] No profile found in public.users');
       }

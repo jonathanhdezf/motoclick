@@ -1,4 +1,4 @@
-const CACHE_NAME = 'motoclick-pwa-v8';
+const CACHE_NAME = 'motoclick-pwa-v9';
 
 self.addEventListener('install', event => {
   event.waitUntil(
