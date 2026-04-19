@@ -278,6 +278,9 @@
       filter: drop-shadow(0 0 5px rgba(0, 230, 91, 0.4));
     }
 
+    /* Support for potential embedded containers from external APIs */
+    .term-container { background: transparent !important; padding: 0 !important; }
+
     /* ── Trust Carousel Desktop Support ── */
     .trust-grid {
       display: flex !important;
@@ -1604,8 +1607,12 @@
           const res = await fetch(query);
           if (res.ok) {
             let data = (await res.text()).trim();
-            // Sanitize: remove potential ANSI escape codes or weird characters from wttr.in
+            // Sanitize: remove ALL HTML tags (wttr.in sometimes returns a full Terminal UI in HTML)
+            data = data.replace(/<style([\s\S]*?)<\/style>/gi, ''); // Remove internal styles
+            data = data.replace(/<[^>]*>?/gm, ''); // Strip all other tags
+            // Remove ANSI escape codes
             data = data.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+            data = data.trim();
             
             // Manual translation fallback for WTTR glitches
             const translations = {
