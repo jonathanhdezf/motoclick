@@ -104,8 +104,8 @@ class MotoClickAuth {
    */
   _onSessionEnd() {
     localStorage.removeItem('motoclick_current_user');
-    if (window.store && typeof window.store.logout === 'function') {
-      window.store.logout();
+    if (window.store && typeof window.store.setCurrentUser === 'function') {
+      window.store.setCurrentUser(null);
     }
     window.dispatchEvent(new CustomEvent('motoclick:auth:cleared'));
     console.log('[Auth] Session ended, local data cleared');
@@ -368,8 +368,8 @@ class MotoClickAuth {
 
     try {
       const redirectTo = role === 'driver'
-        ? window.location.origin + '/repartidor/panel.html'
-        : window.location.origin + '/cliente/nuevo-pedido.html';
+        ? window.location.origin + '/repartidor/'
+        : window.location.origin + '/cliente/';
 
       const { data, error } = await this._sb.auth.signInWithOAuth({
         provider: 'google',
@@ -419,8 +419,8 @@ class MotoClickAuth {
 
     try {
       const redirectTo = role === 'driver'
-        ? window.location.origin + '/repartidor/panel.html'
-        : window.location.origin + '/cliente/nuevo-pedido.html';
+        ? window.location.origin + '/repartidor/'
+        : window.location.origin + '/cliente/';
 
       const { data, error } = await this._sb.auth.signInWithOAuth({
         provider: 'facebook',
