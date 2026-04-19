@@ -375,8 +375,13 @@ class MotoClickStore {
 
   setCurrentUser(user) {
     this._currentUser = user;
-    localStorage.setItem('motoclick_current_user', JSON.stringify(user));
-    if (user && !this._useFallback) this._initPresence();
+    if (user) {
+      localStorage.setItem('motoclick_current_user', JSON.stringify(user));
+      if (!this._useFallback) this._initPresence();
+    } else {
+      // Al borrar el usuario, eliminar la clave — no escribir "null"
+      localStorage.removeItem('motoclick_current_user');
+    }
   }
 
   getCurrentUser() { return this._currentUser; }
@@ -385,11 +390,23 @@ class MotoClickStore {
    * Cerrar sesión — usa Supabase Auth si está disponible
    */
   async logout() {
-    if (this._auth && typeof this._auth.signOut === 'function') {
-      await this._auth.signOut();
+    try {
+      if (this._auth && typeof this._auth.signOut === 'function') {
+        // scope:'global' invalida el refresh token en el servidor
+        // Evita que Supabase reconstruya la sesión en siguientes cargas
+        await this._sb?.auth?.signOut({ scope: 'global' });
+      }
+    } catch(e) {
+      console.warn('[Store] Error during signOut, clearing locally anyway:', e);
     }
     this._currentUser = null;
-    localStorage.removeItem('motoclick_current_user');
+    // Nuking ALL Supabase and app tokens from the browser
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sb-') || key.startsWith('motoclick_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    sessionStorage.clear();
   }
 
   // ══════════════════════════════════════════════════════════════
