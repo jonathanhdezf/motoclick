@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#00e65b">
+  <meta name="theme-color" content="#00e65b"><!-- Chrome/Android -->
+  <meta name="msapplication-TileColor" content="#00e65b"><!-- Edge/IE -->
   <title>MotoClick | Panel de Administración Premium</title>
   <link rel="icon" href="../assets/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -223,6 +224,7 @@
     .flex-between { display: flex; justify-content: space-between; align-items: center; }
     .gap-1 { gap: 1rem; }
     .m-0 { margin: 0 !important; }
+    .mt-0 { margin-top: 0 !important; }
     .mt-1 { margin-top: 4px; }
     .mt-2 { margin-top: 2rem; }
     .mb-1 { margin-bottom: 1rem; }
@@ -242,6 +244,12 @@
     .text-blue { color: #3b82f6; }
     .text-yellow { color: #eab308; }
     .text-purple { color: #a855f7; }
+    /* Clases para reemplazar estilos inline */
+    .btn-broadcaster { padding: 4px 10px; font-size: 0.75rem; background: #3b82f6; border-color: #3b82f6; }
+    .modal-logout-wide { max-width: 400px; text-align: center; }
+    .modal-actions-flush { margin-top: 0; }
+    .broadcast-z { z-index: 10001; }
+    .textarea-h120 { height: 120px; }
     
     .app-container { display: flex; min-height: 100vh; }
     .stat-value { font-size: clamp(20px, 5vw, 28px); font-weight: 800; margin-top: 4px; }
@@ -410,7 +418,7 @@
             <div class="panel-card">
               <div class="panel-header">
                 <h3 class="m-0">🛰️ Broadcaster</h3>
-                <button class="btn btn-sm btn-primary" onclick="sendGlobalBroadcast()" style="padding: 4px 10px; font-size: 0.75rem; background: #3b82f6; border-color: #3b82f6;">
+                <button class="btn btn-sm btn-primary btn-broadcaster" onclick="sendGlobalBroadcast()">
                   <i class="fas fa-bullhorn"></i> Comunicado Global
                 </button>
               </div>
@@ -633,13 +641,13 @@
 
     <!-- Logout Modal -->
     <div class="modal-overlay hidden" id="logout-modal">
-      <div class="modal-content animate-fade-in-up" style="max-width: 400px; text-align: center;">
+      <div class="modal-content animate-fade-in-up modal-logout-wide">
         <div class="u-logout-icon-box mb-lg">
           <i class="fas fa-sign-out-alt fa-2x"></i>
         </div>
         <h3 class="m-0 mb-sm">¿Cerrar Sesión?</h3>
         <p class="text-secondary mb-xl fs-sm">Se finalizará tu sesión administrativa actual.</p>
-          <div class="modal-actions" style="margin-top: 0;">
+          <div class="modal-actions modal-actions-flush">
             <button class="btn btn-secondary btn-block" onclick="closeLogoutModal()">Cancelar</button>
             <button class="btn btn-primary btn-block btn-bg-danger" id="btn-do-logout">Sí, Salir</button>
           </div>
@@ -647,12 +655,12 @@
     </div>
 
     <!-- Broadcast Modal (Replacement for prompt) -->
-    <div class="modal-overlay hidden" id="broadcast-modal" style="z-index: 10001;">
+    <div class="modal-overlay hidden broadcast-z" id="broadcast-modal">
       <div class="modal-content animate-fade-in-up broadcast-modal-card">
         <h3 id="broadcast-modal-title" class="title-primary">📢 Comunicado</h3>
         <p id="broadcast-modal-subtitle" class="text-secondary mb-md modal-subtitle">Escribe el mensaje que deseas enviar.</p>
         <div class="form-group">
-          <textarea id="broadcast-msg-input" class="form-input" style="height: 120px;" placeholder="Escribe tu mensaje aquí..."></textarea>
+          <textarea id="broadcast-msg-input" class="form-input textarea-h120" placeholder="Escribe tu mensaje aquí..."></textarea>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary btn-block" onclick="closeBroadcastModal()">Cancelar</button>

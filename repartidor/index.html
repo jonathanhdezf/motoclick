@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="MotoClick — Inicia sesión como repartidor para recibir mandados.">
-  <meta name="theme-color" content="#00e65b">
+  <meta name="theme-color" content="#00e65b"><!-- Chrome/Android -->
+  <meta name="msapplication-TileColor" content="#00e65b"><!-- Edge/IE -->
   <title>MotoClick — Repartidor</title>
   <link rel="icon" type="image/png" href="../assets/logo_motoclick_app.png">
   <link rel="apple-touch-icon" href="../assets/logo_motoclick_app.png">
@@ -70,6 +71,11 @@
     .social-icon { width: 20px; height: 20px; flex-shrink: 0; }
     .btn-google:hover { border-color: #4285F4; box-shadow: 0 2px 12px rgba(66,133,244,0.15); }
     .btn-facebook:hover { border-color: #1877F2; box-shadow: 0 2px 12px rgba(24,119,242,0.15); }
+    /* Utility classes para reemplazar estilos inline */
+    .oauth-icon-wrapper { text-align: center; margin-bottom: 1.5rem; }
+    .oauth-emoji { font-size: 3rem; margin-bottom: 0.5rem; }
+    .label-muted-sm { font-size: 0.8rem; color: var(--text-muted); }
+    .label-accent-link { color: var(--text-accent); }
   </style>
   <script>document.addEventListener("DOMContentLoaded", () => { setTimeout(() => { document.body.style.visibility='visible'; document.body.style.opacity='1'; }, 100); });</script>
 </head>
@@ -176,8 +182,8 @@
   <!-- OAuth Phone Modal — Solicitar teléfono después de login social -->
   <div class="modal-overlay hidden" id="oauth-phone-modal">
     <div class="modal-content animate-fade-in-up">
-      <div class="text-center" style="margin-bottom: 1.5rem;">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🏍️</div>
+      <div class="oauth-icon-wrapper">
+        <div class="oauth-emoji">🏍️</div>
         <h3 class="modal-h3">¡Casi listo, Repartidor!</h3>
         <p class="text-secondary mb-md modal-p">Necesitamos tu número de celular para asignarte mandados.</p>
       </div>
@@ -188,10 +194,10 @@
           <span class="form-error"></span>
         </div>
         <div class="form-group">
-          <label class="custom-checkbox" style="font-size: 0.8rem; color: var(--text-muted);">
+          <label class="custom-checkbox label-muted-sm">
             <input type="checkbox" id="oauth-agree-terms" required>
             <span class="checkmark"></span>
-            Acepto los <a href="../terminos.html" target="_blank" style="color: var(--text-accent);">términos y condiciones</a> de repartidor
+            Acepto los <a href="../terminos.html" target="_blank" class="label-accent-link">términos y condiciones</a> de repartidor
           </label>
         </div>
         <div class="modal-actions">

@@ -230,10 +230,11 @@ class MotoClickStore {
       // Si el login fue exitoso, verificar integridad del ROL en la base de datos
       if (result.success) {
         // NO CONFIAR en el objeto devuelto por Auth, pedirlo a la tabla public.users
+        // NOTA: result.user.id es el auth UUID → en public.users se llama user_id, no id
         const { data: profile, error } = await this._sb
           .from('users')
           .select('role, phone')
-          .eq('id', result.user.id)
+          .eq('user_id', result.user.id)
           .single();
 
         if (error || !profile) {
