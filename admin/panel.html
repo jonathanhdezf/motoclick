@@ -13,6 +13,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // 🛡️ SECURITY BLOCKER (SENIOR LEVEL)
+    // BLOQUEO INSTANTÁNEO — Se ejecuta antes de procesar el CSS y el Body
+    (function() {
+      const raw = localStorage.getItem('motoclick_current_user');
+      let user = null;
+      try { user = JSON.parse(raw); } catch(_) {}
+
+      if (!user || user.role !== 'admin') {
+        // Redirigir de inmediato
+        window.location.replace('/admin/');
+        // Inyectar CSS que destruya el renderizado por si hay latencia
+        document.write('<style>html { display:none !important; }</style>');
+      } else {
+        // Marcar sesión volátil para el interceptor de BFCache
+        sessionStorage.setItem('mc_admin_session', '1');
+      }
+
+      // Interceptor de BFCache (Botón "Atrás" en móviles)
+      window.addEventListener('pageshow', function(event) {
+        if (event.persisted && !sessionStorage.getItem('mc_admin_session')) {
+          window.location.replace('/admin/');
+        }
+      });
+    })();
+  </script>
   <style>
     :root {
       --accent: #22c55e;
@@ -677,50 +703,6 @@
   <script src="../js/store.js?v=2.1"></script>
   <script src="../js/utils.js?v=2.1"></script>
   <script>
-    // ═══════════════════════════════════════════════════════════════
-    // 🛡️ CAPA 1 — Guard Pre-JS: Ocultar el panel desde el primer ciclo
-    // El body empieza invisible para evitar flash de contenido admin
-    // ═══════════════════════════════════════════════════════════════
-    document.documentElement.style.visibility = 'hidden';
-
-    // ═══════════════════════════════════════════════════════════════
-    // 🛡️ CAPA 2 — BFCache Mobile Interceptor (pageshow inline)
-    // Se registra ANTES de cargar Supabase/store/utils para actuar
-    // inmediatamente cuando el navegador sirve la página desde caché.
-    // ═══════════════════════════════════════════════════════════════
-    window.addEventListener('pageshow', function(event) {
-      const isFromCache = event.persisted;
-      const sessionAlive = sessionStorage.getItem('mc_admin_session') === '1';
-      
-      if (isFromCache && !sessionAlive) {
-        // La página viene del BFCache pero la sesión fue destruida
-        // Redirigir sin escapes, blanquear el DOM antes
-        document.documentElement.style.visibility = 'hidden';
-        window.location.replace('/admin/');
-        return;
-      }
-    });
-
-    // ═══════════════════════════════════════════════════════════════
-    // 🛡️ CAPA 3 — Guard Síncrono: Verificar sesión al instante
-    // Usa localStorage para chequeo inmediato. Si falla, cortar acceso.
-    // ═══════════════════════════════════════════════════════════════
-    (function() {
-      const raw = localStorage.getItem('motoclick_current_user');
-      let user = null;
-      try { user = JSON.parse(raw); } catch(_) {}
-
-      if (!user || user.role !== 'admin') {
-        console.warn('[Admin] Acceso denegado: Sesión inválida o rol insuficiente.');
-        window.location.replace('/admin/');
-        return; // No ejecutar nada más
-      }
-
-      // Sesión válida — marcar token volátil y mostrar el panel
-      sessionStorage.setItem('mc_admin_session', '1');
-      document.documentElement.style.visibility = 'visible';
-    })();
-
     const store = window.MotoClickStore;
     let currentUserId = null;
 
