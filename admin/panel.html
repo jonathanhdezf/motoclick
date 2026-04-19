@@ -649,7 +649,7 @@
         <p class="text-secondary mb-xl fs-sm">Se finalizará tu sesión administrativa actual.</p>
           <div class="modal-actions modal-actions-flush">
             <button class="btn btn-secondary btn-block" onclick="closeLogoutModal()">Cancelar</button>
-            <button class="btn btn-primary btn-block btn-bg-danger" id="btn-do-logout">Sí, Salir</button>
+            <button class="btn btn-primary btn-block btn-bg-danger" id="btn-do-logout" onclick="confirmLogout()">Sí, Salir</button>
           </div>
       </div>
     </div>
@@ -1470,7 +1470,12 @@
       }
     }
 
-    initDashboard();
+    (async function init() {
+      const user = await requireAuth('admin');
+      if (user && user.role === 'admin') {
+         initDashboard();
+      }
+    })();
   </script>
   
   <style>
