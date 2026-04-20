@@ -12,13 +12,24 @@
     var b = document.createElement('div');
     b.className = 'gs-b'; b.id = 'gs-scroll-bar';
     c.appendChild(b); document.body.appendChild(c);
-    function up() {
+
+    // Throttle visual updates with requestAnimationFrame to avoid forced reflows on rapid scroll
+    var ticking = false;
+    function update() {
+      ticking = false;
       var h = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       b.style.height = (h > 0 ? (window.pageYOffset || document.documentElement.scrollTop) / h * 100 : 0) + '%';
     }
-    window.addEventListener('scroll', up, {passive:true});
-    window.addEventListener('resize', up);
-    up();
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll);
+    update();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inject);
   else inject();

@@ -1702,15 +1702,21 @@
         return card ? (card.offsetWidth + 20) : carousel.clientWidth;
       }
 
+      // Cache card width and update on resize to avoid layout reads on every scroll
+      let cachedCardWidth = null;
+      function updateCardWidth() {
+        cachedCardWidth = getCardWidth();
+      }
+      updateCardWidth();
+      window.addEventListener('resize', () => updateCardWidth(), { passive: true });
+
       function scrollToCard(index) {
         currentIndex = (index + CARD_COUNT) % CARD_COUNT;
-        
         // Dynamic scroll behavior for all devices
         carousel.scrollTo({ 
-          left: currentIndex * getCardWidth(), 
+          left: currentIndex * (cachedCardWidth || getCardWidth()), 
           behavior: 'smooth' 
         });
-        
         updateDots();
       }
 
@@ -1731,19 +1737,27 @@
         startTimer();
       }
 
-      // Sync dots on manual scroll
+      // Sync dots on manual scroll — throttle updates via requestAnimationFrame
+      let scrollRaf = null;
       carousel.addEventListener('scroll', () => {
-        const w = getCardWidth();
-        if (w > 0) {
-          const idx = Math.round(carousel.scrollLeft / w);
-          if (idx !== currentIndex) { currentIndex = idx; updateDots(); }
-        }
+        if (scrollRaf) return;
+        scrollRaf = requestAnimationFrame(() => {
+          const w = cachedCardWidth || getCardWidth();
+          if (w > 0) {
+            const idx = Math.round(carousel.scrollLeft / w);
+            if (idx !== currentIndex) { currentIndex = idx; updateDots(); }
+          }
+          scrollRaf = null;
+        });
       });
 
-      // Drag/swipe support
+      // Drag/swipe support — avoid reading offsetLeft on every mousemove
+      let carouselClientLeft = 0;
       carousel.addEventListener('mousedown', e => {
         isDragging = true;
-        dragStartX = e.pageX - carousel.offsetLeft;
+        const rect = carousel.getBoundingClientRect();
+        carouselClientLeft = rect.left;
+        dragStartX = e.pageX - carouselClientLeft;
         dragScrollLeft = carousel.scrollLeft;
         carousel.style.cursor = 'grabbing';
         clearInterval(autoTimer);
@@ -1753,7 +1767,7 @@
       carousel.addEventListener('mousemove', e => {
         if (!isDragging) return;
         e.preventDefault();
-        const x = e.pageX - carousel.offsetLeft;
+        const x = e.pageX - carouselClientLeft;
         carousel.scrollLeft = dragScrollLeft - (x - dragStartX);
       });
 
