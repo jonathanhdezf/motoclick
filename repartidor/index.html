@@ -179,35 +179,6 @@
     </div>
   </div>
 
-  <!-- OAuth Phone Modal — Solicitar teléfono después de login social -->
-  <div class="modal-overlay hidden" id="oauth-phone-modal">
-    <div class="modal-content animate-fade-in-up">
-      <div class="oauth-icon-wrapper">
-        <div class="oauth-emoji">🏍️</div>
-        <h3 class="modal-h3">¡Casi listo, Repartidor!</h3>
-        <p class="text-secondary mb-md modal-p">Necesitamos tu número de celular para asignarte mandados.</p>
-      </div>
-      <form onsubmit="handleOAuthPhoneSubmit(event)">
-        <div class="form-group">
-          <label class="form-label" for="oauth-phone">Número de Celular (10 dígitos)</label>
-          <input class="form-input" type="tel" id="oauth-phone" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 5512345678" maxlength="10" required>
-          <span class="form-error"></span>
-        </div>
-        <div class="form-group">
-          <label class="custom-checkbox label-muted-sm">
-            <input type="checkbox" id="oauth-agree-terms" required>
-            <span class="checkmark"></span>
-            Acepto los <a href="../terminos.html" target="_blank" class="label-accent-link">términos y condiciones</a> de repartidor
-          </label>
-        </div>
-        <div class="modal-actions">
-          <button type="submit" class="btn btn-primary btn-block" id="oauth-phone-submit">
-            Continuar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
@@ -215,8 +186,23 @@
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
-    // ── OAuth Callback Handler — Se ejecuta al volver de Google/Facebook ──
+    // ── Auth Check Logic ──
     (async function() {
+      // 1. Verificar si hay sesión activa
+      const user = window.store?.getCurrentUser();
+      
+      if (user) {
+        // El middleware checkSessionIntegrity en utils.js se encargará de mostrar el modal si falta el teléfono.
+        if (user.phone && user.phone.length >= 10 && !user.phone.includes('@')) {
+          if (user.role === 'driver') {
+            window.location.href = '/repartidor/panel.html';
+          } else if (user.role === 'client') {
+            window.location.href = '/cliente/nuevo-pedido.html';
+          }
+        }
+      }
+
+      // Handle OAuth Redirects
       const session = await store._sb?.auth?.getSession();
       if (session?.data?.session?.user) {
         const authUser = session.data.session.user;
@@ -224,76 +210,16 @@
 
         if (provider === 'google' || provider === 'facebook') {
           const result = await store.handleOAuthCallback('driver');
-
-          if (result && result.success && result.needsPhone) {
-            document.getElementById('oauth-phone-modal').classList.remove('hidden');
-            document.getElementById('oauth-phone').focus();
-            return;
-          }
-
-          if (result && result.success && result.user) {
-            if (result.user.role === 'driver') {
-              showToast('¡Bienvenido, Repartidor! 🏍️', 'success');
-              setTimeout(() => navigateTo('/repartidor/panel.html'), 600);
-            } else {
-              showToast('Esta cuenta es de cliente, no de repartidor.', 'warning');
-              await store._auth.signOut();
+          if (result && result.success) {
+            if (result.user.phone && result.user.phone.length >= 10) {
+                 window.location.href = '/repartidor/panel.html';
             }
-            return;
-          }
-
-          // Si llegamos aquí y result no fue exitoso
-          if (result && !result.success) {
-            showToast(result.error || 'Error al completar el perfil social.', 'error');
           }
         }
       }
-
-      const user = store.getCurrentUser();
-      if (user && user.role === 'driver') {
-        window.location.href = '/repartidor/panel.html';
-      }
     })();
 
-    // ── OAuth Phone Submit ──
-    async function handleOAuthPhoneSubmit(e) {
-      e.preventDefault();
-      const phone = document.getElementById('oauth-phone').value.trim();
-      const agreedTerms = document.getElementById('oauth-agree-terms').checked;
 
-      if (!agreedTerms) {
-        showToast('Debes aceptar los términos y condiciones', 'warning');
-        return;
-      }
-
-      if (!phone || phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
-        showToast('Ingresa un número de celular válido de 10 dígitos', 'error');
-        return;
-      }
-
-      const btn = document.getElementById('oauth-phone-submit');
-      btn.disabled = true; btn.textContent = 'Guardando...';
-
-      const result = await store.saveOAuthPhone(phone);
-
-      btn.disabled = false; btn.textContent = 'Continuar';
-
-      if (result.success) {
-        showToast('¡Teléfono registrado! 📱', 'success');
-        document.getElementById('oauth-phone-modal').classList.add('hidden');
-        setTimeout(() => navigateTo('/repartidor/panel.html'), 600);
-      } else {
-        showToast(result.error, 'error');
-      }
-    }
-
-    // Check if already logged in
-    (function() {
-      const user = store.getCurrentUser();
-      if (user && user.role === 'driver') {
-        window.location.href = '/repartidor/panel.html';
-      }
-    })();
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));

@@ -212,35 +212,6 @@
     </div>
   </div>
 
-  <!-- OAuth Phone Modal — Solicitar teléfono después de login social -->
-  <div class="modal-overlay hidden" id="oauth-phone-modal">
-    <div class="modal-content animate-fade-in-up">
-      <div class="oauth-icon-wrapper">
-        <div class="oauth-emoji">📱</div>
-        <h3 class="modal-h3">¡Casi listo!</h3>
-        <p class="text-secondary mb-md modal-p">Necesitamos tu número de celular para contactarte sobre tus pedidos.</p>
-      </div>
-      <form onsubmit="handleOAuthPhoneSubmit(event)">
-        <div class="form-group">
-          <label class="form-label" for="oauth-phone">Número de Celular (10 dígitos)</label>
-          <input class="form-input" type="tel" id="oauth-phone" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 5512345678" maxlength="10" required>
-          <span class="form-error"></span>
-        </div>
-        <div class="form-group">
-          <label class="custom-checkbox label-muted-sm">
-            <input type="checkbox" id="oauth-agree-terms" required>
-            <span class="checkmark"></span>
-            Acepto los <a href="../terminos.html" target="_blank" class="label-accent-link">términos y condiciones</a>
-          </label>
-        </div>
-        <div class="modal-actions">
-          <button type="submit" class="btn btn-primary btn-block" id="oauth-phone-submit">
-            Continuar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- Forgot PIN Modal -->
   <div class="modal-overlay hidden" id="forgot-pin-modal">
@@ -270,86 +241,42 @@
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
-    // ── OAuth Callback Handler — Se ejecuta al volver de Google/Facebook ──
+    // ── Auth Check Logic ──
     (async function() {
-      // Verificar si hay sesión activa de OAuth (después del redirect)
+      // 1. Verificar si hay sesión activa (OAuth o sesión previa restaurada)
+      const user = window.store?.getCurrentUser();
+      
+      if (user) {
+        // El middleware checkSessionIntegrity en utils.js se encargará de mostrar el modal si falta el teléfono.
+        // Solo redirigimos si el perfil está completo.
+        if (user.phone && user.phone.length >= 10 && !user.phone.includes('@')) {
+          if (user.role === 'client') {
+            window.location.href = '/cliente/nuevo-pedido.html';
+          } else if (user.role === 'driver') {
+            window.location.href = '/repartidor/panel.html';
+          }
+        }
+      }
+
+      // Handle OAuth Redirects
       const session = await store._sb?.auth?.getSession();
       if (session?.data?.session?.user) {
         const authUser = session.data.session.user;
         const provider = authUser.app_metadata?.provider;
 
-        // Solo verificar si vino de OAuth social
         if (provider === 'google' || provider === 'facebook') {
           const result = await store.handleOAuthCallback('client');
-
-          if (result && result.success && result.needsPhone) {
-            // Mostrar modal para pedir teléfono
-            document.getElementById('oauth-phone-modal').classList.remove('hidden');
-            document.getElementById('oauth-phone').focus();
-            return; // No continuar hasta que ingrese teléfono
-          }
-
-          if (result && result.success && result.user) {
-            if (result.user.role === 'client') {
-              showToast('¡Bienvenido! 🎉', 'success');
-              setTimeout(() => navigateTo('/cliente/nuevo-pedido.html'), 600);
-            } else {
-              showToast(`Esta cuenta tiene el rol de ${result.user.role}. Usa el portal correspondiente.`, 'warning');
-              await store.logout();
+          if (result && result.success) {
+            // El middleware global en utils.js detectará si necesita teléfono
+            // No redirigimos aquí, dejamos que el middleware actúe o el usuario refresque.
+            if (result.user.phone && result.user.phone.length >= 10) {
+                 window.location.href = '/cliente/nuevo-pedido.html';
             }
-            return;
-          }
-
-          if (result && !result.success) {
-            showToast(result.error || 'No pudimos vincular tu cuenta de Google.', 'error');
           }
         }
-      }
-
-      // Si no hay sesión OAuth activa en el redirect, verificar si ya está logueado
-      const user = store.getCurrentUser();
-      if (user && user.role === 'client') {
-        // REQUISITO INDISPENSABLE: Si no tiene teléfono, forzar modal
-        if (!user.phone || user.phone.length < 10) {
-          document.getElementById('oauth-phone-modal').classList.remove('hidden');
-          document.getElementById('oauth-phone').focus();
-          return;
-        }
-        window.location.href = '/cliente/nuevo-pedido.html';
       }
     })();
 
-    // ── OAuth Phone Submit ──
-    async function handleOAuthPhoneSubmit(e) {
-      e.preventDefault();
-      const phone = document.getElementById('oauth-phone').value.trim();
-      const agreedTerms = document.getElementById('oauth-agree-terms').checked;
-
-      if (!agreedTerms) {
-        showToast('Debes aceptar los términos y condiciones', 'warning');
-        return;
-      }
-
-      if (!phone || phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
-        showToast('Ingresa un número de celular válido de 10 dígitos', 'error');
-        return;
-      }
-
-      const btn = document.getElementById('oauth-phone-submit');
-      btn.disabled = true; btn.textContent = 'Guardando...';
-
-      const result = await store.saveOAuthPhone(phone);
-
-      btn.disabled = false; btn.textContent = 'Continuar';
-
-      if (result.success) {
-        showToast('¡Teléfono registrado! 📱', 'success');
-        document.getElementById('oauth-phone-modal').classList.add('hidden');
-        setTimeout(() => navigateTo('nuevo-pedido.html'), 600);
-      } else {
-        showToast(result.error, 'error');
-      }
-    }
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));

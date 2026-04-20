@@ -1,97 +1,189 @@
-// Ejecutar verificación de integridad cuando el perfil esté listo
-window.addEventListener('motoclick:auth:ready', (e) => {
-  const profile = e.detail;
-  if (profile) {
-    checkSessionIntegrity(profile);
-  }
-});
 
 /**
  * Middleware de Integridad: Verificar que el usuario tenga todos los datos necesarios
  * Especialmente útil para usuarios de Google que no tienen teléfono inicialmente.
  */
+/**
+ * Middleware de Integridad: Verificar que el usuario tenga todos los datos necesarios
+ * Especialmente útil para usuarios de Google que no tienen teléfono inicialmente.
+ * Este middleware actúa como una "barrera" que impide el uso de la app sin teléfono.
+ */
 function checkSessionIntegrity(user) {
+  // Si no se pasa usuario, intentar obtenerlo del store global
+  if (!user) user = window.store?.getCurrentUser();
   if (!user) return;
 
-  // 1. Verificar si falta el teléfono (común en Google Login)
-  if (!user.phone || user.phone === '' || user.phone.includes('@')) {
-    console.warn('[Integrity] Perfil incompleto: Falta número de teléfono.');
+  // 1. Identificar si el perfil es incompleto
+  // Un teléfono es inválido si: no existe, es muy corto, o es un placeholder legacy (contiene @)
+  const isPhoneMissing = !user.phone || user.phone.toString().trim() === '' || user.phone.length < 10 || user.phone.includes('@');
+  
+  if (isPhoneMissing) {
+    console.warn('[Integrity] Perfil incompleto: Falta número de teléfono obligatorio.');
     
-    // Si estamos en una página que requiere teléfono, forzar modal
-    const protectedPages = ['nuevo-pedido.html', 'panel.html', 'rastreo.html'];
-    const currentPage = window.location.pathname.split('/').pop();
+    // Páginas donde el teléfono es ABSOLUTAMENTE obligatorio para operar
+    const protectedPages = ['nuevo-pedido', 'panel', 'rastreo', 'perfil'];
+    const path = window.location.pathname.toLowerCase();
     
-    if (protectedPages.includes(currentPage)) {
-      showPhoneCompletionModal();
+    // Identificar si estamos en el portal de cliente o repartidor
+    const isClientPortal = path.includes('/cliente');
+    const isDriverPortal = path.includes('/repartidor');
+    
+    // Una página es protegida si el path contiene alguna de las palabras clave o estamos en el index de un portal logueados
+    const isProtected = protectedPages.some(page => path.includes(page));
+    const isPortalRoot = (isClientPortal || isDriverPortal) && (path.endsWith('/') || path.endsWith('index.html'));
+
+    if (isProtected || isPortalRoot) {
+      // Usar user.id o user.user_id (Supabase UUID o Serial PK)
+      const userId = user.id || user.user_id;
+      if (userId) {
+        showPhoneCompletionModal(userId);
+      }
     }
   }
 }
 
 /**
  * Mostrar modal obligatorio para completar el número de teléfono
+ * Diseño Senior: Glassmorphism, Bloqueo de UI, Opción de Logout
  */
-function showPhoneCompletionModal() {
+function showPhoneCompletionModal(userId) {
   if (document.getElementById('completion-modal')) return;
 
   const modal = document.createElement('div');
   modal.id = 'completion-modal';
   modal.className = 'modal-overlay animate-fade-in';
-  modal.style.zIndex = '10000';
+  modal.style.cssText = `
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(10, 15, 26, 0.85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  `;
+
   modal.innerHTML = `
-    <div class="modal-content card-glass" style="max-width: 400px; text-align: center;">
-      <div style="font-size: 3rem; margin-bottom: 1rem;">📱</div>
-      <h3 class="mb-sm">¡Ya casi terminamos!</h3>
-      <p class="text-secondary mb-lg">Para continuar en MotoClick, necesitamos un número de teléfono para que los repartidores puedan contactarte.</p>
-      
-      <div class="form-group" style="text-align: left;">
-        <label class="form-label">Número de WhatsApp (10 dígitos)</label>
-        <input type="tel" id="complete-phone" class="form-input" placeholder="Ej. 3312345678" maxlength="10">
+    <div class="modal-content card-glass animate-fade-in-up" style="max-width: 420px; width: 100%; border: 1px solid rgba(0, 230, 91, 0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem; animation: pulse 2s infinite;">📱</div>
+        <h2 style="color: #fff; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -0.02em;">¡Casi listo para pedir!</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+          En <b>MotoClick</b>, tu seguridad es primero. Necesitamos tu WhatsApp para que el repartidor pueda contactarte al llegar.
+        </p>
       </div>
       
-      <button class="btn btn-primary btn-block mt-md" id="btn-save-phone" onclick="saveMissingPhone()">
-        Confirmar y Continuar
-      </button>
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label class="form-label" style="color: var(--text-accent); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+          Número de Celular (10 dígitos)
+        </label>
+        <div style="position: relative;">
+            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600;">+52</span>
+            <input type="tel" id="complete-phone" class="form-input" 
+                   placeholder="Ej. 233 123 4567" 
+                   maxlength="10" 
+                   style="padding-left: 50px; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.1em; border-color: rgba(255,255,255,0.1);"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        </div>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn btn-primary btn-block btn-lg" id="btn-save-phone" onclick="saveMissingPhone('${userId}')" 
+                style="height: 54px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 8px 20px rgba(0, 230, 91, 0.25);">
+          Confirmar y Empezar 🛵
+        </button>
+        
+        <button class="btn-text" onclick="window.store?.logout().then(() => window.location.href='/')" 
+                style="color: var(--text-muted); font-size: 0.85rem; padding: 10px; border: none; background: transparent; cursor: pointer; text-decoration: underline;">
+          Cerrar sesión y salir
+        </button>
+      </div>
+
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;">
+            Al continuar, aceptas que un repartidor independiente pueda contactarte vía llamada o WhatsApp únicamente para temas relacionados con tu pedido.
+        </p>
+      </div>
     </div>
   `;
   document.body.appendChild(modal);
+  document.getElementById('complete-phone').focus();
 }
 
 /**
  * Guardar el teléfono faltante y actualizar el perfil
  */
-async function saveMissingPhone() {
-  const phone = document.getElementById('complete-phone').value.trim();
+async function saveMissingPhone(userId) {
+  const phoneInput = document.getElementById('complete-phone');
+  const phone = phoneInput.value.trim();
+  
   if (!/^\d{10}$/.test(phone)) {
     showToast('Ingresa un número válido de 10 dígitos.', 'error');
+    phoneInput.style.borderColor = '#ff4646';
+    phoneInput.classList.add('animate-shake');
+    setTimeout(() => phoneInput.classList.remove('animate-shake'), 500);
     return;
   }
 
   const btn = document.getElementById('btn-save-phone');
+  const originalText = btn.innerText;
   btn.disabled = true;
-  btn.innerText = 'Guardando...';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
   try {
-    const result = await window.store.updateUser(window.store.getCurrentUser().id, { phone: phone });
+    const result = await window.store.updateUser(userId, { 
+      phone: phone,
+      is_verified: true, // Auto-verificar por ser login OAuth/Proceso de onboarding
+      verification_status: 'verified',
+      verification_date: new Date().toISOString()
+    });
+
     if (result.success) {
-      showToast('Perfil completado. ¡Bienvenido! 🛵', 'success');
-      document.getElementById('completion-modal').remove();
-      // Recargar para aplicar cambios
-      setTimeout(() => window.location.reload(), 1000);
+      showToast('¡Perfil listo! Redirigiendo... 🛵', 'success');
+      
+      // Actualizar metadata de Auth también para consistencia
+      if (window.store?._sb?.auth) {
+        await window.store._sb.auth.updateUser({ data: { phone: phone } });
+      }
+
+      // Animación de salida
+      const modal = document.getElementById('completion-modal');
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.5s ease';
+      
+      setTimeout(() => window.location.reload(), 600);
     } else {
       showToast(result.error || 'Error al guardar el teléfono', 'error');
       btn.disabled = false;
-      btn.innerText = 'Confirmar y Continuar';
+      btn.innerText = originalText;
     }
   } catch (e) {
-    showToast('Error de conexión.', 'error');
+    console.error('[Integrity] Update failed:', e);
+    showToast('Error de conexión. Intenta de nuevo.', 'error');
     btn.disabled = false;
+    btn.innerText = originalText;
   }
 }
 
-// Ejecutar verificación al cargar
-window.addEventListener('load', () => {
-  setTimeout(checkSessionIntegrity, 1500);
-});
+// Ejecutar verificación en varios puntos de entrada para máxima fiabilidad
+(function() {
+  const runCheck = () => {
+    const user = window.store?.getCurrentUser();
+    if (user) checkSessionIntegrity(user);
+  };
+
+  // 1. Al cargar el DOM
+  document.addEventListener('DOMContentLoaded', runCheck);
+  
+  // 2. Al cargar toda la ventana
+  window.addEventListener('load', () => {
+    // Delay de respaldo por si el store tarda en restaurar sesión de Supabase
+    setTimeout(runCheck, 1000);
+    setTimeout(runCheck, 2500);
+  });
+
+  // 3. Cuando el store emite que el perfil está listo
+  window.addEventListener('motoclick:auth:ready', (e) => {
+    if (e.detail) checkSessionIntegrity(e.detail);
+  });
+})();
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     if (!document.querySelector('link[rel="manifest"]')) {

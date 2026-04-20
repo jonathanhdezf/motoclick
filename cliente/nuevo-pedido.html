@@ -1726,7 +1726,7 @@
       if (!container) return;
       
       // Obtener pedidos del cliente utilizando el store
-      const orders = await store.getOrdersByUser(user.id);
+      const orders = await store.getOrdersByClient(user.id);
       
       if (!orders || orders.length === 0) {
         container.innerHTML = `
