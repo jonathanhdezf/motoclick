@@ -324,12 +324,39 @@ class MotoClickStore {
    * Fallback legacy — login directo por DB
    */
   async _fb_loginUser(phone, role, pin) {
-    const { data, error } = await this._sb.from('users')
-      .select('*').eq('phone', phone).eq('role', role).maybeSingle();
-    if (error || !data) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
+    // Normalizar teléfono a 10 dígitos (eliminando prefijos de país como 52)
+    const normalize = p => (p || '').toString().replace(/\D/g, '').replace(/^52/, '').slice(-10);
+    const normPhone = normalize(phone);
 
+    // Intentar buscar en la tabla users con varias estrategias para tolerancia de formatos
+    let res = await this._sb.from('users').select('*').eq('phone', normPhone).eq('role', role).maybeSingle();
+    if (!res || !res.data) {
+      // intentar sin role (por si el usuario fue registrado con otro rol por error)
+      res = await this._sb.from('users').select('*').eq('phone', normPhone).maybeSingle();
+    }
+
+    if ((!res || !res.data) && normPhone) {
+      // intentar búsqueda parcial (número que termina con los últimos 10 dígitos)
+      try {
+        res = await this._sb.from('users').select('*').ilike('phone', `%${normPhone}`).maybeSingle();
+      } catch (e) {
+        // Algunos esquemas o versiones de PostgREST no soportan ilike en columnas no text
+        res = res || { data: null, error: null };
+      }
+    }
+
+    if (!res || !res.data) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
+
+    const data = res.data;
+
+    // Validación de rol: si se especificó rol y no coincide, denegar acceso
+    if (role && data.role && data.role !== role) {
+      return { success: false, error: 'Acceso denegado: Esta cuenta no tiene permisos para este portal.' };
+    }
+
+    // Validar PIN (soporta PIN almacenado o por defecto últimos 4 dígitos)
     if (pin) {
-      const expectedPin = data.pin || phone.slice(-4);
+      const expectedPin = data.pin || normPhone.slice(-4);
       if (pin !== expectedPin) {
         return { success: false, error: 'Contraseña o PIN incorrecto. Intente de nuevo.' };
       }
