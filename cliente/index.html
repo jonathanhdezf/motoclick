@@ -137,13 +137,18 @@
         <div class="tab-content active" id="tab-login">
           <form id="login-form" onsubmit="handleLogin(event)">
             <div class="form-group">
-              <label class="form-label" for="login-phone">Teléfono</label>
-              <input class="form-input" type="tel" id="login-phone" name="phone" placeholder="Ej. 5512345678" maxlength="10">
+              <label class="form-label" for="login-email">Correo electrónico</label>
+              <input class="form-input" type="email" id="login-email" name="email" placeholder="ejemplo@correo.com" autocomplete="email">
+              <span class="form-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="login-phone">O Teléfono</label>
+              <input class="form-input" type="tel" id="login-phone" name="phone" placeholder="Ej. 5512345678" maxlength="10" autocomplete="tel">
               <span class="form-error"></span>
             </div>
             <div class="form-group form-group-pin">
               <label class="form-label" for="login-pin">NIP de Seguridad (4 dígitos)</label>
-              <input class="form-input" type="password" inputmode="numeric" pattern="[0-9]*" id="login-pin" name="pin" placeholder="Ingresa tu NIP" maxlength="4" required>
+              <input class="form-input" type="password" inputmode="numeric" pattern="[0-9]*" id="login-pin" name="pin" placeholder="Ingresa tu NIP" maxlength="4" required autocomplete="current-password">
             </div>
             <div class="forgot-pin-wrapper">
               <a href="#" onclick="document.getElementById('forgot-pin-modal').classList.remove('hidden'); return false;" class="forgot-pin-link">¿Olvidaste tu contraseña?</a>
@@ -288,14 +293,26 @@
     async function handleLogin(e) {
       e.preventDefault();
       const form = e.target;
-      if (!validateForm(form, { phone: { required: true, phone: true } })) return;
+      const email = form.email ? form.email.value.trim() : '';
+      const phone = form.phone ? form.phone.value.trim() : '';
+      if (!email && !phone) { showToast('Ingresa correo o teléfono', 'error'); return; }
 
       const pin = form.pin ? form.pin.value.trim() : null;
+
+      // Validaciones básicas
+      if (email) {
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRe.test(email)) { showToast('Correo inválido', 'error'); return; }
+      } else {
+        if (!/^\d{10}$/.test(phone)) { showToast('Teléfono inválido', 'error'); return; }
+      }
+
+      const identifier = email || phone;
 
       const btn = document.getElementById('login-submit');
       btn.disabled = true; btn.textContent = 'Verificando...';
 
-      const result = await store.loginUser(form.phone.value.trim(), 'client', pin);
+      const result = await store.loginUser(identifier, 'client', pin);
 
       btn.disabled = false; btn.textContent = 'Iniciar Sesión';
 

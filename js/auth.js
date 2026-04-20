@@ -222,19 +222,24 @@ class MotoClickAuth {
       return { success: false, error: 'Supabase Auth no disponible' };
     }
 
-    if (!phone || phone.length < 10) {
-      return { success: false, error: 'Ingresa un teléfono válido de 10 dígitos' };
+    // support either email or phone as identifier
+    const identifier = phone; // could be full email or phone digits
+    if (identifier.includes('@')) {
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRe.test(identifier)) return { success: false, error: 'Ingresa un correo válido' };
+    } else {
+      if (!identifier || identifier.length < 10) return { success: false, error: 'Ingresa un teléfono válido de 10 dígitos' };
     }
     if (!pin || pin.length < 4) {
       return { success: false, error: 'Ingresa tu PIN' };
     }
 
     try {
-      // Usar el mismo formato de email virtual que en signUp
-      const virtualEmail = `${phone}@motoclick.app`;
+      // Use provided email if identifier is an email, otherwise build virtual email from phone
+      const emailToUse = identifier.includes('@') ? identifier : `${identifier}@motoclick.app`;
 
       const { data, error } = await this._sb.auth.signInWithPassword({
-        email: virtualEmail,
+        email: emailToUse,
         password: pin
       });
 
