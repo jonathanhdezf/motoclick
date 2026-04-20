@@ -377,5 +377,64 @@
       // Si tiene éxito, el usuario es redirigido a Facebook
     }
   </script>
+  <script>
+    // Service Worker update helper: enviar FORCE_UPDATE o SKIP_WAITING al SW
+    async function forceSWUpdate() {
+      if (!('serviceWorker' in navigator)) { if (typeof showToast === 'function') showToast('Service Worker no disponible','error'); return; }
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (!registration) {
+          if (typeof showToast === 'function') showToast('No hay registro de Service Worker','error');
+          return;
+        }
+        // Pedir al SW que busque update y active la nueva versión
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'FORCE_UPDATE' });
+          if (typeof showToast === 'function') showToast('Buscando actualización...', 'info');
+        } else {
+          // Si no hay controller activo, forzar update en la registración
+          await registration.update();
+          if (typeof showToast === 'function') showToast('Actualizando...', 'info');
+        }
+      } catch (e) {
+        console.warn('forceSWUpdate error', e);
+        if (typeof showToast === 'function') showToast('Error al pedir actualización', 'error');
+      }
+    }
+
+    navigator.serviceWorker && navigator.serviceWorker.addEventListener && navigator.serviceWorker.addEventListener('message', e => {
+      const d = e.data || {};
+      if (d.type === 'SW_UPDATED') {
+        if (typeof showToast === 'function') showToast('Nueva versión disponible — recargando...', 'success');
+        setTimeout(() => location.reload(), 600);
+      }
+    });
+
+    // Agregar botón flotante para forzar actualización (puede ocultarse si no se desea)
+    (function addSWUpdateButton(){
+      try {
+        const btn = document.createElement('button');
+        btn.id = 'sw-update-btn';
+        btn.title = 'Forzar actualización de la app';
+        btn.innerText = 'Actualizar app';
+        Object.assign(btn.style, {
+          position: 'fixed',
+          bottom: '18px',
+          right: '18px',
+          zIndex: '99999',
+          background: '#00e65b',
+          border: 'none',
+          padding: '10px 12px',
+          borderRadius: '12px',
+          color: '#000',
+          fontWeight: '700',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+          cursor: 'pointer'
+        });
+        btn.addEventListener('click', forceSWUpdate);
+        document.body.appendChild(btn);
+      } catch (e) { console.warn('addSWUpdateButton failed', e); }
+    })();
+  </script>
 </body>
 </html>

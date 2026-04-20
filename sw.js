@@ -59,9 +59,36 @@ self.addEventListener('fetch', event => {
 
 // Evento para recibir mensajes (por ej. desde el main JS)
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
-    const { title, options } = event.data;
+  const data = event.data || {};
+  if (!data.type) return;
+
+  if (data.type === 'SHOW_NOTIFICATION') {
+    const { title, options } = data;
     self.registration.showNotification(title, options);
+    return;
+  }
+
+  if (data.type === 'CHECK_FOR_UPDATE') {
+    // Comando ligero para que el SW compruebe si hay nueva versión
+    if (self.registration && typeof self.registration.update === 'function') {
+      self.registration.update().catch(() => {});
+    }
+    return;
+  }
+
+  if (data.type === 'FORCE_UPDATE' || data.type === 'SKIP_WAITING') {
+    // Forzar activación de la nueva versión y notificar clients para recargar
+    console.log('[SW] Received', data.type, '- updating and skipWaiting');
+    if (self.registration && typeof self.registration.update === 'function') {
+      self.registration.update().catch(() => {});
+    }
+    self.skipWaiting();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      clientList.forEach(client => {
+        try { client.postMessage({ type: 'SW_UPDATED' }); } catch (e) {}
+      });
+    }).catch(() => {});
+    return;
   }
 });
 
