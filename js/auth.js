@@ -230,8 +230,8 @@ class MotoClickAuth {
     } else {
       if (!identifier || identifier.length < 10) return { success: false, error: 'Ingresa un teléfono válido de 10 dígitos' };
     }
-    if (!pin || pin.length < 4) {
-      return { success: false, error: 'Ingresa tu PIN' };
+    if (!pin || pin.length < 6) {
+      return { success: false, error: 'Ingresa tu contraseña (mínimo 6 caracteres)' };
     }
 
     try {
