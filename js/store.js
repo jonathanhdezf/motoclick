@@ -230,15 +230,29 @@ class MotoClickStore {
       
       // Si el login fue exitoso, verificar integridad del ROL en la base de datos
       if (result.success) {
-        // NO CONFIAR en el objeto devuelto por Auth, pedirlo a la tabla public.users
-        // NOTA: result.user.id es el auth UUID → en public.users se llama user_id, no id
-        const { data: profile, error } = await this._sb
-          .from('users')
-          .select('role, phone')
-          .eq('user_id', result.user.id)
-          .single();
+        // Intento seguro de obtener el perfil desde public.users con reintentos.
+        // No cerrar sesión inmediatamente si la consulta falla por problemas transitorios (p. ej. 406, tiempo de propagación).
+        const uid = result.user && result.user.id;
+        let profile = null;
+        let profileErr = null;
 
-        if (error || !profile) {
+        for (let attempt = 0; attempt < 6; attempt++) {
+          try {
+            const res = await this._sb.from('users').select('role, phone').eq('user_id', uid).maybeSingle();
+            profile = res.data;
+            profileErr = res.error;
+            if (profile) break;
+          } catch (e) {
+            profileErr = e;
+          }
+          // Espera incremental antes de reintentar
+          await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+        }
+
+        if (profileErr) console.debug('[Store] profile fetch error after retries:', profileErr);
+
+        if (!profile) {
+          // Si no existe perfil, cerrar sesión para seguridad
           await this._auth.signOut();
           return { success: false, error: 'Error al verificar perfil de seguridad.' };
         }
