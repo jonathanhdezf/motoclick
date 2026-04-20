@@ -80,7 +80,10 @@ class MotoClickAuth {
         const metadata = session.user.user_metadata || {};
         const mergedUser = {
           ...userProfile,
-          avatar_url: metadata.avatar_url || metadata.picture || userProfile.profile_photo_url
+          // Prioritize DB name, then metadata name, then default
+          name: userProfile.name || metadata.full_name || metadata.name || 'Usuario MotoClick',
+          avatar_url: metadata.avatar_url || metadata.picture || userProfile.profile_photo_url,
+          email: session.user.email
         };
         this._updateAppStatus(mergedUser);
         console.log('[Auth] Profile synced from DB:', mergedUser.name);
@@ -629,7 +632,7 @@ class MotoClickAuth {
         .insert([{
           user_id: user.id,
           name: name,
-          phone: user.phone || user.email || '',
+          phone: user.phone || '',
           role: role,
           profile_photo_url: photo,
           is_verified: true,
@@ -654,6 +657,31 @@ class MotoClickAuth {
     } catch (e) {
       console.error('[Auth] completeOAuthProfile error:', e);
       return null;
+    }
+  }
+
+  /**
+   * Guardar el número de teléfono para un usuario de OAuth (Google/Facebook)
+   */
+  async saveOAuthPhone(userId, phone) {
+    if (!userId || !phone) return { success: false, error: 'Datos incompletos' };
+
+    try {
+      const { data, error } = await this._sb
+        .from('users')
+        .update({ phone: phone })
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Actualizar store local
+      this._updateAppStatus(data);
+      return { success: true, data };
+    } catch (e) {
+      console.error('[Auth] Error saving OAuth phone:', e);
+      return { success: false, error: e.message };
     }
   }
 

@@ -80,6 +80,20 @@
     }
     .user-profile-trigger:active { transform: scale(0.98); }
     
+    /* Mobile Override: Ensure name is visible */
+    @media (max-width: 600px) {
+      .user-profile-trigger span {
+        display: inline-block !important;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .user-profile-trigger {
+        padding: 5px 10px;
+      }
+    }
+    
     .navbar-actions { 
       display: flex; 
       align-items: center; 
@@ -934,37 +948,62 @@
   <script>
     let user = null;
     let pickupAutocomplete, deliveryAutocomplete, directionsService;
+
+    // ── UI Updates ──
+    function updateUIWithUser(userData) {
+      if (!userData) return;
+      user = userData;
+
+      // Saludo inmediato
+      const displayEl = document.getElementById('user-display-name');
+      if (displayEl) {
+          displayEl.textContent = `Hola, ${user.name || 'Usuario'}`;
+          displayEl.style.display = 'inline-block';
+      }
+
+      const hBadge = document.getElementById('header-verified-badge');
+      if (hBadge && user.is_verified) {
+          hBadge.classList.remove('hidden');
+      }
+
+      // If profile modal is open, refresh it
+      const pModal = document.getElementById('profile-modal');
+      if (pModal && pModal.style.display === 'flex') {
+          openProfileModal();
+      }
+    }
+
+    // Listen for real-time auth sync
+    window.addEventListener('motoclick:auth:ready', (e) => {
+      console.log('🔄 Auth Sync:', e.detail.name);
+      updateUIWithUser(e.detail);
+    });
+
     // La inicialización se maneja una sola vez en el DOMContentLoaded
     // para evitar conflictos y bloqueos de pantalla.
 
     // ── Profile & Verification Logic ──
     async function openProfileModal() {
-        const user = store.getCurrentUser();
-        if (!user) return navigateTo('../');
-
-        const pModal = document.getElementById('profile-modal');
-        if (!pModal) return;
+        const currentUser = store.getCurrentUser();
+        if (!currentUser) return navigateTo('../');
+        renderProfileData(currentUser);
         
-        // Cargar foto desde metadatos si está disponible (Google/Facebook)
+        const pModal = document.getElementById('profile-modal');
+        pModal.classList.remove('hidden');
+        pModal.style.display = 'flex';
+    }
+
+    async function renderProfileData(userData) {
         const initialsEl = document.getElementById('profile-initials');
         const imgEl = document.getElementById('profile-avatar-img');
         const emailEl = document.getElementById('profile-email-text');
         const phoneEl = document.getElementById('profile-phone-text');
         const waLink = document.getElementById('profile-whatsapp-link');
+        const nameTextEl = document.getElementById('profile-name-text');
         
-        // Verificar si hay sesión activa para obtener metadatos frescos
-        let avatarUrl = user.avatar_url || user.profile_photo_url;
-        let userEmail = user.email;
-        let userPhone = user.phone;
-
-        try {
-            const { data } = await store._sb.auth.getSession();
-            if (data?.session?.user) {
-                const meta = data.session.user.user_metadata;
-                avatarUrl = meta?.avatar_url || meta?.picture || avatarUrl;
-                userEmail = data.session.user.email || userEmail;
-            }
-        } catch(e) {}
+        let avatarUrl = userData.avatar_url || userData.profile_photo_url;
+        let userEmail = userData.email;
+        let userPhone = userData.phone;
 
         if (avatarUrl) {
             imgEl.src = avatarUrl;
@@ -973,13 +1012,13 @@
         } else {
             imgEl.classList.add('hidden');
             initialsEl.classList.remove('hidden');
-            initialsEl.textContent = (user.name || 'M').charAt(0).toUpperCase();
+            initialsEl.textContent = (userData.name || 'M').charAt(0).toUpperCase();
         }
 
-        document.getElementById('profile-name-text').textContent = user.name || 'Usuario';
-        emailEl.textContent = userEmail || 'Sin correo configurado';
+        if (nameTextEl) nameTextEl.textContent = userData.name || 'Usuario';
+        if (emailEl) emailEl.textContent = userEmail || 'Sin correo configurado';
 
-        if (userPhone && userPhone.length >= 10) {
+        if (userPhone && userPhone.length >= 10 && !userPhone.includes('@')) {
             phoneEl.textContent = userPhone;
             waLink.href = `https://wa.me/52${userPhone.replace(/\D/g, '')}`;
             waLink.classList.remove('hidden');
@@ -990,45 +1029,41 @@
         
         const banner = document.getElementById('verification-banner');
         const vText = document.getElementById('verification-text');
-        const vFields = document.getElementById('verification-fields');
         const vTrigger = document.getElementById('btn-trigger-verification');
         const vBadge = document.getElementById('verified-badge');
-        const hBadge = document.getElementById('header-verified-badge');
         
-        // Reset
-        banner.className = 'verification-status-banner banner-none';
-        vFields.classList.add('hidden');
-        vTrigger.classList.remove('hidden');
-        vBadge.classList.add('hidden');
-        
-        if (user.is_verified) {
-            banner.className = 'verification-status-banner banner-verified';
-            vText.textContent = '¡Cuenta Verificada con éxito!';
-            vTrigger.classList.add('hidden');
-            vBadge.classList.remove('hidden');
-            if(hBadge) hBadge.classList.remove('hidden');
-        } else if (user.verification_status === 'pending') {
-            banner.className = 'verification-status-banner banner-pending';
-            vText.textContent = 'Verificación pendiente de revisión.';
-            vTrigger.classList.add('hidden');
-        } else if (user.verification_status === 'rejected') {
-            banner.className = 'verification-status-banner banner-pending';
-            banner.style.borderColor = '#ef4444';
-            vText.textContent = 'Verificación rechazada. Intenta de nuevo.';
-            vTrigger.classList.remove('hidden');
-            vTrigger.textContent = 'Reintentar Verificación';
-        } else {
-            vText.textContent = 'Tu cuenta no está verificada aún.';
+        if (banner) {
+            banner.className = 'verification-status-banner banner-none';
+            if (vBadge) vBadge.classList.add('hidden');
+            
+            if (userData.is_verified) {
+                banner.className = 'verification-status-banner banner-verified';
+                vText.textContent = '¡Cuenta Verificada con éxito!';
+                if (vTrigger) vTrigger.classList.add('hidden');
+                if (vBadge) vBadge.classList.remove('hidden');
+            } else if (userData.verification_status === 'pending') {
+                banner.className = 'verification-status-banner banner-pending';
+                vText.textContent = 'Verificación pendiente de revisión.';
+                if (vTrigger) vTrigger.classList.add('hidden');
+            } else if (userData.verification_status === 'rejected') {
+                banner.className = 'verification-status-banner banner-pending';
+                banner.style.borderColor = '#ef4444';
+                vText.textContent = 'Verificación rechazada. Intenta de nuevo.';
+                if (vTrigger) {
+                    vTrigger.classList.remove('hidden');
+                    vTrigger.textContent = 'Reintentar Verificación';
+                }
+            } else {
+                vText.textContent = 'Tu cuenta no está verificada aún.';
+            }
         }
-        
-        pModal.classList.remove('hidden');
-        pModal.style.display = 'flex';
     }
-
     function closeProfileModal() {
         const modal = document.getElementById('profile-modal');
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
     }
 
     function showVerificationFields() {
@@ -1105,50 +1140,55 @@
       console.log("🚀 Motor de MotoClick Iniciado");
       
       // 1. Autenticación profunda
-      user = await requireAuth('client');
-      if (!user) return; // requireAuth ya redirige
+      const authedUser = await requireAuth('client');
+      if (!authedUser) return; // requireAuth ya redirige
 
       // 2. REQUISITO INDISPENSABLE: Verificar teléfono
-      if (user && (!user.phone || user.phone.length < 10)) {
+      if (!authedUser.phone || authedUser.phone.length < 10) {
           console.warn("[Security] Perfil incompleto: Redirigiendo a registro de teléfono.");
           navigateTo('./');
           return;
       }
       
-      // Saludo inmediato
-      const displayEl = document.getElementById('user-display-name');
-      if (displayEl) displayEl.textContent = `Hola, ${user.name || 'Usuario'}`;
-
-        
-        const hBadge = document.getElementById('header-verified-badge');
-        
-        // 🛡️ Logic for Verified Account (Automatic Cash Unlock)
-        if (curUser.is_verified) {
-            if (hBadge) hBadge.classList.remove('hidden');
-            
-            const cashCard = document.getElementById('cash-payment-label');
-            const cashRadio = document.getElementById('radio-cash');
-            const vBox = document.getElementById('cash-verification-box');
-            
-            if (cashCard) {
-                cashCard.classList.remove('disabled');
-                const subtext = cashCard.querySelector('.payment-subtext');
-                if (subtext) {
-                    subtext.innerHTML = '<i class="fas fa-shield-alt"></i> Cuenta Verificada';
-                    subtext.style.color = "#22c55e";
-                }
-            }
-            if (cashRadio) cashRadio.disabled = false;
-            if (vBox) vBox.classList.remove('active');
-        }
-        
-        await renderHistory();
+      updateUIWithUser(authedUser);
+      
+      // Mostrar el cuerpo de la aplicación tras autenticar
+      document.body.style.opacity = '1';
+      document.body.style.visibility = 'visible';
+      
+      // Intentar cargar historial (opcional, no bloqueante)
+      try {
+          await renderHistory();
+      } catch (e) {
+          console.warn("Error al cargar historial:", e);
       }
 
-      // 2. Google Maps Places Logic
+      const hBadge = document.getElementById('header-verified-badge');
+      
+      // 🛡️ Logic for Verified Account (Automatic Cash Unlock)
+      if (user.is_verified) {
+          if (hBadge) hBadge.classList.remove('hidden');
+          
+          const cashCard = document.getElementById('cash-payment-label');
+          const cashRadio = document.getElementById('radio-cash');
+          const vBox = document.getElementById('cash-verification-box');
+          
+          if (cashCard) {
+              cashCard.classList.remove('disabled');
+              const subtext = cashCard.querySelector('.payment-subtext');
+              if (subtext) {
+                  subtext.innerHTML = '<i class="fas fa-shield-alt"></i> Cuenta Verificada';
+                  subtext.style.color = "#22c55e";
+              }
+          }
+          if (cashRadio) cashRadio.disabled = false;
+          if (vBox) vBox.classList.remove('active');
+      }
+      
+      // Google Maps Places Logic
       if (typeof google === 'undefined') return;
 
-      const options = {
+      const gOptions = {
         bounds: TEZIUTLAN_BOUNDS,
         strictBounds: false, 
         componentRestrictions: { country: "mx" },
@@ -1159,7 +1199,7 @@
       const deliveryInput = document.getElementById('delivery-address');
 
       if (pickupInput && !pickupAutocomplete) {
-        pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
+        pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, gOptions);
         pickupAutocomplete.addListener('place_changed', () => {
           const place = pickupAutocomplete.getPlace();
           if (place.geometry && place.geometry.location) {
@@ -1171,7 +1211,7 @@
       }
       
       if (deliveryInput && !deliveryAutocomplete) {
-        deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, options);
+        deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, gOptions);
         deliveryAutocomplete.addListener('place_changed', () => {
           const place = deliveryAutocomplete.getPlace();
           if (place.geometry && place.geometry.location) {
@@ -1328,9 +1368,6 @@
     let pickerMap = null;
     let pickerMarker = null;
     let geocoder = null;
-    let pickupAutocomplete = null;
-    let deliveryAutocomplete = null;
-    let directionsService = null;
     
     // Default center (Teziutlán, Puebla)
     const GMAP_DEFAULT_CENTER = { lat: 19.8166, lng: -97.3596 };
@@ -1679,6 +1716,53 @@
         showToast(result.message || 'Código inválido.', 'error');
         setTimeout(() => input.classList.remove('animate-shake'), 400);
       }
+    }
+
+    /**
+     * 📜 Renderizar Historial de Pedidos del Cliente
+     */
+    async function renderHistory() {
+      const container = document.getElementById('orders-history');
+      if (!container) return;
+      
+      // Obtener pedidos del cliente utilizando el store
+      const orders = await store.getOrdersByUser(user.id);
+      
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: var(--space-xl); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+            <div class="empty-state-icon" style="font-size: 2rem; margin-bottom: 10px;">📦</div>
+            <div class="empty-state-text" style="color: var(--text-muted); font-size: 0.9rem;">Aún no tienes pedidos realizados.</div>
+          </div>`;
+        return;
+      }
+
+      const html = orders.slice(0, 10).map(order => {
+        const isCompleted = order.status === 'entregado';
+        const isCancelled = order.status === 'cancelado';
+        const isActive = !isCompleted && !isCancelled;
+        
+        const statusClass = isCompleted ? 'success' : (isCancelled ? 'danger' : 'warning');
+        
+        return `
+          <div class="history-item animate-fade-in" onclick="${isActive ? `navigateTo('rastreo.html?id=${order.id}')` : ''}" 
+               style="border-left: 3px solid var(--${statusClass}); ${isActive ? 'background: rgba(249, 115, 22, 0.05);' : ''}">
+            <div class="history-left">
+              <div class="history-desc">${order.description.length > 60 ? order.description.substring(0, 60) + '...' : order.description}</div>
+              <div class="history-date">
+                <span>🗓️ ${timeAgo(order.createdAt)}</span>
+                ${order.deliveredAt ? `<span> • ✅ Entregado</span>` : ''}
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+              <span class="badge badge-${statusClass}" style="font-size: 0.7rem;">${getStatusLabel(order.status)}</span>
+              ${isActive ? '<span class="text-accent" style="font-size: 0.75rem; font-weight: 700;">Rastrear 📍</span>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = '<h3 class="section-title" style="margin-top: var(--space-xl); margin-bottom: var(--space-md);">🕒 Tus últimos pedidos</h3>' + html;
     }
   </script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&libraries=places"></script>
