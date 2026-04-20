@@ -226,6 +226,7 @@ class MotoClickStore {
     // Si tenemos Auth, intentar flujo de Supabase Auth
     if (this._auth && typeof this._auth.signIn === 'function') {
       const result = await this._auth.signIn(phone, pin || phone.slice(-4));
+      console.debug('[Store] auth.signIn result:', result);
       
       // Si el login fue exitoso, verificar integridad del ROL en la base de datos
       if (result.success) {
@@ -256,6 +257,7 @@ class MotoClickStore {
       // 🛡️ AUTO-MIGRACIÓN: Si falla porque el usuario no existe en Auth, pero sí en DB
       console.log('[Store] Auth falló, intentando login legacy para migración...');
       const legacyResult = await this._fb_loginUser(phone, role, pin);
+      console.debug('[Store] legacy login result:', legacyResult);
       
       if (legacyResult.success) {
         console.log('[Store] Usuario legacy detectado. Migrando a Supabase Auth...');
@@ -271,10 +273,14 @@ class MotoClickStore {
           }
         });
 
+        console.debug('[Store] auth.signUp (migration) result:', signUpResult);
+
         if (signUpResult.success) {
           showToast('Cuenta actualizada al nuevo sistema de seguridad 🛡️', 'success');
           this._currentUser = signUpResult.user;
           return { success: true, user: this._currentUser };
+        } else {
+          console.warn('[Store] Falló migración a Auth:', signUpResult);
         }
       }
 
@@ -328,19 +334,25 @@ class MotoClickStore {
     const normalize = p => (p || '').toString().replace(/\D/g, '').replace(/^52/, '').slice(-10);
     const normPhone = normalize(phone);
 
+    console.debug('[Store][_fb_loginUser] buscar teléfono:', { original: phone, normalized: normPhone, role });
+
     // Intentar buscar en la tabla users con varias estrategias para tolerancia de formatos
     let res = await this._sb.from('users').select('*').eq('phone', normPhone).eq('role', role).maybeSingle();
+    console.debug('[Store][_fb_loginUser] query1 result:', res);
     if (!res || !res.data) {
       // intentar sin role (por si el usuario fue registrado con otro rol por error)
       res = await this._sb.from('users').select('*').eq('phone', normPhone).maybeSingle();
+      console.debug('[Store][_fb_loginUser] query2 (sin role) result:', res);
     }
 
     if ((!res || !res.data) && normPhone) {
       // intentar búsqueda parcial (número que termina con los últimos 10 dígitos)
       try {
         res = await this._sb.from('users').select('*').ilike('phone', `%${normPhone}`).maybeSingle();
+        console.debug('[Store][_fb_loginUser] query3 (ilike) result:', res);
       } catch (e) {
         // Algunos esquemas o versiones de PostgREST no soportan ilike en columnas no text
+        console.warn('[Store][_fb_loginUser] ilike fallo:', e.message || e);
         res = res || { data: null, error: null };
       }
     }
@@ -348,6 +360,8 @@ class MotoClickStore {
     if (!res || !res.data) return { success: false, error: 'No se encontró una cuenta con ese teléfono.' };
 
     const data = res.data;
+
+    console.debug('[Store][_fb_loginUser] usuario encontrado:', data);
 
     // Validación de rol: si se especificó rol y no coincide, denegar acceso
     if (role && data.role && data.role !== role) {

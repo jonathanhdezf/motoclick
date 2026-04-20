@@ -238,13 +238,16 @@ class MotoClickAuth {
         password: pin
       });
 
+      // DEBUG: log response from Supabase Auth
+      try { console.debug('[Auth] signInWithPassword response:', { data, error }); } catch(e){}
+
       if (error) {
-        if (error.message.includes('Invalid login credentials') || 
+        if (error.message && (error.message.includes('Invalid login credentials') || 
             error.message.includes('email') ||
-            error.message.includes('password')) {
+            error.message.includes('password'))) {
           return { success: false, error: 'Teléfono o PIN incorrecto. Intenta de nuevo.' };
         }
-        return { success: false, error: error.message };
+        return { success: false, error: error.message || String(error) };
       }
 
       if (!data.user) {
@@ -259,11 +262,13 @@ class MotoClickAuth {
       const currentUser = JSON.parse(localStorage.getItem('motoclick_current_user') || 'null');
       if (!currentUser) {
         // Si no hay perfil, intentarlo manualmente
-        const { data: profile } = await this._sb
+        const { data: profile, error: profileErr } = await this._sb
           .from('users')
           .select('*')
           .eq('user_id', data.user.id)
           .maybeSingle();
+
+        console.debug('[Auth] manual profile lookup:', { profile, profileErr });
 
         if (profile) {
           localStorage.setItem('motoclick_current_user', JSON.stringify(profile));
