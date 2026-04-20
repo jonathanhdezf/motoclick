@@ -1,4 +1,4 @@
-const CACHE_NAME = 'motoclick-pwa-v16';
+const CACHE_NAME = 'motoclick-pwa-v17';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -7,9 +7,16 @@ self.addEventListener('install', event => {
       return cache.addAll([
         '/',
         '/index.html',
+        '/cliente/index.html',
         '/styles/main.css',
         '/js/utils.js',
-        '/assets/logo.png'
+        '/js/gs-scroll.js',
+        '/js/auth.js',
+        '/js/store.js',
+        '/js/supabase-config.js',
+        '/manifest.json',
+        '/assets/logo.png',
+        '/assets/logo_motoclick_app.png'
       ]).catch(() => console.log('Some assets could not be cached.'));
     })
   );
