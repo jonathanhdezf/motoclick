@@ -261,26 +261,6 @@ class MotoClickStore {
    * Usa MotoClickAuth.signIn() que maneja sesiones JWT
    */
   async loginUser(phone, role, pin) {
-    // Especial: intentar RPC legacy que busca en public.users (evita RLS cuando existe el RPC)
-    try {
-      if (this._sb && (role === 'driver' || role === 'client')) {
-        const rpcName = role === 'driver' ? 'legacy_driver_login' : 'legacy_client_login';
-        try {
-          const { data: rpcData, error: rpcErr } = await this._sb.rpc(rpcName, { p_phone: phone, p_pin: pin }).then(r=>r).catch(e=>({ data: null, error: e }));
-          console.debug('[Store] ' + rpcName + ' rpc result:', rpcData, rpcErr);
-          if (!rpcErr && rpcData) {
-            const user = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-            if (user) {
-              this.setCurrentUser(user);
-              return { success: true, user };
-            }
-          }
-        } catch (e) {
-          console.debug('[Store] RPC ' + rpcName + ' failed:', e);
-        }
-      }
-    } catch (e) {}
-
     // Si tenemos Auth, intentar flujo de Supabase Auth
     if (this._auth && typeof this._auth.signIn === 'function') {
       const result = await this._auth.signIn(phone, pin || phone.slice(-4));
