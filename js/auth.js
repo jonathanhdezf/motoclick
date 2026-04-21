@@ -508,17 +508,16 @@ class MotoClickAuth {
         return { success: false, error: 'Error al verificar perfil' };
       }
 
-      if (!profile) {
-        // Perfil no existe — crearlo con datos de OAuth
-        const newProfile = await this.completeOAuthProfile(authUser, role);
-        if (!newProfile) {
-          return { success: false, error: 'Error al crear perfil' };
+      if (!profile || !profile.role || profile.role !== role) {
+        // Perfil no existe o no coincide con el portal actual — sincronizarlo.
+        const syncedProfile = await this.completeOAuthProfile(authUser, role);
+        if (!syncedProfile) {
+          return { success: false, error: 'Error al crear o actualizar perfil' };
         }
-        // Verificar si tiene teléfono
-        if (!newProfile.phone || newProfile.phone.length < 10) {
-          return { success: true, needsPhone: true, user: newProfile };
+        if (!syncedProfile.phone || syncedProfile.phone.length < 10) {
+          return { success: true, needsPhone: true, user: syncedProfile };
         }
-        return { success: true, needsPhone: false, user: newProfile };
+        return { success: true, needsPhone: false, user: syncedProfile };
       }
 
       // Perfil existe — verificar teléfono
