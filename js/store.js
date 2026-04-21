@@ -664,6 +664,23 @@ class MotoClickStore {
       error = retry.error;
     }
 
+    // Si falla por RLS (42501) o status 403, intentar la RPC legacy_create_order (SECURITY DEFINER)
+    if (error && (error.code === '42501' || (error.message && error.message.toLowerCase().includes('row-level security')) || error.status === 403)) {
+      console.warn('[Store] createOrder: RLS prevented insert, attempting legacy_create_order RPC');
+      try {
+        const { data: rpcData, error: rpcErr } = await this._sb.rpc('legacy_create_order', { p_order: row }).then(r => r).catch(e => ({ data: null, error: e }));
+        console.debug('[Store] legacy_create_order rpc result:', rpcData, rpcErr);
+        if (!rpcErr && rpcData) {
+          const record = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+          return this._fromDB(record);
+        } else {
+          console.error('[Store] legacy_create_order rpc error:', rpcErr);
+        }
+      } catch (e) {
+        console.error('[Store] legacy_create_order exception:', e);
+      }
+    }
+
     if (error) {
       // Log completo para facilitar diagnóstico desde consola del cliente
       try {
