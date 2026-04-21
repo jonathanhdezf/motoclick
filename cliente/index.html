@@ -312,7 +312,9 @@
       } else {
         showToast(result.error, 'error');
       }
-    }\r\n\r\n    async function handleRegister(e) {
+    }
+
+    async function handleRegister(e) {
       e.preventDefault();
       const form = e.target;
       if (!validateForm(form, { name: { required: true, minLength: 2 }, phone: { required: true, phone: true } })) return;
@@ -448,6 +450,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
