@@ -1,0 +1,95 @@
+REPARAR PERFIL GOOGLE DE REPARTIDOR EN SUPABASE
+
+IMPORTANTE:
+- Cambia TU_CORREO_GOOGLE por el correo real con el que entras.
+- Ejecuta las consultas en este orden.
+
+
+1. Buscar la cuenta en auth.users
+
+select
+  id,
+  email,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at
+from auth.users
+where lower(email) = lower('TU_CORREO_GOOGLE');
+
+
+2. Si sí existe en auth.users, crear o reparar su perfil en public.users
+
+insert into public.users (
+  user_id,
+  name,
+  phone,
+  role,
+  is_verified,
+  verification_status,
+  verification_date,
+  profile_photo_url
+)
+select
+  au.id,
+  coalesce(
+    au.raw_user_meta_data->>'full_name',
+    au.raw_user_meta_data->>'name',
+    split_part(au.email, '@', 1)
+  ),
+  '',
+  'driver',
+  true,
+  'verified',
+  now(),
+  coalesce(
+    au.raw_user_meta_data->>'avatar_url',
+    au.raw_user_meta_data->>'picture'
+  )
+from auth.users au
+where lower(au.email) = lower('TU_CORREO_GOOGLE')
+and not exists (
+  select 1
+  from public.users pu
+  where pu.user_id = au.id
+);
+
+
+3. Si ya existe perfil pero con rol incorrecto, forzarlo a driver
+
+update public.users
+set role = 'driver'
+where user_id = (
+  select id
+  from auth.users
+  where lower(email) = lower('TU_CORREO_GOOGLE')
+);
+
+
+4. Verificar que quedó bien
+
+select
+  au.id as auth_user_id,
+  au.email,
+  pu.id as profile_id,
+  pu.user_id,
+  pu.name,
+  pu.phone,
+  pu.role
+from auth.users au
+left join public.users pu
+  on pu.user_id = au.id
+where lower(au.email) = lower('TU_CORREO_GOOGLE');
+
+
+RESULTADO ESPERADO:
+- auth_user_id con valor
+- profile_id con valor
+- user_id = auth_user_id
+- role = driver
+
+
+DESPUES DE EJECUTAR:
+1. Cierra sesión
+2. Entra otra vez a /repartidor/
+3. Haz Ctrl+F5
+
