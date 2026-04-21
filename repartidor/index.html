@@ -179,6 +179,56 @@
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
+    async function ensureDriverProfile(authUser) {
+      if (!authUser?.id || !store?._sb) return null;
+
+      const existing = await store._sb
+        .from('users')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .maybeSingle();
+
+      if (existing?.data) {
+        const updates = {};
+        if (existing.data.role !== 'driver') updates.role = 'driver';
+        if (!existing.data.name) {
+          updates.name = authUser.user_metadata?.name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Repartidor';
+        }
+        if (!existing.data.profile_photo_url) {
+          updates.profile_photo_url = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          const updated = await store._sb
+            .from('users')
+            .update(updates)
+            .eq('user_id', authUser.id)
+            .select()
+            .single();
+          return updated.data || existing.data;
+        }
+
+        return existing.data;
+      }
+
+      const inserted = await store._sb
+        .from('users')
+        .insert([{
+          user_id: authUser.id,
+          name: authUser.user_metadata?.name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Repartidor',
+          phone: authUser.phone || '',
+          role: 'driver',
+          profile_photo_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+          is_verified: true,
+          verification_status: 'verified',
+          verification_date: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      return inserted.data || null;
+    }
+
     function continueDriverAccess(user) {
       if (!user) return;
 
@@ -203,14 +253,13 @@
         const provider = authUser.app_metadata?.provider;
 
         if (provider === 'google' || provider === 'facebook') {
-          const result = await store.handleOAuthCallback('driver');
-          if (result && result.success) {
-            continueDriverAccess(result.user);
-            return;
-          } else if (result?.error) {
-            showToast(result.error, 'error');
+          const profile = await ensureDriverProfile(authUser);
+          if (profile) {
+            continueDriverAccess(profile);
             return;
           }
+          showToast('No fue posible preparar tu acceso como repartidor.', 'error');
+          return;
         }
       }
 
