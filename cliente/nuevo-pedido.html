@@ -1733,8 +1733,8 @@
         const statusClass = isCompleted ? 'success' : (isCancelled ? 'danger' : 'warning');
         
         return `
-          <div class="history-item animate-fade-in" onclick="${isActive ? `navigateTo('rastreo.html?id=${order.id}')` : ''}" 
-               style="border-left: 3px solid var(--${statusClass}); ${isActive ? 'background: rgba(249, 115, 22, 0.05);' : ''}">
+          <div class="history-item animate-fade-in" onclick="navigateTo('rastreo.html?id=${order.id}')"
+               style="border-left: 3px solid var(--${statusClass}); ${isActive ? 'background: rgba(249, 115, 22, 0.05);' : ''} cursor: pointer;">
             <div class="history-left">
               <div class="history-desc">${description.length > 60 ? description.substring(0, 60) + '...' : description}</div>
               <div class="history-date">
@@ -1744,7 +1744,7 @@
             </div>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
               <span class="badge badge-${statusClass}" style="font-size: 0.7rem;">${getStatusLabel(order.status)}</span>
-              ${isActive ? '<span class="text-accent" style="font-size: 0.75rem; font-weight: 700;">Rastrear 📍</span>' : ''}
+              <span class="text-accent" style="font-size: 0.75rem; font-weight: 700;">Ver detalle 📍</span>
             </div>
           </div>
         `;
