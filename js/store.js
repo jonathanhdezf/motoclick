@@ -193,6 +193,19 @@ class MotoClickStore {
     return this._currentUser?.id || null;
   }
 
+  _cacheOrder(order) {
+    if (!order || !order.id) return;
+    const orders = this._fb_getOrders();
+    const idx = orders.findIndex(o => o.id === order.id);
+    if (idx === -1) orders.push(order);
+    else orders[idx] = { ...orders[idx], ...order };
+    this._fb_save(orders);
+  }
+
+  _getCachedOrderById(id) {
+    return this._fb_getOrders().find(o => o.id === id) || null;
+  }
+
   // ══════════════════════════════════════════════════════════════
   // USERS — Autenticación con Supabase Auth
   // ══════════════════════════════════════════════════════════════
@@ -602,7 +615,9 @@ class MotoClickStore {
         console.debug('[Store] legacy_get_order_text rpc result:', rpcResult.data, rpcResult.error);
         if (rpcResult && !rpcResult.error && rpcResult.data) {
           const record = Array.isArray(rpcResult.data) ? rpcResult.data[0] : rpcResult.data;
-          return this._fromDB(record);
+          const order = this._fromDB(record);
+          this._cacheOrder(order);
+          return order;
         }
 
         // Si falla, probar la RPC original por compatibilidad
@@ -611,7 +626,9 @@ class MotoClickStore {
         console.debug('[Store] legacy_get_order rpc result:', rpcData, rpcErr);
         if (!rpcErr && rpcData) {
           const record = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-          return this._fromDB(record);
+          const order = this._fromDB(record);
+          this._cacheOrder(order);
+          return order;
         }
       } catch (e) {
         console.error('[Store] legacy_get_order exception:', e);
@@ -619,7 +636,12 @@ class MotoClickStore {
     }
 
     if (error) console.error('[Store] getOrderById Error:', error);
-    return this._fromDB(data);
+    const order = this._fromDB(data);
+    if (order) {
+      this._cacheOrder(order);
+      return order;
+    }
+    return this._getCachedOrderById(id);
   }
 
   async getOrdersByClient(clientId) {
@@ -709,7 +731,9 @@ class MotoClickStore {
         console.debug('[Store] legacy_create_order rpc result:', rpcData, rpcErr);
         if (!rpcErr && rpcData) {
           const record = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-          return this._fromDB(record);
+          const order = this._fromDB(record);
+          this._cacheOrder(order);
+          return order;
         } else {
           console.error('[Store] legacy_create_order rpc error:', rpcErr);
         }
@@ -730,7 +754,9 @@ class MotoClickStore {
       if (error.status) console.error('[Store] createOrder http status:', error.status);
       return null;
     }
-    return this._fromDB(data);
+    const order = this._fromDB(data);
+    this._cacheOrder(order);
+    return order;
   }
 
   async acceptOrder(orderId, driver) {
@@ -743,7 +769,9 @@ class MotoClickStore {
       accepted_at: new Date().toISOString(),
     }).eq('id', orderId).select().single();
     if (error) return null;
-    return this._fromDB(data);
+    const order = this._fromDB(data);
+    this._cacheOrder(order);
+    return order;
   }
 
   async updateOrderStatus(orderId, status) {
@@ -766,7 +794,9 @@ class MotoClickStore {
       console.error('[Store] Error al actualizar estado:', error);
       return null;
     }
-    return this._fromDB(data);
+    const order = this._fromDB(data);
+    this._cacheOrder(order);
+    return order;
   }
 
   async updateOrder(orderId, updates) {
@@ -796,12 +826,16 @@ class MotoClickStore {
       console.error('[Store] updateOrder Final Error:', error);
       return null;
     }
-    return this._fromDB(data);
+    const order = this._fromDB(data);
+    this._cacheOrder(order);
+    return order;
   }
 
   async updateDriverLocation(orderId, location) {
     if (this._useFallback) return this._fb_updateDriverLocation(orderId, location);
     await this._sb.from('orders').update({ driver_location: location }).eq('id', orderId);
+    const cachedOrder = this._getCachedOrderById(orderId);
+    if (cachedOrder) this._cacheOrder({ ...cachedOrder, driverLocation: location });
   }
 
   async deleteOrder(orderId) {
