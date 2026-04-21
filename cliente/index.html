@@ -290,26 +290,29 @@
       document.getElementById('tab-' + tab + '-btn').classList.add('active');
     }
 
-    async function handleLogin(e) {
+            async function handleLogin(e) {
       e.preventDefault();
       const form = e.target;
       const phone = form.phone ? form.phone.value.trim() : '';
       const pin = form.pin ? form.pin.value.trim() : '';
-n      if (!phone || !pin) { showToast('Ingresa teléfono y NIP/contraseña', 'error'); return; }
+
+      if (!phone || !pin) { showToast('Ingresa teléfono y NIP/contraseña', 'error'); return; }
       if (!/^\d{10}$/.test(phone)) { showToast('Teléfono inválido', 'error'); return; }
-n      const btn = document.getElementById('login-submit');
+
+      const btn = document.getElementById('login-submit');
       btn.disabled = true; btn.textContent = 'Verificando...';
-n      const result = await store.loginUser(phone, 'client', pin);
-n      btn.disabled = false; btn.textContent = 'Iniciar Sesión';
-n      if (result.success) {
+
+      const result = await store.loginUser(phone, 'client', pin);
+
+      btn.disabled = false; btn.textContent = 'Iniciar Sesión';
+
+      if (result.success) {
         showToast('¡Bienvenido de vuelta! 🎉', 'success');
         setTimeout(() => navigateTo('nuevo-pedido.html'), 600);
       } else {
         showToast(result.error, 'error');
       }
-    }
-
-    async function handleRegister(e) {
+    }\r\n\r\n    async function handleRegister(e) {
       e.preventDefault();
       const form = e.target;
       if (!validateForm(form, { name: { required: true, minLength: 2 }, phone: { required: true, phone: true } })) return;
@@ -440,3 +443,7 @@
   </script>
 </body>
 </html>
+
+
+
+
