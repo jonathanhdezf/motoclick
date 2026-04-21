@@ -186,20 +186,12 @@
         window.store.setCurrentUser(user);
       }
 
-      const hasValidPhone = user.phone && user.phone.length >= 10 && !user.phone.includes('@');
       if (user.role && user.role !== 'driver') {
         showToast('Esta cuenta no tiene permisos de repartidor.', 'error');
         return;
       }
 
-      if (hasValidPhone) {
-        window.location.href = '/repartidor/panel.html';
-        return;
-      }
-
-      if (typeof checkSessionIntegrity === 'function') {
-        checkSessionIntegrity(user);
-      }
+      window.location.href = '/repartidor/panel.html';
     }
 
     // ── Auth Check Logic ──
