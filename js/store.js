@@ -206,6 +206,21 @@ class MotoClickStore {
     return this._fb_getOrders().find(o => o.id === id) || null;
   }
 
+  _mergeOrderWithFallback(primaryOrder, fallbackOrder) {
+    if (!primaryOrder) return fallbackOrder || null;
+    if (!fallbackOrder) return primaryOrder;
+
+    const merged = { ...fallbackOrder, ...primaryOrder };
+
+    Object.keys(fallbackOrder).forEach(key => {
+      if (merged[key] === null || merged[key] === undefined || merged[key] === '') {
+        merged[key] = fallbackOrder[key];
+      }
+    });
+
+    return merged;
+  }
+
   // ══════════════════════════════════════════════════════════════
   // USERS — Autenticación con Supabase Auth
   // ══════════════════════════════════════════════════════════════
@@ -601,6 +616,7 @@ class MotoClickStore {
     if (this._useFallback) {
       return this._fb_getOrders().find(o => o.id === id) || null;
     }
+    const cachedOrder = this._getCachedOrderById(id);
     let { data, error } = await this._sb.from('orders')
       .select('*')
       .eq('id', id)
@@ -615,7 +631,7 @@ class MotoClickStore {
         console.debug('[Store] legacy_get_order_text rpc result:', rpcResult.data, rpcResult.error);
         if (rpcResult && !rpcResult.error && rpcResult.data) {
           const record = Array.isArray(rpcResult.data) ? rpcResult.data[0] : rpcResult.data;
-          const order = this._fromDB(record);
+          const order = this._mergeOrderWithFallback(this._fromDB(record), cachedOrder);
           this._cacheOrder(order);
           return order;
         }
@@ -626,7 +642,7 @@ class MotoClickStore {
         console.debug('[Store] legacy_get_order rpc result:', rpcData, rpcErr);
         if (!rpcErr && rpcData) {
           const record = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-          const order = this._fromDB(record);
+          const order = this._mergeOrderWithFallback(this._fromDB(record), cachedOrder);
           this._cacheOrder(order);
           return order;
         }
@@ -636,12 +652,12 @@ class MotoClickStore {
     }
 
     if (error) console.error('[Store] getOrderById Error:', error);
-    const order = this._fromDB(data);
+    const order = this._mergeOrderWithFallback(this._fromDB(data), cachedOrder);
     if (order) {
       this._cacheOrder(order);
       return order;
     }
-    return this._getCachedOrderById(id);
+    return cachedOrder;
   }
 
   async getOrdersByClient(clientId) {
@@ -702,10 +718,19 @@ class MotoClickStore {
   async createOrder(orderData) {
     if (this._useFallback) return this._fb_createOrder(orderData);
     const id = 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
-    
+
     // Asegurar que el clientId esté presente
     const finalOrderData = { ...orderData };
     finalOrderData.clientId = this._resolveProfileId(finalOrderData.clientId);
+    const optimisticOrder = {
+      id,
+      ...finalOrderData,
+      status: 'pending',
+      driverId: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    this._cacheOrder(optimisticOrder);
 
     const row = this._toDB({ id, ...finalOrderData, status: 'pending', driverId: null });
     
@@ -731,7 +756,7 @@ class MotoClickStore {
         console.debug('[Store] legacy_create_order rpc result:', rpcData, rpcErr);
         if (!rpcErr && rpcData) {
           const record = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-          const order = this._fromDB(record);
+          const order = this._mergeOrderWithFallback(this._fromDB(record), optimisticOrder);
           this._cacheOrder(order);
           return order;
         } else {
@@ -754,7 +779,7 @@ class MotoClickStore {
       if (error.status) console.error('[Store] createOrder http status:', error.status);
       return null;
     }
-    const order = this._fromDB(data);
+    const order = this._mergeOrderWithFallback(this._fromDB(data), optimisticOrder);
     this._cacheOrder(order);
     return order;
   }
