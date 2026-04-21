@@ -616,6 +616,9 @@ class MotoClickAuth {
     if (!user || !user.id) return;
 
     try {
+      const name = user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
+      const photo = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+
       // Verificar si ya existe perfil
       const { data: existing } = await this._sb
         .from('users')
@@ -624,19 +627,35 @@ class MotoClickAuth {
         .maybeSingle();
 
       if (existing) {
-        // Perfil ya existe, solo actualizar
-        localStorage.setItem('motoclick_current_user', JSON.stringify(existing));
-        if (window.store && typeof window.store.setCurrentUser === 'function') {
-          window.store.setCurrentUser(existing);
+        const updates = {};
+        if (!existing.role || existing.role !== role) updates.role = role;
+        if (!existing.name && name) updates.name = name;
+        if (!existing.profile_photo_url && photo) updates.profile_photo_url = photo;
+
+        let finalProfile = existing;
+        if (Object.keys(updates).length > 0) {
+          const { data: updatedProfile, error: updateError } = await this._sb
+            .from('users')
+            .update(updates)
+            .eq('user_id', user.id)
+            .select()
+            .single();
+
+          if (!updateError && updatedProfile) {
+            finalProfile = updatedProfile;
+          } else if (updateError) {
+            console.error('[Auth] Failed to sync existing OAuth profile:', updateError);
+          }
         }
-        return existing;
+
+        localStorage.setItem('motoclick_current_user', JSON.stringify(finalProfile));
+        if (window.store && typeof window.store.setCurrentUser === 'function') {
+          window.store.setCurrentUser(finalProfile);
+        }
+        return finalProfile;
       }
 
       // Crear perfil manualmente si el trigger no lo hizo
-      const name = user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
-      const photo = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
-      const provider = user.app_metadata?.provider || 'oauth';
-
       const { data: newProfile, error } = await this._sb
         .from('users')
         .insert([{
