@@ -179,20 +179,40 @@
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
+    function continueDriverAccess(user) {
+      if (!user) return;
+
+      if (window.store && typeof window.store.setCurrentUser === 'function') {
+        window.store.setCurrentUser(user);
+      }
+
+      const hasValidPhone = user.phone && user.phone.length >= 10 && !user.phone.includes('@');
+      if (user.role && user.role !== 'driver') {
+        showToast('Esta cuenta no tiene permisos de repartidor.', 'error');
+        return;
+      }
+
+      if (hasValidPhone) {
+        window.location.href = '/repartidor/panel.html';
+        return;
+      }
+
+      if (typeof checkSessionIntegrity === 'function') {
+        checkSessionIntegrity(user);
+      }
+    }
+
     // ── Auth Check Logic ──
     (async function() {
       // 1. Verificar si hay sesión activa
       const user = window.store?.getCurrentUser();
       
       if (user) {
-        // El middleware checkSessionIntegrity en utils.js se encargará de mostrar el modal si falta el teléfono.
-        if (user.phone && user.phone.length >= 10 && !user.phone.includes('@')) {
-          if (user.role === 'driver') {
-            window.location.href = '/repartidor/panel.html';
-          } else if (user.role === 'client') {
-            window.location.href = '/cliente/nuevo-pedido.html';
-          }
+        if (user.role === 'client') {
+          window.location.href = '/cliente/nuevo-pedido.html';
+          return;
         }
+        continueDriverAccess(user);
       }
 
       // Handle OAuth Redirects
@@ -204,9 +224,9 @@
         if (provider === 'google' || provider === 'facebook') {
           const result = await store.handleOAuthCallback('driver');
           if (result && result.success) {
-            if (result.user.phone && result.user.phone.length >= 10) {
-                 window.location.href = '/repartidor/panel.html';
-            }
+            continueDriverAccess(result.user);
+          } else if (result?.error) {
+            showToast(result.error, 'error');
           }
         }
       }
@@ -238,7 +258,7 @@
 
       if (result.success) {
         showToast('¡Bienvenido de vuelta! 🏍️', 'success');
-        setTimeout(() => navigateTo('/repartidor/panel.html'), 600);
+        setTimeout(() => continueDriverAccess(result.user), 600);
       } else {
         showToast(result.error, 'error');
       }
