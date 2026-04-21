@@ -485,9 +485,9 @@ class MotoClickStore {
   async logout() {
     try {
       if (this._auth && typeof this._auth.signOut === 'function') {
-        // scope:'global' invalida el refresh token en el servidor
-        // Evita que Supabase reconstruya la sesión en siguientes cargas
-        await this._sb?.auth?.signOut({ scope: 'global' });
+        await this._auth.signOut();
+      } else if (this._sb?.auth) {
+        await this._sb.auth.signOut({ scope: 'global' });
       }
     } catch(e) {
       console.warn('[Store] Error during signOut, clearing locally anyway:', e);

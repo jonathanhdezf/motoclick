@@ -686,9 +686,13 @@
       if (active) navigateTo(`entrega.html?id=${active.id}`);
     }
 
-    function handleLogout() {
-      store.logout();
-      navigateTo('./');
+    async function handleLogout() {
+      try {
+        await store.logout();
+      } catch (e) {
+        console.error('[DriverPanel] Logout error:', e);
+      }
+      navigateReplace('/repartidor/');
     }
 
     // --- EXPENSES LOGIC --- //
