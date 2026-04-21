@@ -357,6 +357,7 @@
   <script>
     let user = null;
     let previousCount = 0;
+    let currentPendingOrders = {};
 
     (async function init() {
       user = await requireAuth('driver');
@@ -490,10 +491,13 @@
       previousCount = pending.length;
 
       if (pending.length === 0) {
+        currentPendingOrders = {};
         container.innerHTML = '';
         container.appendChild(createEmptyState());
         return;
       }
+
+      currentPendingOrders = Object.fromEntries(pending.map(order => [order.id, order]));
 
       container.innerHTML = pending.map((order, i) => `
         <div class="order-card ${isNew && i === pending.length - 1 ? 'new-order-flash' : ''}" id="order-${order.id}">
@@ -516,11 +520,11 @@
             </div>
             <div class="order-detail">
               <span class="order-detail-icon">📍</span>
-              <span class="order-detail-text"><strong>Recoger:</strong> ${order.pickupAddress}</span>
+              <span class="order-detail-text" style="cursor:pointer;" onclick="openOrderLocation('${order.id}', 'pickup')" title="Abrir en Google Maps"><strong>Recoger:</strong> ${order.pickupAddress} <span style="color:#3b82f6;font-weight:800;font-size:0.72rem;">🛰️ MAPS</span></span>
             </div>
             <div class="order-detail">
               <span class="order-detail-icon">🏠</span>
-              <span class="order-detail-text"><strong>Entregar:</strong> ${order.deliveryAddress}</span>
+              <span class="order-detail-text" style="cursor:pointer;" onclick="openOrderLocation('${order.id}', 'delivery')" title="Abrir en Google Maps"><strong>Entregar:</strong> ${order.deliveryAddress} <span style="color:#3b82f6;font-weight:800;font-size:0.72rem;">🛰️ MAPS</span></span>
             </div>
             ${order.stopDescription ? `
               <div class="order-detail" style="border-left: 2px solid #3b82f6; padding-left: 10px; margin-top: 8px;">
@@ -536,6 +540,31 @@
           </div>
         </div>
       `).join('');
+    }
+
+    function openOrderLocation(orderId, type) {
+      const order = currentPendingOrders[orderId];
+      if (!order) {
+        showToast('No se encontró la ubicación del mandado.', 'error');
+        return;
+      }
+
+      const coords = type === 'pickup' ? order.pickupCoords : order.deliveryCoords;
+      const address = type === 'pickup' ? order.pickupAddress : order.deliveryAddress;
+
+      let url = '';
+      if (Array.isArray(coords) && coords.length >= 2 && coords[0] !== null && coords[1] !== null) {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${coords[0]},${coords[1]}`;
+      } else if (address) {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+      }
+
+      if (!url) {
+        showToast('Ubicación no disponible para abrir en mapas.', 'error');
+        return;
+      }
+
+      window.open(url, '_blank', 'noopener');
     }
 
     async function renderHistory() {
