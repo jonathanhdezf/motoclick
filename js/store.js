@@ -183,6 +183,16 @@ class MotoClickStore {
     return r;
   }
 
+  _resolveProfileId(explicitId = null) {
+    if (explicitId) {
+      if (this._currentUser?.user_id && explicitId === this._currentUser.user_id && this._currentUser.id) {
+        return this._currentUser.id;
+      }
+      return explicitId;
+    }
+    return this._currentUser?.id || null;
+  }
+
   // ══════════════════════════════════════════════════════════════
   // USERS — Autenticación con Supabase Auth
   // ══════════════════════════════════════════════════════════════
@@ -579,11 +589,11 @@ class MotoClickStore {
       return this._fb_getOrders().find(o => o.id === id) || null;
     }
     let { data, error } = await this._sb.from('orders')
-      .select('*, client:users!client_id(is_verified, verification_status, profile_photo_url), driver:users!driver_id(is_verified, verification_status, profile_photo_url)')
+      .select('*')
       .eq('id', id)
       .maybeSingle();
 
-    // Si falla por RLS (42501) o la consulta devuelve null, intentar RPC legacy_get_order_text primero, luego legacy_get_order
+    // Si falla por RLS o la consulta devuelve null, intentar RPC legacy_get_order_text primero, luego legacy_get_order
     if ((error && (error.code === '42501' || (error.message && error.message.toLowerCase().includes('row-level security')))) || (!error && !data)) {
       try {
         console.warn('[Store] getOrderById: select failed or returned null, trying legacy_get_order_text RPC first');
@@ -618,7 +628,8 @@ class MotoClickStore {
         .filter(o => o.clientId === clientId)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-    const { data, error } = await this._sb.from('orders').select('*').eq('client_id', clientId).order('created_at', { ascending: false });
+    const resolvedClientId = this._resolveProfileId(clientId);
+    const { data, error } = await this._sb.from('orders').select('*').eq('client_id', resolvedClientId).order('created_at', { ascending: false });
     if (error) console.error('[Store] getOrdersByClient Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
@@ -629,7 +640,8 @@ class MotoClickStore {
         .filter(o => o.driverId === driverId)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-    const { data, error } = await this._sb.from('orders').select('*').eq('driver_id', driverId).order('created_at', { ascending: false });
+    const resolvedDriverId = this._resolveProfileId(driverId);
+    const { data, error } = await this._sb.from('orders').select('*').eq('driver_id', resolvedDriverId).order('created_at', { ascending: false });
     if (error) console.error('[Store] getOrdersByDriver Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
@@ -655,8 +667,9 @@ class MotoClickStore {
     if (this._useFallback) {
       return this._fb_getOrders().find(o => o.driverId === driverId && !['pending','entregado','cancelado'].includes(o.status)) || null;
     }
+    const resolvedDriverId = this._resolveProfileId(driverId);
     const { data, error } = await this._sb.from('orders').select('*')
-      .eq('driver_id', driverId)
+      .eq('driver_id', resolvedDriverId)
       .not('status', 'in', '("pending","entregado","cancelado")')
       .order('created_at', { ascending: false })
       .limit(1);
@@ -670,9 +683,7 @@ class MotoClickStore {
     
     // Asegurar que el clientId esté presente
     const finalOrderData = { ...orderData };
-    if (!finalOrderData.clientId && this._currentUser) {
-       finalOrderData.clientId = this._currentUser.id;
-    }
+    finalOrderData.clientId = this._resolveProfileId(finalOrderData.clientId);
 
     const row = this._toDB({ id, ...finalOrderData, status: 'pending', driverId: null });
     

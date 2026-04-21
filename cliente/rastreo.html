@@ -247,12 +247,6 @@
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
-    const user = requireAuth('client');
-    if (user) {
-      const g = document.getElementById('user-greeting');
-      if (g) g.innerHTML = `Hola, <span id="navbar-user-name" style="color: var(--accent);">${user.name}</span> <i class="fas fa-chevron-down" style="font-size: 10px; opacity: 0.5; margin-left: 5px;"></i>`;
-    }
-
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('id');
 
@@ -269,7 +263,13 @@
       if (typeof google !== 'undefined') loadOrder();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await requireAuth('client');
+      if (user) {
+        const g = document.getElementById('user-greeting');
+        if (g) g.innerHTML = `Hola, <span id="navbar-user-name" style="color: var(--accent);">${user.name}</span> <i class="fas fa-chevron-down" style="font-size: 10px; opacity: 0.5; margin-left: 5px;"></i>`;
+      }
+
       loadOrder();
       // Listen for real-time updates
       store.on('order_accepted', handleUpdate);
@@ -294,7 +294,10 @@
 
     async function loadOrder() {
       const order = await store.getOrderById(orderId);
-      if (!order) return;
+      if (!order) {
+        console.warn('[Tracking] No se pudo cargar el pedido:', orderId);
+        return;
+      }
 
       renderStatus(order.status);
       renderSummary(order);
