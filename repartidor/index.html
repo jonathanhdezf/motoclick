@@ -112,7 +112,7 @@
 
         <!-- Login -->
         <div class="tab-content active" id="tab-login">
-          <form id="login-form" onsubmit="handleLogin(event)">
+          <form id="login-form">
             <div class="form-group">
               <label class="form-label" for="login-phone">Teléfono</label>
               <input class="form-input" type="tel" id="login-phone" name="phone" placeholder="Ej. 5512345678" maxlength="10">
@@ -286,6 +286,10 @@
         showToast(result.error, 'error');
       }
     }
+
+    // Attach form handlers
+    document.getElementById('login-form')?.addEventListener('submit', handleLogin);
+    document.getElementById('register-form')?.addEventListener('submit', handleRegister);
 
     // ── Social Login Handlers ──
     async function handleGoogleLogin() {
