@@ -196,18 +196,7 @@
 
     // ── Auth Check Logic ──
     (async function() {
-      // 1. Verificar si hay sesión activa
-      const user = window.store?.getCurrentUser();
-      
-      if (user) {
-        if (user.role === 'client') {
-          window.location.href = '/cliente/nuevo-pedido.html';
-          return;
-        }
-        continueDriverAccess(user);
-      }
-
-      // Handle OAuth Redirects
+      // 1. Priorizar la sesión real de Supabase en retornos de OAuth
       const session = await store._sb?.auth?.getSession();
       if (session?.data?.session?.user) {
         const authUser = session.data.session.user;
@@ -217,10 +206,22 @@
           const result = await store.handleOAuthCallback('driver');
           if (result && result.success) {
             continueDriverAccess(result.user);
+            return;
           } else if (result?.error) {
             showToast(result.error, 'error');
+            return;
           }
         }
+      }
+
+      // 2. Fallback a usuario cacheado para sesiones tradicionales
+      const user = window.store?.getCurrentUser();
+      if (user) {
+        if (user.role === 'client') {
+          window.location.href = '/cliente/nuevo-pedido.html';
+          return;
+        }
+        continueDriverAccess(user);
       }
     })();
 
