@@ -696,7 +696,23 @@ class MotoClickStore {
 
   async getPendingOrders() {
     if (this._useFallback) return this._fb_getOrders().filter(o => o.status === 'pending');
-    const { data, error } = await this._sb.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: true });
+    let { data, error } = await this._sb.from('orders').select('*').eq('status', 'pending').order('created_at', { ascending: true });
+
+    // Fallback defensivo: algunos cambios de RLS/esquema dejan la consulta filtrada vacía aunque el SELECT base sí responde.
+    if (error || !(data || []).length) {
+      try {
+        const retry = await this._sb.from('orders').select('*').order('created_at', { ascending: true });
+        if (!retry.error && Array.isArray(retry.data)) {
+          data = retry.data.filter(row => row.status === 'pending');
+          error = null;
+        } else if (retry.error) {
+          error = retry.error;
+        }
+      } catch (e) {
+        error = e;
+      }
+    }
+
     if (error) console.error('[Store] getPendingOrders Error:', error);
     return (data || []).map(r => this._fromDB(r));
   }
