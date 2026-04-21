@@ -288,6 +288,7 @@
     }
 
     // Attach form handlers
+    window.handleLogin = handleLogin; window.handleRegister = handleRegister;
     document.getElementById('login-form')?.addEventListener('submit', handleLogin);
     document.getElementById('register-form')?.addEventListener('submit', handleRegister);
 
