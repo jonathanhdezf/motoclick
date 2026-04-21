@@ -583,10 +583,20 @@ class MotoClickStore {
       .eq('id', id)
       .maybeSingle();
 
-    // Si falla por RLS (42501) o la consulta devuelve null, intentar RPC legacy_get_order
+    // Si falla por RLS (42501) o la consulta devuelve null, intentar RPC legacy_get_order_text primero, luego legacy_get_order
     if ((error && (error.code === '42501' || (error.message && error.message.toLowerCase().includes('row-level security')))) || (!error && !data)) {
       try {
-        console.warn('[Store] getOrderById: select failed or returned null, trying legacy_get_order RPC');
+        console.warn('[Store] getOrderById: select failed or returned null, trying legacy_get_order_text RPC first');
+        // Intentar la versión text (desambiguación de sobrecarga)
+        let rpcResult = await this._sb.rpc('legacy_get_order_text', { p_order_id: id }).then(r => r).catch(e => ({ data: null, error: e }));
+        console.debug('[Store] legacy_get_order_text rpc result:', rpcResult.data, rpcResult.error);
+        if (rpcResult && !rpcResult.error && rpcResult.data) {
+          const record = Array.isArray(rpcResult.data) ? rpcResult.data[0] : rpcResult.data;
+          return this._fromDB(record);
+        }
+
+        // Si falla, probar la RPC original por compatibilidad
+        console.warn('[Store] getOrderById: legacy_get_order_text failed, trying legacy_get_order RPC');
         const { data: rpcData, error: rpcErr } = await this._sb.rpc('legacy_get_order', { p_order_id: id }).then(r => r).catch(e => ({ data: null, error: e }));
         console.debug('[Store] legacy_get_order rpc result:', rpcData, rpcErr);
         if (!rpcErr && rpcData) {
