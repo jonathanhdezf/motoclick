@@ -1284,26 +1284,6 @@
       setTimeout(() => navigateTo(`rastreo.html?id=${order.id}`), 800);
     }
 
-    async function renderHistory() {
-      const container = document.getElementById('orders-history');
-      const orders = await store.getOrdersByClient(user.id);
-      if (orders.length === 0) { container.innerHTML = ''; return; }
-      container.innerHTML = `
-        <h3 style="margin-bottom: var(--space-md); color: var(--text-secondary);">📜 Tus mandados recientes</h3>
-        ${orders.slice(0, 5).map(o => `
-          <div class="history-item" onclick="navigateTo('rastreo.html?id=${o.id}')">
-            <div class="history-left">
-              <span class="history-desc">${o.description.substring(0, 60)}${o.description.length > 60 ? '...' : ''}</span>
-              <span class="history-date">${timeAgo(o.createdAt)}</span>
-            </div>
-            <span class="badge ${o.status === 'entregado' ? 'badge-success' : o.status === 'pending' ? 'badge-pending' : 'badge-active'}">
-              ${getStatusLabel(o.status)}
-            </span>
-          </div>
-        `).join('')}
-      `;
-    }
-
     function handleLogout() {
       store.logout();
       navigateTo('./');
@@ -1725,9 +1705,15 @@
     async function renderHistory() {
       const container = document.getElementById('orders-history');
       if (!container) return;
+
+      const currentUser = store.getCurrentUser() || user;
+      if (!currentUser?.id) {
+        container.innerHTML = '';
+        return;
+      }
       
       // Obtener pedidos del cliente utilizando el store
-      const orders = await store.getOrdersByClient(user.id);
+      const orders = await store.getOrdersByClient(currentUser.id);
       
       if (!orders || orders.length === 0) {
         container.innerHTML = `
@@ -1742,6 +1728,7 @@
         const isCompleted = order.status === 'entregado';
         const isCancelled = order.status === 'cancelado';
         const isActive = !isCompleted && !isCancelled;
+        const description = order.description || 'Mandado sin descripción';
         
         const statusClass = isCompleted ? 'success' : (isCancelled ? 'danger' : 'warning');
         
@@ -1749,7 +1736,7 @@
           <div class="history-item animate-fade-in" onclick="${isActive ? `navigateTo('rastreo.html?id=${order.id}')` : ''}" 
                style="border-left: 3px solid var(--${statusClass}); ${isActive ? 'background: rgba(249, 115, 22, 0.05);' : ''}">
             <div class="history-left">
-              <div class="history-desc">${order.description.length > 60 ? order.description.substring(0, 60) + '...' : order.description}</div>
+              <div class="history-desc">${description.length > 60 ? description.substring(0, 60) + '...' : description}</div>
               <div class="history-date">
                 <span>🗓️ ${timeAgo(order.createdAt)}</span>
                 ${order.deliveredAt ? `<span> • ✅ Entregado</span>` : ''}
