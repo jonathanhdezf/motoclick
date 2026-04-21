@@ -578,10 +578,26 @@ class MotoClickStore {
     if (this._useFallback) {
       return this._fb_getOrders().find(o => o.id === id) || null;
     }
-    const { data, error } = await this._sb.from('orders')
+    let { data, error } = await this._sb.from('orders')
       .select('*, client:users!client_id(is_verified, verification_status, profile_photo_url), driver:users!driver_id(is_verified, verification_status, profile_photo_url)')
       .eq('id', id)
       .maybeSingle();
+
+    // Si falla por RLS (42501) o la consulta devuelve null, intentar RPC legacy_get_order
+    if ((error && (error.code === '42501' || (error.message && error.message.toLowerCase().includes('row-level security')))) || (!error && !data)) {
+      try {
+        console.warn('[Store] getOrderById: select failed or returned null, trying legacy_get_order RPC');
+        const { data: rpcData, error: rpcErr } = await this._sb.rpc('legacy_get_order', { p_order_id: id }).then(r => r).catch(e => ({ data: null, error: e }));
+        console.debug('[Store] legacy_get_order rpc result:', rpcData, rpcErr);
+        if (!rpcErr && rpcData) {
+          const record = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+          return this._fromDB(record);
+        }
+      } catch (e) {
+        console.error('[Store] legacy_get_order exception:', e);
+      }
+    }
+
     if (error) console.error('[Store] getOrderById Error:', error);
     return this._fromDB(data);
   }
