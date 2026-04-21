@@ -223,12 +223,13 @@ class MotoClickStore {
    * Usa MotoClickAuth.signIn() que maneja sesiones JWT
    */
   async loginUser(phone, role, pin) {
-    // Especial: si es repartidor, intentar RPC legacy que busca en public.users (evita RLS cuando está implementado el RPC)
+    // Especial: intentar RPC legacy que busca en public.users (evita RLS cuando existe el RPC)
     try {
-      if (role === 'driver' && this._sb) {
+      if (this._sb && (role === 'driver' || role === 'client')) {
+        const rpcName = role === 'driver' ? 'legacy_driver_login' : 'legacy_client_login';
         try {
-          const { data: rpcData, error: rpcErr } = await this._sb.rpc('legacy_driver_login', { p_phone: phone, p_pin: pin }).then(r=>r).catch(e=>({ data: null, error: e }));
-          console.debug('[Store] legacy_driver_login rpc result:', rpcData, rpcErr);
+          const { data: rpcData, error: rpcErr } = await this._sb.rpc(rpcName, { p_phone: phone, p_pin: pin }).then(r=>r).catch(e=>({ data: null, error: e }));
+          console.debug('[Store] ' + rpcName + ' rpc result:', rpcData, rpcErr);
           if (!rpcErr && rpcData) {
             const user = Array.isArray(rpcData) ? rpcData[0] : rpcData;
             if (user) {
@@ -237,7 +238,7 @@ class MotoClickStore {
             }
           }
         } catch (e) {
-          console.debug('[Store] RPC driver login failed:', e);
+          console.debug('[Store] RPC ' + rpcName + ' failed:', e);
         }
       }
     } catch (e) {}
