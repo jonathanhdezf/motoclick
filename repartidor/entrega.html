@@ -432,17 +432,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script>
-    const user = requireAuth('driver');
+    let user = null;
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('id');
-
-    if (user) {
-      const g = document.getElementById('user-greeting');
-      if (g) g.innerHTML = `Hola, <span class="user-name" id="navbar-user-name">${user.name}</span>`;
-    }
 
     if (!orderId) {
       showToast('Pedido no encontrado.', 'error');
@@ -460,7 +456,13 @@
 
     let orderTerminalState = false;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      user = await requireAuth('driver');
+      if (!user) return;
+
+      const g = document.getElementById('user-greeting');
+      if (g) g.innerHTML = `Hola, <span class="user-name" id="navbar-user-name">${user.name || 'Repartidor'}</span>`;
+
       loadOrder();
       // Listen for updates - only if not in terminal state
       const orderPoll = setInterval(() => {

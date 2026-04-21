@@ -343,20 +343,21 @@
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="../js/store.js"></script>
   <script src="../js/utils.js"></script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnfCrURPf28s3I5mAzhl3Jbol4U5p2igE&callback=init&loading=async"></script>
   
   <script>
     // --- Configuration & State ---
-    const user = requireAuth('driver');
+    let user = null;
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('id');
     
     // Instancia global para este módulo (Renombrado para evitar conflicto con SDK)
-    const sbClient = (typeof window.supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined') 
+    const sbClient = window.store?._sb || ((typeof window.supabase !== 'undefined' && typeof SUPABASE_URL !== 'undefined') 
         ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) 
-        : null;
+        : null);
 
     let commerceName = '';
     let locationCaptured = null;
@@ -368,6 +369,9 @@
 
     // --- Initialization ---
     async function init() {
+      user = await requireAuth('driver');
+      if (!user) return;
+
       if (!orderId) {
         showToast('ID de orden no proporcionado', 'error');
         setTimeout(() => window.history.back(), 1500);
