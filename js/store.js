@@ -649,20 +649,32 @@ class MotoClickStore {
 
     const row = this._toDB({ id, ...finalOrderData, status: 'pending', driverId: null });
     
-    let { data, error } = await this._sb.from('orders').insert([row]).select().single();
+    // Especificar columnas en select() y añadir logging detallado para diagnosticar fallas del servidor
+    let { data, error } = await this._sb.from('orders').insert([row]).select('*').single();
     
     // Si falla por columnas nuevas (client_name, client_phone), intentamos sin ellas
-    if (error && (error.code === 'PGRST105' || error.code === 'PGRST204' || error.message.includes('column'))) {
+    if (error && (error.code === 'PGRST105' || error.code === 'PGRST204' || (error.message && error.message.includes('column')))) {
       console.warn('[Store] createOrder: Reintentando sin columnas extendidas (Caché de esquema detectada)');
       const fallbackRow = { ...row };
       delete fallbackRow.client_name;
       delete fallbackRow.client_phone;
-      const retry = await this._sb.from('orders').insert([fallbackRow]).select().single();
+      const retry = await this._sb.from('orders').insert([fallbackRow]).select('*').single();
       data = retry.data;
       error = retry.error;
     }
 
-    if (error) { console.error('[Store] createOrder Final Error:', error); return null; }
+    if (error) {
+      // Log completo para facilitar diagnóstico desde consola del cliente
+      try {
+        console.error('[Store] createOrder Final Error:', JSON.parse(JSON.stringify(error)));
+      } catch (e) {
+        console.error('[Store] createOrder Final Error (raw):', error);
+      }
+      if (error.details) console.error('[Store] createOrder error details:', error.details);
+      if (error.hint) console.error('[Store] createOrder hint:', error.hint);
+      if (error.status) console.error('[Store] createOrder http status:', error.status);
+      return null;
+    }
     return this._fromDB(data);
   }
 
