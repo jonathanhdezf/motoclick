@@ -358,7 +358,9 @@ function formatCurrency(amount) {
 
 // ── Date Format ──
 function formatDate(dateStr) {
+  if (!dateStr) return 'Fecha no disponible';
   const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return 'Fecha no disponible';
   return d.toLocaleDateString('es-MX', {
     day: 'numeric',
     month: 'short',

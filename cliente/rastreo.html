@@ -365,45 +365,56 @@
     }
 
     function renderSummary(order) {
+      const description = order.description || 'Mandado sin descripción';
+      const pickupAddress = order.pickupAddress || 'Ubicación de recolección pendiente';
+      const deliveryAddress = order.deliveryAddress || 'Ubicación de entrega pendiente';
+      const paymentMethod = order.paymentMethod || 'pending';
+      const paymentLabel = order.paymentMethod ? getPaymentLabel(order.paymentMethod) : 'Forma de pago pendiente';
+      const createdAtLabel = order.createdAt ? formatDate(order.createdAt) : 'Fecha no disponible';
+      const extraStops = Array.isArray(order.stops)
+        ? order.stops
+            .map(s => typeof s === 'string' ? s : s?.desc)
+            .filter(Boolean)
+        : [];
+
       document.getElementById('order-summary').innerHTML = `
         <div class="order-summary-row">
           <span class="order-summary-icon">📝</span>
           <div class="order-summary-content">
             <div class="order-summary-label">Mandado</div>
-            <div class="order-summary-value">${order.description}</div>
+            <div class="order-summary-value">${description}</div>
           </div>
         </div>
         <div class="order-summary-row">
           <span class="order-summary-icon">📍</span>
           <div class="order-summary-content">
             <div class="order-summary-label">Recolección</div>
-            <div class="order-summary-value">${order.pickupAddress}</div>
+            <div class="order-summary-value">${pickupAddress}</div>
           </div>
         </div>
         <div class="order-summary-row">
           <span class="order-summary-icon">🏠</span>
           <div class="order-summary-content">
             <div class="order-summary-label">Entrega</div>
-            <div class="order-summary-value">${order.deliveryAddress}</div>
+            <div class="order-summary-value">${deliveryAddress}</div>
           </div>
         </div>
         <div class="order-summary-row">
-          <span class="order-summary-icon">${order.paymentMethod === 'cash' ? '💵' : order.paymentMethod === 'card' ? '💳' : '🏦'}</span>
+          <span class="order-summary-icon">${paymentMethod === 'cash' ? '💵' : paymentMethod === 'card' ? '💳' : '🏦'}</span>
           <div class="order-summary-content">
             <div class="order-summary-label">Pago</div>
-            <div class="order-summary-value">${getPaymentLabel(order.paymentMethod)}</div>
+            <div class="order-summary-value">${paymentLabel}</div>
           </div>
         </div>
-        ${(order.stops && order.stops.length > 0) || order.stopDescription ? `
+        ${(extraStops.length > 0) || order.stopDescription ? `
           <div class="order-summary-row" style="background: rgba(59, 130, 246, 0.05); padding: 12px; border-radius: 12px; border-left: 3px solid #3b82f6; margin-top: 10px;">
             <span class="order-summary-icon">📍</span>
             <div class="order-summary-content">
               <div class="order-summary-label">Paradas Extra</div>
               <div class="order-summary-value" style="font-weight: 500; color: #3b82f6; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
-                ${order.stops ? order.stops.map(s => {
-                  const desc = typeof s === 'string' ? s : s.desc;
-                  return `<div>• ${desc}</div>`;
-                }).join('') : `<div>• ${order.stopDescription}</div>`}
+                ${extraStops.length > 0
+                  ? extraStops.map(desc => `<div>• ${desc}</div>`).join('')
+                  : `<div>• ${order.stopDescription}</div>`}
               </div>
             </div>
           </div>
@@ -445,7 +456,7 @@
           <span class="order-summary-icon">🕐</span>
           <div class="order-summary-content">
             <div class="order-summary-label">Solicitado</div>
-            <div class="order-summary-value">${formatDate(order.createdAt)}</div>
+            <div class="order-summary-value">${createdAtLabel}</div>
           </div>
         </div>
       `;
